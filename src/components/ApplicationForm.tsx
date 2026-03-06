@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { Send } from 'lucide-react';
-import { store } from '@/lib/store';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,17 +17,25 @@ const schema = z.object({
   message: z.string().trim().min(1, 'Message is required').max(2000),
 });
 
-type FormData = z.infer<typeof schema>;
+type FormValues = z.infer<typeof schema>;
 
 const ApplicationForm = () => {
   const [submitted, setSubmitted] = useState(false);
-  const form = useForm<FormData>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', email: '', message: '' } as FormData,
+    defaultValues: { name: '', email: '', message: '' },
   });
 
-  const onSubmit = (data: FormData) => {
-    store.addSubmission({ name: data.name, email: data.email, message: data.message });
+  const onSubmit = async (data: FormValues) => {
+    const { error } = await supabase.from('submissions').insert({
+      name: data.name,
+      email: data.email,
+      message: data.message,
+    });
+    if (error) {
+      toast.error('Something went wrong. Please try again.');
+      return;
+    }
     toast.success('Application submitted successfully!');
     setSubmitted(true);
     form.reset();
@@ -50,52 +58,29 @@ const ApplicationForm = () => {
       <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your full name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="you@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Message / Motivation</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Why do you want to join?" rows={4} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormField control={form.control} name="name" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name</FormLabel>
+                <FormControl><Input placeholder="Your full name" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="email" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl><Input type="email" placeholder="you@example.com" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="message" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Message / Motivation</FormLabel>
+                <FormControl><Textarea placeholder="Why do you want to join?" rows={4} {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
             <Button type="submit" className="w-full" disabled={submitted}>
-              {submitted ? 'Sent!' : (
-                <>
-                  <Send className="w-4 h-4 mr-2" />
-                  Apply
-                </>
-              )}
+              {submitted ? 'Sent!' : (<><Send className="w-4 h-4 mr-2" />Apply</>)}
             </Button>
           </form>
         </Form>
