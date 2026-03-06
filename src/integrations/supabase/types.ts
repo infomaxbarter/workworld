@@ -22,6 +22,7 @@ export type Database = {
           id: string
           lat: number
           lng: number
+          slug: string | null
           title: string
         }
         Insert: {
@@ -31,6 +32,7 @@ export type Database = {
           id?: string
           lat?: number
           lng?: number
+          slug?: string | null
           title: string
         }
         Update: {
@@ -40,9 +42,87 @@ export type Database = {
           id?: string
           lat?: number
           lng?: number
+          slug?: string | null
           title?: string
         }
         Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profile_edit_requests: {
+        Row: {
+          admin_response: string | null
+          created_at: string
+          id: string
+          new_data: Json
+          old_data: Json
+          profile_id: string
+          reviewed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_response?: string | null
+          created_at?: string
+          id?: string
+          new_data?: Json
+          old_data?: Json
+          profile_id: string
+          reviewed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_response?: string | null
+          created_at?: string
+          id?: string
+          new_data?: Json
+          old_data?: Json
+          profile_id?: string
+          reviewed_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_edit_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -57,6 +137,7 @@ export type Database = {
           linkedin: string | null
           lng: number | null
           location: string | null
+          slug: string | null
           twitter: string | null
           updated_at: string
           user_id: string
@@ -74,6 +155,7 @@ export type Database = {
           linkedin?: string | null
           lng?: number | null
           location?: string | null
+          slug?: string | null
           twitter?: string | null
           updated_at?: string
           user_id: string
@@ -91,6 +173,7 @@ export type Database = {
           linkedin?: string | null
           lng?: number | null
           location?: string | null
+          slug?: string | null
           twitter?: string | null
           updated_at?: string
           user_id?: string
@@ -169,12 +252,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_notification: {
+        Args: {
+          _link?: string
+          _message?: string
+          _title: string
+          _type: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      generate_slug: { Args: { input: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      notify_admins: {
+        Args: {
+          _link?: string
+          _message?: string
+          _title: string
+          _type: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
