@@ -23,8 +23,11 @@ const ApplicationForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', email: '', message: '' },
+    defaultValues: { name: '', email: '', message: '' } as FormData,
   });
+
+  const onSubmit = (data: FormData) => {
+    store.addSubmission({ name: data.name, email: data.email, message: data.message });
 
   const onSubmit = (data: FormData) => {
     store.addSubmission(data);
