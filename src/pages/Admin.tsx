@@ -9,14 +9,15 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
 
 interface Submission { id: string; name: string; email: string; message: string; created_at: string; }
-interface UserMarker { id: string; name: string; lat: number; lng: number; }
+interface UserMarker { id: string; name: string; lat: number; lng: number; slug: string | null; }
 interface EventMarker { id: string; title: string; date: string | null; description: string | null; lat: number; lng: number; slug: string | null; }
-interface ProfileRow { id: string; user_id: string; display_name: string; bio: string | null; location: string | null; approved: boolean; slug: string | null; created_at: string; }
+interface ProfileRow { id: string; user_id: string; display_name: string; bio: string | null; location: string | null; website: string | null; twitter: string | null; linkedin: string | null; instagram: string | null; approved: boolean; slug: string | null; created_at: string; }
 interface EditRequest { id: string; profile_id: string; user_id: string; old_data: Record<string, any>; new_data: Record<string, any>; status: string; admin_response: string | null; created_at: string; reviewed_at: string | null; profile_name?: string; }
 
 const Admin = () => {
@@ -57,6 +58,7 @@ const Admin = () => {
   return <AdminDashboard />;
 };
 
+/* ─── Dashboard ─── */
 const AdminDashboard = () => {
   const { t } = useLanguage();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -66,7 +68,7 @@ const AdminDashboard = () => {
   const [editRequests, setEditRequests] = useState<EditRequest[]>([]);
   const [profileFilter, setProfileFilter] = useState<'all' | 'pending' | 'approved'>('pending');
 
-  // New member/event forms
+  // New forms
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberLat, setNewMemberLat] = useState<number | null>(null);
   const [newMemberLng, setNewMemberLng] = useState<number | null>(null);
@@ -79,7 +81,18 @@ const AdminDashboard = () => {
   const [newEventLng, setNewEventLng] = useState<number | null>(null);
   const [showEventPicker, setShowEventPicker] = useState(false);
 
-  // Edit request review
+  // Edit states
+  const [editingMember, setEditingMember] = useState<string | null>(null);
+  const [editMemberForm, setEditMemberForm] = useState<Partial<UserMarker>>({});
+  const [showEditMemberPicker, setShowEditMemberPicker] = useState(false);
+
+  const [editingEvent, setEditingEvent] = useState<string | null>(null);
+  const [editEventForm, setEditEventForm] = useState<Partial<EventMarker>>({});
+  const [showEditEventPicker, setShowEditEventPicker] = useState(false);
+
+  const [editingProfile, setEditingProfile] = useState<string | null>(null);
+  const [editProfileForm, setEditProfileForm] = useState<Partial<ProfileRow>>({});
+
   const [reviewResponse, setReviewResponse] = useState<Record<string, string>>({});
 
   const reload = async () => {
@@ -91,12 +104,11 @@ const AdminDashboard = () => {
       supabase.from('profile_edit_requests').select('*').order('created_at', { ascending: false }),
     ]);
     if (s) setSubmissions(s);
-    if (u) setUsers(u);
+    if (u) setUsers(u as unknown as UserMarker[]);
     if (e) setEvents(e as unknown as EventMarker[]);
     if (p) setProfiles(p as unknown as ProfileRow[]);
     if (er) {
-      // Enrich with profile names
-      const requests = (er as unknown as EditRequest[]);
+      const requests = er as unknown as EditRequest[];
       const profileMap = new Map((p as unknown as ProfileRow[])?.map(pr => [pr.id, pr.display_name]) || []);
       requests.forEach(r => { r.profile_name = profileMap.get(r.profile_id) || 'Unknown'; });
       setEditRequests(requests);
@@ -105,91 +117,90 @@ const AdminDashboard = () => {
 
   useEffect(() => { reload(); }, []);
 
+  // ─── Submissions ───
   const exportCSV = () => {
     const header = 'Name,Email,Message,Date\n';
     const rows = submissions.map(s => `"${s.name}","${s.email}","${s.message}","${s.created_at}"`).join('\n');
     const blob = new Blob([header + rows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'submissions.csv'; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = 'submissions.csv'; a.click();
     URL.revokeObjectURL(url);
   };
+  const deleteSubmission = async (id: string) => { await supabase.from('submissions').delete().eq('id', id); setSubmissions(prev => prev.filter(s => s.id !== id)); };
 
-  const deleteSubmission = async (id: string) => {
-    await supabase.from('submissions').delete().eq('id', id);
-    setSubmissions(prev => prev.filter(s => s.id !== id));
-  };
-
+  // ─── Profiles ───
   const approveProfile = async (userId: string) => {
     await supabase.from('profiles').update({ approved: true }).eq('user_id', userId);
     setProfiles(prev => prev.map(p => p.user_id === userId ? { ...p, approved: true } : p));
     await supabase.rpc('create_notification', { _user_id: userId, _type: 'approval', _title: 'Profiliniz onaylandı! 🎉', _message: 'Profiliniz artık topluluk sayfasında görünüyor.', _link: '/humans' } as any);
     toast.success('Profile approved');
   };
-
   const rejectProfile = async (userId: string) => {
     await supabase.from('profiles').update({ approved: false }).eq('user_id', userId);
     setProfiles(prev => prev.map(p => p.user_id === userId ? { ...p, approved: false } : p));
     toast.success('Profile rejected');
   };
-
-  const deleteProfile = async (id: string) => {
-    await supabase.from('profiles').delete().eq('id', id);
-    setProfiles(prev => prev.filter(p => p.id !== id));
-  };
-
-  // User markers CRUD with map picker
-  const addUser = async () => {
-    if (!newMemberName.trim()) { toast.error('Name required'); return; }
-    const { error } = await supabase.from('user_markers').insert({ name: newMemberName, lat: newMemberLat || 0, lng: newMemberLng || 0 });
-    if (error) toast.error('Failed');
-    else {
-      setNewMemberName(''); setNewMemberLat(null); setNewMemberLng(null); setShowMemberPicker(false);
-      reload();
-    }
-  };
-
-  const removeUser = async (id: string) => {
-    await supabase.from('user_markers').delete().eq('id', id);
-    setUsers(prev => prev.filter(u => u.id !== id));
-  };
-
-  // Event markers CRUD with map picker
-  const addEvent = async () => {
-    if (!newEventTitle.trim()) { toast.error('Title required'); return; }
-    const { error } = await supabase.from('event_markers').insert({
-      title: newEventTitle, date: newEventDate || null, description: newEventDesc || null,
-      lat: newEventLat || 0, lng: newEventLng || 0,
-    });
-    if (error) toast.error('Failed');
-    else {
-      setNewEventTitle(''); setNewEventDate(''); setNewEventDesc(''); setNewEventLat(null); setNewEventLng(null); setShowEventPicker(false);
-      reload();
-    }
-  };
-
-  const removeEvent = async (id: string) => {
-    await supabase.from('event_markers').delete().eq('id', id);
-    setEvents(prev => prev.filter(e => e.id !== id));
-  };
-
-  // Edit request actions
-  const approveEditRequest = async (req: EditRequest) => {
-    // Apply changes to profile
-    await supabase.from('profiles').update(req.new_data as any).eq('id', req.profile_id);
-    await supabase.from('profile_edit_requests').update({ status: 'approved', reviewed_at: new Date().toISOString() } as any).eq('id', req.id);
-    await supabase.rpc('create_notification', { _user_id: req.user_id, _type: 'edit_approved', _title: 'Profil değişikliğiniz onaylandı ✅', _message: `${Object.keys(req.new_data).join(', ')} alanları güncellendi.`, _link: `/humans/${profiles.find(p => p.id === req.profile_id)?.slug || req.user_id}` } as any);
-    toast.success('Edit request approved');
+  const deleteProfile = async (id: string) => { await supabase.from('profiles').delete().eq('id', id); setProfiles(prev => prev.filter(p => p.id !== id)); };
+  const startEditProfile = (p: ProfileRow) => { setEditingProfile(p.id); setEditProfileForm(p); };
+  const saveProfile = async () => {
+    if (!editingProfile) return;
+    const f = editProfileForm;
+    await supabase.from('profiles').update({
+      display_name: f.display_name || '', bio: f.bio, location: f.location,
+      website: f.website, twitter: f.twitter, linkedin: f.linkedin, instagram: f.instagram,
+    } as any).eq('id', editingProfile);
+    setEditingProfile(null);
+    toast.success('Profile updated');
     reload();
   };
 
+  // ─── Members (user_markers) ───
+  const addUser = async () => {
+    if (!newMemberName.trim()) { toast.error('Name required'); return; }
+    await supabase.from('user_markers').insert({ name: newMemberName, lat: newMemberLat || 0, lng: newMemberLng || 0 });
+    setNewMemberName(''); setNewMemberLat(null); setNewMemberLng(null); setShowMemberPicker(false);
+    reload();
+  };
+  const removeUser = async (id: string) => { await supabase.from('user_markers').delete().eq('id', id); setUsers(prev => prev.filter(u => u.id !== id)); };
+  const startEditMember = (u: UserMarker) => { setEditingMember(u.id); setEditMemberForm(u); setShowEditMemberPicker(false); };
+  const saveMember = async () => {
+    if (!editingMember) return;
+    await supabase.from('user_markers').update({ name: editMemberForm.name || '', lat: editMemberForm.lat || 0, lng: editMemberForm.lng || 0 }).eq('id', editingMember);
+    setEditingMember(null); setShowEditMemberPicker(false);
+    toast.success('Member updated');
+    reload();
+  };
+
+  // ─── Events ───
+  const addEvent = async () => {
+    if (!newEventTitle.trim()) { toast.error('Title required'); return; }
+    await supabase.from('event_markers').insert({ title: newEventTitle, date: newEventDate || null, description: newEventDesc || null, lat: newEventLat || 0, lng: newEventLng || 0 });
+    setNewEventTitle(''); setNewEventDate(''); setNewEventDesc(''); setNewEventLat(null); setNewEventLng(null); setShowEventPicker(false);
+    reload();
+  };
+  const removeEvent = async (id: string) => { await supabase.from('event_markers').delete().eq('id', id); setEvents(prev => prev.filter(e => e.id !== id)); };
+  const startEditEvent = (e: EventMarker) => { setEditingEvent(e.id); setEditEventForm(e); setShowEditEventPicker(false); };
+  const saveEvent = async () => {
+    if (!editingEvent) return;
+    await supabase.from('event_markers').update({ title: editEventForm.title || '', date: editEventForm.date || null, description: editEventForm.description || null, lat: editEventForm.lat || 0, lng: editEventForm.lng || 0 }).eq('id', editingEvent);
+    setEditingEvent(null); setShowEditEventPicker(false);
+    toast.success('Event updated');
+    reload();
+  };
+
+  // ─── Edit Requests ───
+  const approveEditRequest = async (req: EditRequest) => {
+    await supabase.from('profiles').update(req.new_data as any).eq('id', req.profile_id);
+    await supabase.from('profile_edit_requests').update({ status: 'approved', reviewed_at: new Date().toISOString() } as any).eq('id', req.id);
+    await supabase.rpc('create_notification', { _user_id: req.user_id, _type: 'edit_approved', _title: 'Profil değişikliğiniz onaylandı ✅', _message: `${Object.keys(req.new_data).join(', ')} alanları güncellendi.`, _link: `/humans/${profiles.find(p => p.id === req.profile_id)?.slug || req.user_id}` } as any);
+    toast.success('Approved'); reload();
+  };
   const rejectEditRequest = async (req: EditRequest) => {
     const response = reviewResponse[req.id] || '';
     if (!response.trim()) { toast.error(t('admin.response_required')); return; }
     await supabase.from('profile_edit_requests').update({ status: 'rejected', admin_response: response, reviewed_at: new Date().toISOString() } as any).eq('id', req.id);
     await supabase.rpc('create_notification', { _user_id: req.user_id, _type: 'edit_rejected', _title: 'Profil değişikliğiniz reddedildi', _message: response, _link: `/humans/${profiles.find(p => p.id === req.profile_id)?.slug || req.user_id}` } as any);
-    toast.success('Edit request rejected');
-    reload();
+    toast.success('Rejected'); reload();
   };
 
   const filteredProfiles = profiles.filter(p => {
@@ -203,8 +214,7 @@ const AdminDashboard = () => {
 
   const fieldLabels: Record<string, string> = {
     display_name: t('profile.display_name'), bio: t('profile.bio'), location: t('profile.location'),
-    website: t('profile.website'), twitter: 'Twitter', linkedin: 'LinkedIn', instagram: 'Instagram',
-    lat: 'Lat', lng: 'Lng',
+    website: t('profile.website'), twitter: 'Twitter', linkedin: 'LinkedIn', instagram: 'Instagram', lat: 'Lat', lng: 'Lng',
   };
 
   return (
@@ -212,12 +222,12 @@ const AdminDashboard = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-foreground">{t('admin.title')}</h1>
-          <div className="flex gap-3 text-sm text-muted-foreground">
+          <div className="flex gap-3 text-sm text-muted-foreground flex-wrap">
             <span className="flex items-center gap-1"><Users className="w-4 h-4" />{profiles.length}</span>
             <span className="flex items-center gap-1"><CalendarDays className="w-4 h-4" />{events.length}</span>
             <span className="flex items-center gap-1"><FileText className="w-4 h-4" />{submissions.length}</span>
-            {pendingCount > 0 && <Badge variant="destructive" className="gap-1"><Clock className="w-3 h-3" />{pendingCount} {t('admin.pending')}</Badge>}
-            {pendingEdits > 0 && <Badge variant="destructive" className="gap-1"><GitCompare className="w-3 h-3" />{pendingEdits} {t('admin.edit_requests')}</Badge>}
+            {pendingCount > 0 && <Badge variant="destructive" className="gap-1"><Clock className="w-3 h-3" />{pendingCount}</Badge>}
+            {pendingEdits > 0 && <Badge variant="destructive" className="gap-1"><GitCompare className="w-3 h-3" />{pendingEdits}</Badge>}
           </div>
         </div>
 
@@ -236,7 +246,7 @@ const AdminDashboard = () => {
             <TabsTrigger value="events" className="gap-1.5"><CalendarDays className="w-4 h-4" /> {t('admin.events')}</TabsTrigger>
           </TabsList>
 
-          {/* Edit Requests Tab */}
+          {/* ═══ Edit Requests ═══ */}
           <TabsContent value="edit_requests">
             <div className="space-y-4">
               {editRequests.filter(r => r.status === 'pending').length === 0 && (
@@ -252,8 +262,6 @@ const AdminDashboard = () => {
                       </div>
                       <Badge variant="secondary" className="gap-1"><Clock className="w-3 h-3" />{t('admin.pending')}</Badge>
                     </div>
-
-                    {/* Diff view */}
                     <div className="border border-border rounded-lg overflow-hidden">
                       <Table>
                         <TableHeader>
@@ -267,41 +275,21 @@ const AdminDashboard = () => {
                           {Object.keys(req.new_data).map(key => (
                             <TableRow key={key}>
                               <TableCell className="font-medium text-sm">{fieldLabels[key] || key}</TableCell>
-                              <TableCell className="text-sm text-destructive/80 bg-destructive/5">
-                                {String(req.old_data[key] ?? '—')}
-                              </TableCell>
-                              <TableCell className="text-sm text-primary bg-primary/5">
-                                {String(req.new_data[key] ?? '—')}
-                              </TableCell>
+                              <TableCell className="text-sm text-destructive/80 bg-destructive/5">{String(req.old_data[key] ?? '—')}</TableCell>
+                              <TableCell className="text-sm text-primary bg-primary/5">{String(req.new_data[key] ?? '—')}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
                       </Table>
                     </div>
-
-                    {/* Admin response for rejection */}
-                    <div className="space-y-2">
-                      <Textarea
-                        placeholder={t('admin.reject_reason_placeholder')}
-                        value={reviewResponse[req.id] || ''}
-                        onChange={e => setReviewResponse(prev => ({ ...prev, [req.id]: e.target.value }))}
-                        rows={2}
-                      />
-                    </div>
-
+                    <Textarea placeholder={t('admin.reject_reason_placeholder')} value={reviewResponse[req.id] || ''} onChange={e => setReviewResponse(prev => ({ ...prev, [req.id]: e.target.value }))} rows={2} />
                     <div className="flex gap-2 justify-end">
-                      <Button variant="outline" size="sm" onClick={() => rejectEditRequest(req)} className="gap-1">
-                        <XCircle className="w-4 h-4" /> {t('admin.reject')}
-                      </Button>
-                      <Button size="sm" onClick={() => approveEditRequest(req)} className="gap-1">
-                        <CheckCircle className="w-4 h-4" /> {t('admin.approve')}
-                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => rejectEditRequest(req)} className="gap-1"><XCircle className="w-4 h-4" /> {t('admin.reject')}</Button>
+                      <Button size="sm" onClick={() => approveEditRequest(req)} className="gap-1"><CheckCircle className="w-4 h-4" /> {t('admin.approve')}</Button>
                     </div>
                   </CardContent>
                 </Card>
               ))}
-
-              {/* History */}
               {editRequests.filter(r => r.status !== 'pending').length > 0 && (
                 <div className="mt-8">
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('admin.review_history')}</h3>
@@ -313,14 +301,8 @@ const AdminDashboard = () => {
                           <span className="text-xs text-muted-foreground ml-2">{Object.keys(req.new_data).join(', ')}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          {req.admin_response && (
-                            <span className="text-xs text-muted-foreground max-w-[200px] truncate flex items-center gap-1">
-                              <MessageSquare className="w-3 h-3" />{req.admin_response}
-                            </span>
-                          )}
-                          <Badge variant={req.status === 'approved' ? 'default' : 'destructive'} className="text-xs">
-                            {req.status === 'approved' ? t('admin.approved') : t('admin.rejected')}
-                          </Badge>
+                          {req.admin_response && <span className="text-xs text-muted-foreground max-w-[200px] truncate flex items-center gap-1"><MessageSquare className="w-3 h-3" />{req.admin_response}</span>}
+                          <Badge variant={req.status === 'approved' ? 'default' : 'destructive'} className="text-xs">{req.status === 'approved' ? t('admin.approved') : t('admin.rejected')}</Badge>
                         </div>
                       </CardContent>
                     </Card>
@@ -330,7 +312,7 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
 
-          {/* Profiles Tab */}
+          {/* ═══ Profiles ═══ */}
           <TabsContent value="profiles">
             <div className="flex gap-2 mb-4">
               {(['all', 'pending', 'approved'] as const).map(f => (
@@ -342,34 +324,49 @@ const AdminDashboard = () => {
             <div className="space-y-3">
               {filteredProfiles.map(p => (
                 <Card key={p.id}>
-                  <CardContent className="p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-foreground truncate">{p.display_name || '(unnamed)'}</span>
-                        {p.approved ? (
-                          <Badge variant="default" className="gap-1 text-xs"><CheckCircle className="w-3 h-3" />{t('admin.approved')}</Badge>
-                        ) : (
-                          <Badge variant="secondary" className="gap-1 text-xs"><Clock className="w-3 h-3" />{t('admin.pending')}</Badge>
-                        )}
+                  <CardContent className="p-4">
+                    {editingProfile === p.id ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1"><Label>{t('profile.display_name')}</Label><Input value={editProfileForm.display_name || ''} onChange={e => setEditProfileForm({ ...editProfileForm, display_name: e.target.value })} /></div>
+                          <div className="space-y-1"><Label>{t('profile.location')}</Label><Input value={editProfileForm.location || ''} onChange={e => setEditProfileForm({ ...editProfileForm, location: e.target.value })} /></div>
+                        </div>
+                        <div className="space-y-1"><Label>{t('profile.bio')}</Label><Textarea value={editProfileForm.bio || ''} onChange={e => setEditProfileForm({ ...editProfileForm, bio: e.target.value })} rows={2} /></div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1"><Label>{t('profile.website')}</Label><Input value={editProfileForm.website || ''} onChange={e => setEditProfileForm({ ...editProfileForm, website: e.target.value })} /></div>
+                          <div className="space-y-1"><Label>Twitter</Label><Input value={editProfileForm.twitter || ''} onChange={e => setEditProfileForm({ ...editProfileForm, twitter: e.target.value })} /></div>
+                          <div className="space-y-1"><Label>LinkedIn</Label><Input value={editProfileForm.linkedin || ''} onChange={e => setEditProfileForm({ ...editProfileForm, linkedin: e.target.value })} /></div>
+                          <div className="space-y-1"><Label>Instagram</Label><Input value={editProfileForm.instagram || ''} onChange={e => setEditProfileForm({ ...editProfileForm, instagram: e.target.value })} /></div>
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                          <Button variant="outline" size="sm" onClick={() => setEditingProfile(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
+                          <Button size="sm" onClick={saveProfile} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
+                        </div>
                       </div>
-                      {p.location && <p className="text-xs text-muted-foreground">{p.location}</p>}
-                      {p.bio && <p className="text-xs text-muted-foreground truncate max-w-md">{p.bio}</p>}
-                    </div>
-                    <div className="flex gap-2 shrink-0">
-                      {!p.approved && (
-                        <Button size="sm" onClick={() => approveProfile(p.user_id)} className="gap-1">
-                          <CheckCircle className="w-4 h-4" /> {t('admin.approve')}
-                        </Button>
-                      )}
-                      {p.approved && (
-                        <Button variant="outline" size="sm" onClick={() => rejectProfile(p.user_id)} className="gap-1">
-                          <XCircle className="w-4 h-4" /> {t('admin.reject')}
-                        </Button>
-                      )}
-                      <Button variant="ghost" size="icon" onClick={() => deleteProfile(p.id)}>
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
+                    ) : (
+                      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-foreground truncate">{p.display_name || '(unnamed)'}</span>
+                            {p.approved ? <Badge variant="default" className="gap-1 text-xs"><CheckCircle className="w-3 h-3" />{t('admin.approved')}</Badge> : <Badge variant="secondary" className="gap-1 text-xs"><Clock className="w-3 h-3" />{t('admin.pending')}</Badge>}
+                          </div>
+                          {p.location && <p className="text-xs text-muted-foreground">{p.location}</p>}
+                          {p.bio && <p className="text-xs text-muted-foreground truncate max-w-md">{p.bio}</p>}
+                          <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
+                            {p.website && <span>🌐 {p.website}</span>}
+                            {p.twitter && <span>𝕏 @{p.twitter}</span>}
+                            {p.linkedin && <span>in/{p.linkedin}</span>}
+                            {p.instagram && <span>📷 @{p.instagram}</span>}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <Button variant="ghost" size="icon" onClick={() => startEditProfile(p)}><Edit2 className="w-4 h-4" /></Button>
+                          {!p.approved && <Button size="sm" onClick={() => approveProfile(p.user_id)} className="gap-1"><CheckCircle className="w-4 h-4" />{t('admin.approve')}</Button>}
+                          {p.approved && <Button variant="outline" size="sm" onClick={() => rejectProfile(p.user_id)} className="gap-1"><XCircle className="w-4 h-4" />{t('admin.reject')}</Button>}
+                          <Button variant="ghost" size="icon" onClick={() => deleteProfile(p.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -377,21 +374,15 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
 
-          {/* Submissions Tab */}
+          {/* ═══ Submissions ═══ */}
           <TabsContent value="submissions">
             <div className="flex justify-between items-center mb-4">
               <p className="text-sm text-muted-foreground">{submissions.length} submission(s)</p>
-              <Button variant="outline" size="sm" onClick={exportCSV} disabled={!submissions.length}>
-                <Download className="w-4 h-4 mr-1" /> {t('admin.export_csv')}
-              </Button>
+              <Button variant="outline" size="sm" onClick={exportCSV} disabled={!submissions.length}><Download className="w-4 h-4 mr-1" /> {t('admin.export_csv')}</Button>
             </div>
             <div className="border rounded-lg overflow-hidden">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>Message</TableHead><TableHead>Date</TableHead><TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
+                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>Message</TableHead><TableHead>Date</TableHead><TableHead></TableHead></TableRow></TableHeader>
                 <TableBody>
                   {submissions.map(s => (
                     <TableRow key={s.id}>
@@ -399,9 +390,7 @@ const AdminDashboard = () => {
                       <TableCell>{s.email}</TableCell>
                       <TableCell className="max-w-[200px] truncate">{s.message}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">{new Date(s.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => deleteSubmission(s.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
-                      </TableCell>
+                      <TableCell><Button variant="ghost" size="icon" onClick={() => deleteSubmission(s.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button></TableCell>
                     </TableRow>
                   ))}
                   {!submissions.length && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No submissions yet.</TableCell></TableRow>}
@@ -410,7 +399,7 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
 
-          {/* Map Markers Tab */}
+          {/* ═══ Members (Anonymous) ═══ */}
           <TabsContent value="markers">
             <Card className="mb-4">
               <CardContent className="p-4 space-y-3">
@@ -418,32 +407,50 @@ const AdminDashboard = () => {
                 <Input value={newMemberName} onChange={e => setNewMemberName(e.target.value)} placeholder="Name" />
                 <Button variant="outline" size="sm" onClick={() => setShowMemberPicker(!showMemberPicker)} className="gap-1">
                   <MapPin className="w-4 h-4" /> {t('map.pick_location')}
-                  {newMemberLat && newMemberLng && <span className="text-xs">({newMemberLat.toFixed(2)}, {newMemberLng.toFixed(2)})</span>}
+                  {newMemberLat != null && newMemberLng != null && <span className="text-xs">({newMemberLat.toFixed(2)}, {newMemberLng.toFixed(2)})</span>}
                 </Button>
-                {showMemberPicker && (
-                  <LocationPicker lat={newMemberLat} lng={newMemberLng} onChange={(lat, lng) => { setNewMemberLat(lat); setNewMemberLng(lng); }} />
-                )}
+                {showMemberPicker && <LocationPicker lat={newMemberLat} lng={newMemberLng} onChange={(lat, lng) => { setNewMemberLat(lat); setNewMemberLng(lng); }} />}
                 <Button size="sm" onClick={addUser}><Plus className="w-4 h-4 mr-1" /> {t('admin.add_member')}</Button>
               </CardContent>
             </Card>
 
             <p className="text-sm text-muted-foreground mb-3">{users.length} {t('admin.anonymous_members')}</p>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {users.map(u => (
                 <Card key={u.id}>
-                  <CardContent className="p-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="font-medium text-sm">{u.name}</span>
-                      <span className="text-xs text-muted-foreground">📍 {u.lat.toFixed(2)}, {u.lng.toFixed(2)}</span>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => removeUser(u.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                  <CardContent className="p-4">
+                    {editingMember === u.id ? (
+                      <div className="space-y-3">
+                        <div className="space-y-1"><Label>Name</Label><Input value={editMemberForm.name || ''} onChange={e => setEditMemberForm({ ...editMemberForm, name: e.target.value })} /></div>
+                        <Button variant="outline" size="sm" onClick={() => setShowEditMemberPicker(!showEditMemberPicker)} className="gap-1">
+                          <MapPin className="w-4 h-4" /> {t('map.pick_location')}
+                          {editMemberForm.lat != null && editMemberForm.lng != null && <span className="text-xs">({editMemberForm.lat.toFixed(2)}, {editMemberForm.lng.toFixed(2)})</span>}
+                        </Button>
+                        {showEditMemberPicker && <LocationPicker lat={editMemberForm.lat ?? null} lng={editMemberForm.lng ?? null} onChange={(lat, lng) => setEditMemberForm({ ...editMemberForm, lat, lng })} />}
+                        <div className="flex gap-2 justify-end">
+                          <Button variant="outline" size="sm" onClick={() => setEditingMember(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
+                          <Button size="sm" onClick={saveMember} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium text-sm">{u.name}</span>
+                          <span className="text-xs text-muted-foreground">📍 {u.lat.toFixed(2)}, {u.lng.toFixed(2)}</span>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => startEditMember(u)}><Edit2 className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => removeUser(u.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
             </div>
           </TabsContent>
 
-          {/* Events Tab */}
+          {/* ═══ Events ═══ */}
           <TabsContent value="events">
             <Card className="mb-4">
               <CardContent className="p-4 space-y-3">
@@ -455,26 +462,49 @@ const AdminDashboard = () => {
                 <Textarea value={newEventDesc} onChange={e => setNewEventDesc(e.target.value)} placeholder="Description" rows={2} />
                 <Button variant="outline" size="sm" onClick={() => setShowEventPicker(!showEventPicker)} className="gap-1">
                   <MapPin className="w-4 h-4" /> {t('map.pick_location')}
-                  {newEventLat && newEventLng && <span className="text-xs">({newEventLat.toFixed(2)}, {newEventLng.toFixed(2)})</span>}
+                  {newEventLat != null && newEventLng != null && <span className="text-xs">({newEventLat.toFixed(2)}, {newEventLng.toFixed(2)})</span>}
                 </Button>
-                {showEventPicker && (
-                  <LocationPicker lat={newEventLat} lng={newEventLng} onChange={(lat, lng) => { setNewEventLat(lat); setNewEventLng(lng); }} />
-                )}
+                {showEventPicker && <LocationPicker lat={newEventLat} lng={newEventLng} onChange={(lat, lng) => { setNewEventLat(lat); setNewEventLng(lng); }} />}
                 <Button size="sm" onClick={addEvent}><Plus className="w-4 h-4 mr-1" /> {t('admin.add_event')}</Button>
               </CardContent>
             </Card>
 
             <p className="text-sm text-muted-foreground mb-3">{events.length} event(s)</p>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {events.map(e => (
                 <Card key={e.id}>
-                  <CardContent className="p-3 flex items-center justify-between">
-                    <div>
-                      <span className="font-medium text-sm">{e.title}</span>
-                      {e.date && <span className="text-xs text-muted-foreground ml-2">📅 {e.date}</span>}
-                      <span className="text-xs text-muted-foreground ml-2">📍 {e.lat.toFixed(2)}, {e.lng.toFixed(2)}</span>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => removeEvent(e.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                  <CardContent className="p-4">
+                    {editingEvent === e.id ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1"><Label>Title</Label><Input value={editEventForm.title || ''} onChange={ev => setEditEventForm({ ...editEventForm, title: ev.target.value })} /></div>
+                          <div className="space-y-1"><Label>Date</Label><Input type="date" value={editEventForm.date || ''} onChange={ev => setEditEventForm({ ...editEventForm, date: ev.target.value })} /></div>
+                        </div>
+                        <div className="space-y-1"><Label>Description</Label><Textarea value={editEventForm.description || ''} onChange={ev => setEditEventForm({ ...editEventForm, description: ev.target.value })} rows={3} /></div>
+                        <Button variant="outline" size="sm" onClick={() => setShowEditEventPicker(!showEditEventPicker)} className="gap-1">
+                          <MapPin className="w-4 h-4" /> {t('map.pick_location')}
+                          {editEventForm.lat != null && editEventForm.lng != null && <span className="text-xs">({editEventForm.lat.toFixed(2)}, {editEventForm.lng.toFixed(2)})</span>}
+                        </Button>
+                        {showEditEventPicker && <LocationPicker lat={editEventForm.lat ?? null} lng={editEventForm.lng ?? null} onChange={(lat, lng) => setEditEventForm({ ...editEventForm, lat, lng })} />}
+                        <div className="flex gap-2 justify-end">
+                          <Button variant="outline" size="sm" onClick={() => setEditingEvent(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
+                          <Button size="sm" onClick={saveEvent} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium text-sm">{e.title}</span>
+                          {e.date && <span className="text-xs text-muted-foreground ml-2">📅 {e.date}</span>}
+                          <span className="text-xs text-muted-foreground ml-2">📍 {e.lat.toFixed(2)}, {e.lng.toFixed(2)}</span>
+                          {e.description && <p className="text-xs text-muted-foreground mt-1 truncate max-w-md">{e.description}</p>}
+                        </div>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => startEditEvent(e)}><Edit2 className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => removeEvent(e.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
