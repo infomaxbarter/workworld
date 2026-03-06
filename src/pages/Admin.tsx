@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { store, UserMarker, EventMarker, Submission } from '@/lib/store';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -8,6 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Download, Plus, Trash2, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface Submission { id: string; name: string; email: string; message: string; created_at: string; }
+interface UserMarker { id: string; name: string; lat: number; lng: number; }
+interface EventMarker { id: string; title: string; date: string | null; description: string | null; lat: number; lng: number; }
 
 const ADMIN_PASS = 'workworld2026';
 
@@ -48,60 +52,63 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState<UserMarker[]>([]);
   const [events, setEvents] = useState<EventMarker[]>([]);
 
-  useEffect(() => {
-    setSubmissions(store.getSubmissions());
-    setUsers(store.getUsers());
-    setEvents(store.getEvents());
-  }, []);
+  const reload = async () => {
+    const [{ data: s }, { data: u }, { data: e }] = await Promise.all([
+      supabase.from('submissions').select('*').order('created_at', { ascending: false }),
+      supabase.from('user_markers').select('*'),
+      supabase.from('event_markers').select('*'),
+    ]);
+    if (s) setSubmissions(s);
+    if (u) setUsers(u);
+    if (e) setEvents(e);
+  };
+
+  useEffect(() => { reload(); }, []);
 
   const exportCSV = () => {
     const header = 'Name,Email,Message,Date\n';
-    const rows = submissions.map(s => `"${s.name}","${s.email}","${s.message}","${s.createdAt}"`).join('\n');
+    const rows = submissions.map(s => `"${s.name}","${s.email}","${s.message}","${s.created_at}"`).join('\n');
     const blob = new Blob([header + rows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'submissions.csv';
-    a.click();
+    a.href = url; a.download = 'submissions.csv'; a.click();
     URL.revokeObjectURL(url);
   };
 
-  const addUser = () => {
-    const u: UserMarker = { id: crypto.randomUUID(), name: 'New Member', lat: 0, lng: 0 };
-    const updated = [...users, u];
-    setUsers(updated);
-    store.setUsers(updated);
+  // User markers CRUD - need admin RLS policies, using direct operations
+  const addUser = async () => {
+    const { error } = await supabase.from('user_markers').insert({ name: 'New Member', lat: 0, lng: 0 });
+    if (error) toast.error('Failed to add member');
+    else reload();
   };
 
-  const updateUser = (id: string, field: keyof UserMarker, value: string) => {
-    const updated = users.map(u => u.id === id ? { ...u, [field]: field === 'lat' || field === 'lng' ? parseFloat(value) || 0 : value } : u);
-    setUsers(updated);
-    store.setUsers(updated);
+  const updateUser = async (id: string, field: string, value: string) => {
+    const val = field === 'lat' || field === 'lng' ? parseFloat(value) || 0 : value;
+    await supabase.from('user_markers').update({ [field]: val }).eq('id', id);
+    // Update local state immediately
+    setUsers(prev => prev.map(u => u.id === id ? { ...u, [field]: val } : u));
   };
 
-  const removeUser = (id: string) => {
-    const updated = users.filter(u => u.id !== id);
-    setUsers(updated);
-    store.setUsers(updated);
+  const removeUser = async (id: string) => {
+    await supabase.from('user_markers').delete().eq('id', id);
+    setUsers(prev => prev.filter(u => u.id !== id));
   };
 
-  const addEvent = () => {
-    const e: EventMarker = { id: crypto.randomUUID(), title: 'New Event', date: '', description: '', lat: 0, lng: 0 };
-    const updated = [...events, e];
-    setEvents(updated);
-    store.setEvents(updated);
+  const addEvent = async () => {
+    const { error } = await supabase.from('event_markers').insert({ title: 'New Event', lat: 0, lng: 0 });
+    if (error) toast.error('Failed to add event');
+    else reload();
   };
 
-  const updateEvent = (id: string, field: keyof EventMarker, value: string) => {
-    const updated = events.map(e => e.id === id ? { ...e, [field]: field === 'lat' || field === 'lng' ? parseFloat(value) || 0 : value } : e);
-    setEvents(updated);
-    store.setEvents(updated);
+  const updateEvent = async (id: string, field: string, value: string) => {
+    const val = field === 'lat' || field === 'lng' ? parseFloat(value) || 0 : value;
+    await supabase.from('event_markers').update({ [field]: val }).eq('id', id);
+    setEvents(prev => prev.map(e => e.id === id ? { ...e, [field]: val } : e));
   };
 
-  const removeEvent = (id: string) => {
-    const updated = events.filter(e => e.id !== id);
-    setEvents(updated);
-    store.setEvents(updated);
+  const removeEvent = async (id: string) => {
+    await supabase.from('event_markers').delete().eq('id', id);
+    setEvents(prev => prev.filter(e => e.id !== id));
   };
 
   return (
@@ -139,7 +146,7 @@ const AdminDashboard = () => {
                       <TableCell className="font-medium">{s.name}</TableCell>
                       <TableCell>{s.email}</TableCell>
                       <TableCell className="max-w-[200px] truncate">{s.message}</TableCell>
-                      <TableCell className="text-muted-foreground text-xs">{new Date(s.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-muted-foreground text-xs">{new Date(s.created_at).toLocaleDateString()}</TableCell>
                     </TableRow>
                   ))}
                   {!submissions.length && (
@@ -180,9 +187,9 @@ const AdminDashboard = () => {
                   <CardContent className="p-4 space-y-3">
                     <div className="flex flex-col sm:flex-row gap-3">
                       <Input value={e.title} onChange={ev => updateEvent(e.id, 'title', ev.target.value)} placeholder="Title" className="flex-1" />
-                      <Input type="date" value={e.date} onChange={ev => updateEvent(e.id, 'date', ev.target.value)} className="w-40" />
+                      <Input type="date" value={e.date || ''} onChange={ev => updateEvent(e.id, 'date', ev.target.value)} className="w-40" />
                     </div>
-                    <Textarea value={e.description} onChange={ev => updateEvent(e.id, 'description', ev.target.value)} placeholder="Description" rows={2} />
+                    <Textarea value={e.description || ''} onChange={ev => updateEvent(e.id, 'description', ev.target.value)} placeholder="Description" rows={2} />
                     <div className="flex gap-3 items-center">
                       <Input value={e.lat} onChange={ev => updateEvent(e.id, 'lat', ev.target.value)} placeholder="Lat" className="w-28" />
                       <Input value={e.lng} onChange={ev => updateEvent(e.id, 'lng', ev.target.value)} placeholder="Lng" className="w-28" />
