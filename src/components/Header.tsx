@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
 import type { Lang } from '@/i18n/translations';
 import type { User as SupaUser } from '@supabase/supabase-js';
+import NotificationBell from './NotificationBell';
 
 const langLabels: Record<Lang, string> = { tr: 'TR', en: 'EN', de: 'DE' };
 
@@ -15,30 +16,31 @@ const Header = () => {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
   const [user, setUser] = useState<SupaUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [profileSlug, setProfileSlug] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
   }, [dark]);
 
+  const loadUserMeta = async (userId: string) => {
+    const [{ data: roles }, { data: profile }] = await Promise.all([
+      supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin'),
+      supabase.from('profiles').select('slug').eq('user_id', userId).single(),
+    ]);
+    setIsAdmin(!!(roles && roles.length > 0));
+    setProfileSlug((profile as any)?.slug || null);
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) {
-        supabase.from('user_roles').select('role').eq('user_id', session.user.id).eq('role', 'admin').then(({ data }) => {
-          setIsAdmin(!!(data && data.length > 0));
-        });
-      } else {
-        setIsAdmin(false);
-      }
+      if (session?.user) loadUserMeta(session.user.id);
+      else { setIsAdmin(false); setProfileSlug(null); }
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      if (session?.user) {
-        supabase.from('user_roles').select('role').eq('user_id', session.user.id).eq('role', 'admin').then(({ data }) => {
-          setIsAdmin(!!(data && data.length > 0));
-        });
-      }
+      if (session?.user) loadUserMeta(session.user.id);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -107,13 +109,14 @@ const Header = () => {
           {/* Auth */}
           {user ? (
             <>
+              <NotificationBell userId={user.id} />
               {isAdmin && (
                 <Button variant="ghost" size="icon" asChild>
                   <Link to="/admin"><Shield className="w-4 h-4" /></Link>
                 </Button>
               )}
               <Button variant="ghost" size="icon" asChild>
-                <Link to={`/profile/${user.id}`}><User className="w-4 h-4" /></Link>
+                <Link to={`/humans/${profileSlug || user.id}`}><User className="w-4 h-4" /></Link>
               </Button>
               <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="w-4 h-4" />

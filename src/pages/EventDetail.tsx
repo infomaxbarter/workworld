@@ -12,28 +12,35 @@ interface EventData {
   description: string | null;
   lat: number;
   lng: number;
+  slug: string | null;
   created_at: string;
 }
 
 const EventDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const { t } = useLanguage();
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from('event_markers').select('*').eq('id', id!).single().then(({ data }) => {
-      if (data) setEvent(data as EventData);
+    const load = async () => {
+      let { data } = await supabase.from('event_markers').select('*').eq('slug', slug!).single();
+      if (!data) {
+        const res = await supabase.from('event_markers').select('*').eq('id', slug!).single();
+        data = res.data;
+      }
+      if (data) setEvent(data as unknown as EventData);
       setLoading(false);
-    });
-  }, [id]);
+    };
+    load();
+  }, [slug]);
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!event) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Event not found.</div>;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
-      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
+      <Link to="/events" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
         <ArrowLeft className="w-4 h-4" /> {t('event.back')}
       </Link>
 

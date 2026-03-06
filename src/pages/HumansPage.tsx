@@ -18,6 +18,7 @@ interface Profile {
   twitter: string | null;
   linkedin: string | null;
   instagram: string | null;
+  slug: string | null;
   approved: boolean;
   created_at: string;
 }
@@ -48,7 +49,7 @@ const HumansPage = () => {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {profiles.map((p) => (
-            <Link key={p.id} to={`/profile/${p.user_id}`}>
+            <Link key={p.id} to={`/humans/${p.slug || p.user_id}`}>
               <Card className="hover:shadow-md transition-shadow h-full">
                 <CardContent className="p-5">
                   <div className="flex items-center gap-3 mb-3">
@@ -69,26 +70,10 @@ const HumansPage = () => {
                   </div>
                   {p.bio && <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{p.bio}</p>}
                   <div className="flex flex-wrap gap-2">
-                    {p.website && (
-                      <Badge variant="secondary" className="text-xs gap-1">
-                        <Globe className="w-3 h-3" /> Web
-                      </Badge>
-                    )}
-                    {p.twitter && (
-                      <Badge variant="secondary" className="text-xs gap-1">
-                        <Twitter className="w-3 h-3" /> Twitter
-                      </Badge>
-                    )}
-                    {p.linkedin && (
-                      <Badge variant="secondary" className="text-xs gap-1">
-                        <Linkedin className="w-3 h-3" /> LinkedIn
-                      </Badge>
-                    )}
-                    {p.instagram && (
-                      <Badge variant="secondary" className="text-xs gap-1">
-                        <Instagram className="w-3 h-3" /> Instagram
-                      </Badge>
-                    )}
+                    {p.website && <Badge variant="secondary" className="text-xs gap-1"><Globe className="w-3 h-3" /> Web</Badge>}
+                    {p.twitter && <Badge variant="secondary" className="text-xs gap-1"><Twitter className="w-3 h-3" /> Twitter</Badge>}
+                    {p.linkedin && <Badge variant="secondary" className="text-xs gap-1"><Linkedin className="w-3 h-3" /> LinkedIn</Badge>}
+                    {p.instagram && <Badge variant="secondary" className="text-xs gap-1"><Instagram className="w-3 h-3" /> Instagram</Badge>}
                   </div>
                 </CardContent>
               </Card>

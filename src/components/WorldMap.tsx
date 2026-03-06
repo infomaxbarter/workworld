@@ -6,22 +6,6 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
 import { supabase } from '@/integrations/supabase/client';
 
-interface UserMarker {
-  id: string;
-  name: string;
-  lat: number;
-  lng: number;
-}
-
-interface EventMarker {
-  id: string;
-  title: string;
-  date: string | null;
-  description: string | null;
-  lat: number;
-  lng: number;
-}
-
 // Fix default marker icons
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -60,25 +44,29 @@ const WorldMap = () => {
     const cluster = L.markerClusterGroup();
 
     const loadMarkers = async () => {
-      const [{ data: users }, { data: events }] = await Promise.all([
+      // Fetch approved profiles with coordinates + anonymous user_markers + events
+      const [{ data: profiles }, { data: anonMarkers }, { data: events }] = await Promise.all([
+        supabase.from('profiles').select('*').eq('approved', true).not('lat', 'is', null).not('lng', 'is', null),
         supabase.from('user_markers').select('*'),
         supabase.from('event_markers').select('*'),
       ]);
 
-      (users as UserMarker[] | null)?.forEach((u) => {
-        const marker = L.marker([u.lat, u.lng]);
+      // Approved profiles on map
+      (profiles as any[] | null)?.forEach((p) => {
+        if (!p.lat || !p.lng) return;
+        const marker = L.marker([p.lat, p.lng]);
         marker.bindPopup(`
           <div style="padding:12px;min-width:180px;font-family:inherit;">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
               <div style="width:36px;height:36px;border-radius:50%;background:hsl(152,60%,36%);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;">
-                ${u.name.charAt(0).toUpperCase()}
+                ${(p.display_name || '?').charAt(0).toUpperCase()}
               </div>
               <div>
-                <div style="font-weight:600;font-size:14px;">${u.name}</div>
-                <div style="font-size:11px;color:#888;">Member</div>
+                <div style="font-weight:600;font-size:14px;">${p.display_name}</div>
+                ${p.location ? `<div style="font-size:11px;color:#888;">${p.location}</div>` : '<div style="font-size:11px;color:#888;">Member</div>'}
               </div>
             </div>
-            <a href="/profile/${u.id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">
+            <a href="/humans/${p.slug || p.user_id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">
               View Profile →
             </a>
           </div>
@@ -86,14 +74,31 @@ const WorldMap = () => {
         cluster.addLayer(marker);
       });
 
-      (events as EventMarker[] | null)?.forEach((e) => {
+      // Anonymous user markers (manual entries without profiles)
+      (anonMarkers as any[] | null)?.forEach((u) => {
+        const marker = L.marker([u.lat, u.lng]);
+        marker.bindPopup(`
+          <div style="padding:12px;min-width:160px;font-family:inherit;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:#888;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;">
+                ${u.name.charAt(0).toUpperCase()}
+              </div>
+              <div style="font-weight:600;font-size:14px;">${u.name}</div>
+            </div>
+          </div>
+        `);
+        cluster.addLayer(marker);
+      });
+
+      // Events
+      (events as any[] | null)?.forEach((e) => {
         const marker = L.marker([e.lat, e.lng], { icon: eventIcon });
         marker.bindPopup(`
           <div style="padding:12px;min-width:200px;font-family:inherit;">
             <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e.title}</div>
             ${e.date ? `<div style="font-size:12px;color:#888;margin-bottom:4px;">📅 ${e.date}</div>` : ''}
             ${e.description ? `<div style="font-size:13px;color:#555;margin-bottom:8px;">${e.description.substring(0, 100)}${e.description.length > 100 ? '...' : ''}</div>` : ''}
-            <a href="/event/${e.id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">
+            <a href="/events/${e.slug || e.id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">
               Details →
             </a>
           </div>

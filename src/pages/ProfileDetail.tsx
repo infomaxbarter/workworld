@@ -27,11 +27,12 @@ interface Profile {
   lat: number | null;
   lng: number | null;
   approved: boolean;
+  slug: string | null;
   created_at: string;
 }
 
 const ProfileDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const { t } = useLanguage();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,38 +42,71 @@ const ProfileDetail = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from('profiles').select('*').eq('user_id', id!).single();
+      // Try slug first, then user_id fallback
+      let { data } = await supabase.from('profiles').select('*').eq('slug', slug!).single();
+      if (!data) {
+        const res = await supabase.from('profiles').select('*').eq('user_id', slug!).single();
+        data = res.data;
+      }
       if (data) {
-        setProfile(data as unknown as Profile);
-        setForm(data as unknown as Profile);
+        const p = data as unknown as Profile;
+        setProfile(p);
+        setForm(p);
       }
       const { data: { session } } = await supabase.auth.getSession();
-      setIsOwner(session?.user?.id === id);
+      if (data) setIsOwner(session?.user?.id === (data as any).user_id);
       setLoading(false);
     };
     load();
-  }, [id]);
+  }, [slug]);
 
   const handleSave = async () => {
-    const { error } = await supabase.from('profiles').update({
-      display_name: form.display_name || '',
-      bio: form.bio,
-      location: form.location,
-      website: form.website,
-      twitter: form.twitter,
-      linkedin: form.linkedin,
-      instagram: form.instagram,
-      lat: form.lat,
-      lng: form.lng,
-    }).eq('user_id', id!);
+    if (!profile) return;
+
+    // Build old/new data for edit request
+    const fields = ['display_name', 'bio', 'location', 'website', 'twitter', 'linkedin', 'instagram', 'lat', 'lng'] as const;
+    const oldData: Record<string, any> = {};
+    const newData: Record<string, any> = {};
+    let hasChanges = false;
+
+    fields.forEach(f => {
+      const oldVal = (profile as any)[f];
+      const newVal = (form as any)[f];
+      if (oldVal !== newVal) {
+        oldData[f] = oldVal;
+        newData[f] = newVal;
+        hasChanges = true;
+      }
+    });
+
+    if (!hasChanges) {
+      toast.info(t('profile.no_changes'));
+      return;
+    }
+
+    // Submit edit request
+    const { error } = await supabase.from('profile_edit_requests').insert({
+      profile_id: profile.id,
+      user_id: profile.user_id,
+      old_data: oldData,
+      new_data: newData,
+    } as any);
 
     if (error) {
       toast.error(error.message);
       return;
     }
-    setProfile({ ...profile!, ...form } as Profile);
+
+    // Notify admins
+    await supabase.rpc('notify_admins', {
+      _type: 'edit_request',
+      _title: `${profile.display_name} profil düzenlemesi bekliyor`,
+      _message: `${Object.keys(newData).join(', ')} alanları değiştirildi`,
+      _link: '/admin',
+    } as any);
+
     setEditing(false);
-    toast.success('Profile updated!');
+    toast.success(t('profile.edit_submitted'));
   };
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading...</div>;
@@ -124,6 +158,9 @@ const ProfileDetail = () => {
         <CardContent className="space-y-4">
           {editing ? (
             <>
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                <p className="text-xs text-muted-foreground">{t('profile.edit_note')}</p>
+              </div>
               <div className="space-y-2">
                 <Label>{t('profile.bio')}</Label>
                 <Textarea value={form.bio || ''} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} />
@@ -151,14 +188,9 @@ const ProfileDetail = () => {
                 </div>
               </div>
 
-              {/* Map location picker */}
               <div className="space-y-2">
                 <Label>{t('map.pick_location')}</Label>
-                <LocationPicker
-                  lat={form.lat ?? null}
-                  lng={form.lng ?? null}
-                  onChange={(lat, lng) => setForm({ ...form, lat, lng })}
-                />
+                <LocationPicker lat={form.lat ?? null} lng={form.lng ?? null} onChange={(lat, lng) => setForm({ ...form, lat, lng })} />
               </div>
 
               <div className="flex gap-2 justify-end">
