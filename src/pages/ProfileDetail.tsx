@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MapPin, Globe, Twitter, Linkedin, Instagram, ArrowLeft, Edit2, Save, Clock, CheckCircle } from 'lucide-react';
+import { MapPin, Globe, Twitter, Linkedin, Instagram, ArrowLeft, Edit2, Save, Clock, CheckCircle, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
 
@@ -39,10 +39,11 @@ const ProfileDetail = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<Partial<Profile>>({});
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const load = async () => {
-      // Try slug first, then user_id fallback
       let { data } = await supabase.from('profiles').select('*').eq('slug', slug!).single();
       if (!data) {
         const res = await supabase.from('profiles').select('*').eq('user_id', slug!).single();
@@ -60,10 +61,39 @@ const ProfileDetail = () => {
     load();
   }, [slug]);
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+
+    setUploading(true);
+    const ext = file.name.split('.').pop();
+    const path = `${profile.user_id}/avatar.${ext}`;
+
+    const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+    if (uploadError) {
+      toast.error(uploadError.message);
+      setUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+    const avatarUrl = urlData.publicUrl + '?t=' + Date.now();
+
+    // Direct update for avatar (no approval needed)
+    await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('user_id', profile.user_id);
+    setProfile({ ...profile, avatar_url: avatarUrl });
+    setForm(prev => ({ ...prev, avatar_url: avatarUrl }));
+    setUploading(false);
+    toast.success(t('profile.avatar_updated'));
+  };
+
+  const handleAvatarUrl = (url: string) => {
+    setForm(prev => ({ ...prev, avatar_url: url }));
+  };
+
   const handleSave = async () => {
     if (!profile) return;
 
-    // Build old/new data for edit request
     const fields = ['display_name', 'bio', 'location', 'website', 'twitter', 'linkedin', 'instagram', 'lat', 'lng'] as const;
     const oldData: Record<string, any> = {};
     const newData: Record<string, any> = {};
@@ -79,12 +109,22 @@ const ProfileDetail = () => {
       }
     });
 
+    // Check avatar URL change (manual URL input)
+    if (form.avatar_url !== profile.avatar_url && form.avatar_url) {
+      await supabase.from('profiles').update({ avatar_url: form.avatar_url }).eq('user_id', profile.user_id);
+      setProfile(prev => prev ? { ...prev, avatar_url: form.avatar_url! } : prev);
+    }
+
     if (!hasChanges) {
+      if (form.avatar_url !== profile.avatar_url) {
+        setEditing(false);
+        toast.success(t('profile.avatar_updated'));
+        return;
+      }
       toast.info(t('profile.no_changes'));
       return;
     }
 
-    // Submit edit request
     const { error } = await supabase.from('profile_edit_requests').insert({
       profile_id: profile.id,
       user_id: profile.user_id,
@@ -97,7 +137,6 @@ const ProfileDetail = () => {
       return;
     }
 
-    // Notify admins
     await supabase.rpc('notify_admins', {
       _type: 'edit_request',
       _title: `${profile.display_name} profil düzenlemesi bekliyor`,
@@ -120,12 +159,26 @@ const ProfileDetail = () => {
 
       <Card>
         <CardHeader className="flex flex-row items-center gap-4 pb-4">
-          <Avatar className="w-16 h-16">
-            <AvatarImage src={profile.avatar_url || undefined} />
-            <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-              {profile.display_name?.charAt(0)?.toUpperCase() || '?'}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative group">
+            <Avatar className="w-16 h-16">
+              <AvatarImage src={profile.avatar_url || undefined} />
+              <AvatarFallback className="text-lg bg-primary text-primary-foreground">
+                {profile.display_name?.charAt(0)?.toUpperCase() || '?'}
+              </AvatarFallback>
+            </Avatar>
+            {isOwner && (
+              <>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <Camera className="w-5 h-5 text-white" />
+                </button>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+              </>
+            )}
+          </div>
           <div className="flex-1 min-w-0">
             {editing ? (
               <div className="space-y-2">
@@ -161,6 +214,18 @@ const ProfileDetail = () => {
               <div className="rounded-lg border border-border bg-muted/30 p-3">
                 <p className="text-xs text-muted-foreground">{t('profile.edit_note')}</p>
               </div>
+
+              {/* Avatar URL input */}
+              <div className="space-y-2">
+                <Label>{t('profile.avatar_url')}</Label>
+                <Input
+                  value={form.avatar_url || ''}
+                  onChange={(e) => handleAvatarUrl(e.target.value)}
+                  placeholder="https://example.com/photo.jpg"
+                />
+                <p className="text-xs text-muted-foreground">{t('profile.avatar_url_hint')}</p>
+              </div>
+
               <div className="space-y-2">
                 <Label>{t('profile.bio')}</Label>
                 <Textarea value={form.bio || ''} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} />
