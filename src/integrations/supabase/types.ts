@@ -14,7 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      event_markers: {
+        Row: {
+          created_at: string
+          date: string | null
+          description: string | null
+          id: string
+          lat: number
+          lng: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          id?: string
+          lat?: number
+          lng?: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          id?: string
+          lat?: number
+          lng?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      submissions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      user_markers: {
+        Row: {
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
