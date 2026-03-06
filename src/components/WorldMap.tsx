@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import MarkerClusterGroup from 'react-leaflet-cluster';
+import { useEffect, useRef, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster';
 import { supabase } from '@/integrations/supabase/client';
 
 // Fix default marker icons
@@ -24,6 +26,42 @@ const eventIcon = new L.Icon({
 
 interface UserMarker { id: string; name: string; lat: number; lng: number; }
 interface EventMarker { id: string; title: string; date: string | null; description: string | null; lat: number; lng: number; }
+
+const ClusterLayer = ({ users, events }: { users: UserMarker[]; events: EventMarker[] }) => {
+  const map = useMap();
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
+
+  useEffect(() => {
+    if (clusterRef.current) {
+      map.removeLayer(clusterRef.current);
+    }
+
+    const cluster = (L as any).markerClusterGroup();
+
+    users.forEach((u) => {
+      const marker = L.marker([u.lat, u.lng]);
+      marker.bindPopup(`<div class="p-3 min-w-[140px]"><p class="text-xs font-medium uppercase tracking-wider mb-1" style="color: hsl(215.4, 16.3%, 46.9%)">Member</p><p class="font-semibold">${u.name}</p></div>`);
+      cluster.addLayer(marker);
+    });
+
+    events.forEach((e) => {
+      const marker = L.marker([e.lat, e.lng], { icon: eventIcon });
+      marker.bindPopup(`<div class="p-3 min-w-[180px]"><p class="text-xs font-medium uppercase tracking-wider mb-1" style="color: hsl(152, 60%, 36%)">Event</p><p class="font-semibold">${e.title}</p>${e.date ? `<p class="text-xs mt-1" style="color: hsl(215.4, 16.3%, 46.9%)">${e.date}</p>` : ''}${e.description ? `<p class="text-sm mt-1" style="color: hsl(215.4, 16.3%, 46.9%)">${e.description}</p>` : ''}</div>`);
+      cluster.addLayer(marker);
+    });
+
+    map.addLayer(cluster);
+    clusterRef.current = cluster;
+
+    return () => {
+      if (clusterRef.current) {
+        map.removeLayer(clusterRef.current);
+      }
+    };
+  }, [map, users, events]);
+
+  return null;
+};
 
 const WorldMap = () => {
   const [users, setUsers] = useState<UserMarker[]>([]);
@@ -48,30 +86,7 @@ const WorldMap = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MarkerClusterGroup chunkedLoading>
-          {users.map((u) => (
-            <Marker key={`user-${u.id}`} position={[u.lat, u.lng]}>
-              <Popup>
-                <div className="p-3 min-w-[140px]">
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Member</p>
-                  <p className="font-semibold text-foreground">{u.name}</p>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-          {events.map((e) => (
-            <Marker key={`event-${e.id}`} position={[e.lat, e.lng]} icon={eventIcon}>
-              <Popup>
-                <div className="p-3 min-w-[180px]">
-                  <p className="text-xs font-medium uppercase tracking-wider text-primary mb-1">Event</p>
-                  <p className="font-semibold text-foreground">{e.title}</p>
-                  {e.date && <p className="text-xs text-muted-foreground mt-1">{e.date}</p>}
-                  {e.description && <p className="text-sm text-muted-foreground mt-1">{e.description}</p>}
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MarkerClusterGroup>
+        <ClusterLayer users={users} events={events} />
       </MapContainer>
     </div>
   );
