@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,38 +7,43 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Download, Plus, Trash2, Lock } from 'lucide-react';
+import { Download, Plus, Trash2, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Submission { id: string; name: string; email: string; message: string; created_at: string; }
 interface UserMarker { id: string; name: string; lat: number; lng: number; }
 interface EventMarker { id: string; title: string; date: string | null; description: string | null; lat: number; lng: number; }
 
-const ADMIN_PASS = 'workworld2026';
-
 const Admin = () => {
-  const [authed, setAuthed] = useState(false);
-  const [pass, setPass] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
+  const navigate = useNavigate();
 
-  if (!authed) {
+  useEffect(() => {
+    const check = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { navigate('/auth'); return; }
+      const { data } = await supabase.from('user_roles').select('role').eq('user_id', session.user.id).eq('role', 'admin');
+      if (data && data.length > 0) {
+        setAuthorized(true);
+      }
+      setLoading(false);
+    };
+    check();
+  }, [navigate]);
+
+  if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading...</div>;
+
+  if (!authorized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4">
-        <Card className="w-full max-w-sm">
-          <CardHeader className="text-center">
-            <Lock className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-            <CardTitle>Admin Access</CardTitle>
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <Card className="w-full max-w-sm text-center">
+          <CardHeader>
+            <ShieldAlert className="w-10 h-10 mx-auto text-destructive mb-2" />
+            <CardTitle>Access Denied</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <Input
-              type="password"
-              placeholder="Enter password"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && (pass === ADMIN_PASS ? setAuthed(true) : toast.error('Wrong password'))}
-            />
-            <Button className="w-full" onClick={() => pass === ADMIN_PASS ? setAuthed(true) : toast.error('Wrong password')}>
-              Enter
-            </Button>
+          <CardContent>
+            <p className="text-muted-foreground text-sm">You don't have admin privileges.</p>
           </CardContent>
         </Card>
       </div>
@@ -75,7 +81,6 @@ const AdminDashboard = () => {
     URL.revokeObjectURL(url);
   };
 
-  // User markers CRUD - need admin RLS policies, using direct operations
   const addUser = async () => {
     const { error } = await supabase.from('user_markers').insert({ name: 'New Member', lat: 0, lng: 0 });
     if (error) toast.error('Failed to add member');
@@ -85,7 +90,6 @@ const AdminDashboard = () => {
   const updateUser = async (id: string, field: string, value: string) => {
     const val = field === 'lat' || field === 'lng' ? parseFloat(value) || 0 : value;
     await supabase.from('user_markers').update({ [field]: val }).eq('id', id);
-    // Update local state immediately
     setUsers(prev => prev.map(u => u.id === id ? { ...u, [field]: val } : u));
   };
 

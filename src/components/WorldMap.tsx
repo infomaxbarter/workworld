@@ -67,15 +67,37 @@ const WorldMap = () => {
 
       (users as UserMarker[] | null)?.forEach((u) => {
         const marker = L.marker([u.lat, u.lng]);
-        marker.bindPopup(`<div><strong>Member</strong><br/>${u.name}</div>`);
+        marker.bindPopup(`
+          <div style="padding:12px;min-width:180px;font-family:inherit;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <div style="width:36px;height:36px;border-radius:50%;background:hsl(152,60%,36%);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;">
+                ${u.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:14px;">${u.name}</div>
+                <div style="font-size:11px;color:#888;">Member</div>
+              </div>
+            </div>
+            <a href="/profile/${u.id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">
+              View Profile →
+            </a>
+          </div>
+        `);
         cluster.addLayer(marker);
       });
 
       (events as EventMarker[] | null)?.forEach((e) => {
         const marker = L.marker([e.lat, e.lng], { icon: eventIcon });
-        marker.bindPopup(
-          `<div><strong>Event</strong><br/>${e.title}${e.date ? `<br/>${e.date}` : ''}${e.description ? `<br/>${e.description}` : ''}</div>`,
-        );
+        marker.bindPopup(`
+          <div style="padding:12px;min-width:200px;font-family:inherit;">
+            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e.title}</div>
+            ${e.date ? `<div style="font-size:12px;color:#888;margin-bottom:4px;">📅 ${e.date}</div>` : ''}
+            ${e.description ? `<div style="font-size:13px;color:#555;margin-bottom:8px;">${e.description.substring(0, 100)}${e.description.length > 100 ? '...' : ''}</div>` : ''}
+            <a href="/event/${e.id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">
+              Details →
+            </a>
+          </div>
+        `);
         cluster.addLayer(marker);
       });
 

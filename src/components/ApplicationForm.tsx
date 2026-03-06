@@ -10,17 +10,20 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
-
-const schema = z.object({
-  name: z.string().trim().min(1, 'Name is required').max(100),
-  email: z.string().trim().email('Invalid email').max(255),
-  message: z.string().trim().min(1, 'Message is required').max(2000),
-});
-
-type FormValues = z.infer<typeof schema>;
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const ApplicationForm = () => {
+  const { t } = useLanguage();
   const [submitted, setSubmitted] = useState(false);
+
+  const schema = z.object({
+    name: z.string().trim().min(1, t('form.name_required')).max(100),
+    email: z.string().trim().email(t('form.email_invalid')).max(255),
+    message: z.string().trim().min(1, t('form.message_required')).max(2000),
+  });
+
+  type FormValues = z.infer<typeof schema>;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { name: '', email: '', message: '' },
@@ -33,10 +36,10 @@ const ApplicationForm = () => {
       message: data.message,
     });
     if (error) {
-      toast.error('Something went wrong. Please try again.');
+      toast.error(t('form.error'));
       return;
     }
-    toast.success('Application submitted successfully!');
+    toast.success(t('form.success'));
     setSubmitted(true);
     form.reset();
     setTimeout(() => setSubmitted(false), 3000);
@@ -51,8 +54,8 @@ const ApplicationForm = () => {
       className="max-w-lg mx-auto"
     >
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-foreground tracking-tight">Join Our Community</h2>
-        <p className="text-muted-foreground mt-2">Tell us about yourself and why you'd like to join.</p>
+        <h2 className="text-2xl font-bold text-foreground tracking-tight">{t('form.title')}</h2>
+        <p className="text-muted-foreground mt-2">{t('form.subtitle')}</p>
       </div>
 
       <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
@@ -60,27 +63,27 @@ const ApplicationForm = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl><Input placeholder="Your full name" {...field} /></FormControl>
+                <FormLabel>{t('form.name')}</FormLabel>
+                <FormControl><Input placeholder={t('form.name_placeholder')} {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="email" render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl><Input type="email" placeholder="you@example.com" {...field} /></FormControl>
+                <FormLabel>{t('form.email')}</FormLabel>
+                <FormControl><Input type="email" placeholder={t('form.email_placeholder')} {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="message" render={({ field }) => (
               <FormItem>
-                <FormLabel>Message / Motivation</FormLabel>
-                <FormControl><Textarea placeholder="Why do you want to join?" rows={4} {...field} /></FormControl>
+                <FormLabel>{t('form.message')}</FormLabel>
+                <FormControl><Textarea placeholder={t('form.message_placeholder')} rows={4} {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <Button type="submit" className="w-full" disabled={submitted}>
-              {submitted ? 'Sent!' : (<><Send className="w-4 h-4 mr-2" />Apply</>)}
+              {submitted ? t('form.sent') : (<><Send className="w-4 h-4 mr-2" />{t('form.submit')}</>)}
             </Button>
           </form>
         </Form>
