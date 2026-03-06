@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays, Map } from 'lucide-react';
+import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays, Map, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
@@ -67,6 +67,9 @@ const Header = () => {
             <Button variant="ghost" size="sm" asChild>
               <Link to="/map" className="gap-1.5"><Map className="w-4 h-4" />{t('nav.map')}</Link>
             </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/about" className="gap-1.5"><Info className="w-4 h-4" />{t('nav.about')}</Link>
+            </Button>
           </nav>
         </div>
 
@@ -81,6 +84,9 @@ const Header = () => {
             </Button>
             <Button variant="ghost" size="icon" asChild>
               <Link to="/map"><Map className="w-4 h-4" /></Link>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/about"><Info className="w-4 h-4" /></Link>
             </Button>
           </div>
 
