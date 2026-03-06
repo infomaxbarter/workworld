@@ -85,6 +85,9 @@ const Header = () => {
             <Button variant="ghost" size="icon" asChild>
               <Link to="/map"><Map className="w-4 h-4" /></Link>
             </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/about"><Info className="w-4 h-4" /></Link>
+            </Button>
           </div>
 
           {/* Language Switcher */}
