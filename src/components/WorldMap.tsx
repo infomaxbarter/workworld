@@ -23,6 +23,15 @@ const eventIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
+const anonIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
 const WorldMap = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -44,23 +53,23 @@ const WorldMap = () => {
     const cluster = L.markerClusterGroup();
 
     const loadMarkers = async () => {
-      // Fetch approved profiles with coordinates + anonymous user_markers + events
       const [{ data: profiles }, { data: anonMarkers }, { data: events }] = await Promise.all([
         supabase.from('profiles').select('*').eq('approved', true).not('lat', 'is', null).not('lng', 'is', null),
         supabase.from('user_markers').select('*'),
         supabase.from('event_markers').select('*'),
       ]);
 
-      // Approved profiles on map
+      // Approved profiles
       (profiles as any[] | null)?.forEach((p) => {
         if (!p.lat || !p.lng) return;
         const marker = L.marker([p.lat, p.lng]);
         marker.bindPopup(`
           <div style="padding:12px;min-width:180px;font-family:inherit;">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-              <div style="width:36px;height:36px;border-radius:50%;background:hsl(152,60%,36%);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;">
-                ${(p.display_name || '?').charAt(0).toUpperCase()}
-              </div>
+              ${p.avatar_url
+                ? `<img src="${p.avatar_url}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" />`
+                : `<div style="width:36px;height:36px;border-radius:50%;background:hsl(152,60%,36%);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;">${(p.display_name || '?').charAt(0).toUpperCase()}</div>`
+              }
               <div>
                 <div style="font-weight:600;font-size:14px;">${p.display_name}</div>
                 ${p.location ? `<div style="font-size:11px;color:#888;">${p.location}</div>` : '<div style="font-size:11px;color:#888;">Member</div>'}
@@ -74,17 +83,23 @@ const WorldMap = () => {
         cluster.addLayer(marker);
       });
 
-      // Anonymous user markers (manual entries without profiles)
+      // Anonymous members
       (anonMarkers as any[] | null)?.forEach((u) => {
-        const marker = L.marker([u.lat, u.lng]);
+        const marker = L.marker([u.lat, u.lng], { icon: anonIcon });
         marker.bindPopup(`
           <div style="padding:12px;min-width:160px;font-family:inherit;">
-            <div style="display:flex;align-items:center;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
               <div style="width:32px;height:32px;border-radius:50%;background:#888;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;">
                 ${u.name.charAt(0).toUpperCase()}
               </div>
-              <div style="font-weight:600;font-size:14px;">${u.name}</div>
+              <div>
+                <div style="font-weight:600;font-size:14px;">${u.name}</div>
+                <div style="font-size:11px;color:#888;">Unverified</div>
+              </div>
             </div>
+            <a href="/members/${u.slug || u.id}" style="display:block;text-align:center;padding:6px 12px;background:#888;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">
+              View →
+            </a>
           </div>
         `);
         cluster.addLayer(marker);

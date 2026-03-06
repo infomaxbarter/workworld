@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays } from 'lucide-react';
+import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays, Map } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,16 +59,13 @@ const Header = () => {
           </Link>
           <nav className="hidden sm:flex items-center gap-1">
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/humans" className="gap-1.5">
-                <Users className="w-4 h-4" />
-                {t('nav.humans')}
-              </Link>
+              <Link to="/humans" className="gap-1.5"><Users className="w-4 h-4" />{t('nav.humans')}</Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/events" className="gap-1.5">
-                <CalendarDays className="w-4 h-4" />
-                {t('nav.events')}
-              </Link>
+              <Link to="/events" className="gap-1.5"><CalendarDays className="w-4 h-4" />{t('nav.events')}</Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/map" className="gap-1.5"><Map className="w-4 h-4" />{t('nav.map')}</Link>
             </Button>
           </nav>
         </div>
@@ -81,6 +78,9 @@ const Header = () => {
             </Button>
             <Button variant="ghost" size="icon" asChild>
               <Link to="/events"><CalendarDays className="w-4 h-4" /></Link>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/map"><Map className="w-4 h-4" /></Link>
             </Button>
           </div>
 

@@ -13,6 +13,8 @@ import ProfileDetail from "./pages/ProfileDetail";
 import EventDetail from "./pages/EventDetail";
 import HumansPage from "./pages/HumansPage";
 import EventsPage from "./pages/EventsPage";
+import MapPage from "./pages/MapPage";
+import MemberDetail from "./pages/MemberDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,8 +33,10 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/humans" element={<HumansPage />} />
             <Route path="/events" element={<EventsPage />} />
+            <Route path="/map" element={<MapPage />} />
             <Route path="/humans/:slug" element={<ProfileDetail />} />
             <Route path="/events/:slug" element={<EventDetail />} />
+            <Route path="/members/:slug" element={<MemberDetail />} />
             <Route path="/kvkk" element={<LegalPage />} />
             <Route path="/cookies" element={<LegalPage />} />
             <Route path="/consent" element={<LegalPage />} />
