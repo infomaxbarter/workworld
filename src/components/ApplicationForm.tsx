@@ -28,9 +28,6 @@ const ApplicationForm = () => {
 
   const onSubmit = (data: FormData) => {
     store.addSubmission({ name: data.name, email: data.email, message: data.message });
-
-  const onSubmit = (data: FormData) => {
-    store.addSubmission(data);
     toast.success('Application submitted successfully!');
     setSubmitted(true);
     form.reset();
