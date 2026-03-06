@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Footer from '@/components/Footer';
 
