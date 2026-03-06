@@ -18,7 +18,8 @@ const content: Record<string, { title: string; body: string }> = {
 };
 
 const LegalPage = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
+  const slug = location.pathname.replace('/', '');
   const page = content[slug || ''];
 
   if (!page) {
