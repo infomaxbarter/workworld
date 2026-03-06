@@ -31,8 +31,8 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/humans" element={<HumansPage />} />
             <Route path="/events" element={<EventsPage />} />
-            <Route path="/profile/:id" element={<ProfileDetail />} />
-            <Route path="/event/:id" element={<EventDetail />} />
+            <Route path="/humans/:slug" element={<ProfileDetail />} />
+            <Route path="/events/:slug" element={<EventDetail />} />
             <Route path="/kvkk" element={<LegalPage />} />
             <Route path="/cookies" element={<LegalPage />} />
             <Route path="/consent" element={<LegalPage />} />

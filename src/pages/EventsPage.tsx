@@ -12,6 +12,7 @@ interface EventData {
   description: string | null;
   lat: number;
   lng: number;
+  slug: string | null;
   created_at: string;
 }
 
@@ -22,7 +23,7 @@ const EventsPage = () => {
 
   useEffect(() => {
     supabase.from('event_markers').select('*').order('date', { ascending: false }).then(({ data }) => {
-      if (data) setEvents(data as EventData[]);
+      if (data) setEvents(data as unknown as EventData[]);
       setLoading(false);
     });
   }, []);
@@ -41,7 +42,7 @@ const EventsPage = () => {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {events.map((e) => (
-            <Link key={e.id} to={`/event/${e.id}`}>
+            <Link key={e.id} to={`/events/${e.slug || e.id}`}>
               <Card className="hover:shadow-md transition-shadow h-full">
                 <CardContent className="p-5">
                   <h3 className="font-bold text-lg text-foreground mb-2">{e.title}</h3>
@@ -53,9 +54,7 @@ const EventsPage = () => {
                   <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-2">
                     <MapPin className="w-3.5 h-3.5 text-primary" />{e.lat.toFixed(2)}, {e.lng.toFixed(2)}
                   </p>
-                  {e.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">{e.description}</p>
-                  )}
+                  {e.description && <p className="text-sm text-muted-foreground line-clamp-2">{e.description}</p>}
                 </CardContent>
               </Card>
             </Link>
