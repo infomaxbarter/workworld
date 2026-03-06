@@ -111,6 +111,26 @@ export const translations: Record<Lang, Record<string, string>> = {
     'admin.response_required': 'Red sebebi gereklidir.',
     'admin.review_history': 'İnceleme Geçmişi',
     'admin.anonymous_members': 'anonim üye',
+
+    'nav.map': 'Harita',
+    'map.title': 'Dünya Haritası',
+    'map.subtitle': 'Topluluğumuzu haritada keşfedin',
+
+    'member.unverified': 'Doğrulanmamış',
+    'member.anonymous_note': 'Bu üye manuel olarak eklenmiştir, hesabı doğrulanmamıştır.',
+    'member.unverified_description': 'Bu profil henüz bir hesaba bağlı değildir. Bilgiler yönetici tarafından girilmiştir.',
+
+    'event.participants': 'Katılımcılar',
+    'event.join': 'Katıl',
+    'event.leave': 'Ayrıl',
+    'event.login_to_join': 'Katılmak için giriş yap',
+    'event.no_participants': 'Henüz katılımcı yok.',
+    'event.rsvp_confirmed': 'Katılımınız onaylandı!',
+    'event.rsvp_cancelled': 'Katılımınız iptal edildi.',
+
+    'profile.avatar_url': 'Profil Fotoğrafı URL',
+    'profile.avatar_url_hint': 'URL girin veya fotoğrafın üstüne tıklayarak yükleyin',
+    'profile.avatar_updated': 'Profil fotoğrafı güncellendi!',
   },
   en: {
     'nav.home': 'Home',
@@ -222,6 +242,26 @@ export const translations: Record<Lang, Record<string, string>> = {
     'admin.response_required': 'Rejection reason is required.',
     'admin.review_history': 'Review History',
     'admin.anonymous_members': 'anonymous member(s)',
+
+    'nav.map': 'Map',
+    'map.title': 'World Map',
+    'map.subtitle': 'Explore our community on the map',
+
+    'member.unverified': 'Unverified',
+    'member.anonymous_note': 'This member was added manually and has no verified account.',
+    'member.unverified_description': 'This profile is not linked to an account. Information was entered by an administrator.',
+
+    'event.participants': 'Participants',
+    'event.join': 'Join',
+    'event.leave': 'Leave',
+    'event.login_to_join': 'Log in to join',
+    'event.no_participants': 'No participants yet.',
+    'event.rsvp_confirmed': 'You have joined the event!',
+    'event.rsvp_cancelled': 'You have left the event.',
+
+    'profile.avatar_url': 'Profile Photo URL',
+    'profile.avatar_url_hint': 'Enter a URL or click on the photo to upload',
+    'profile.avatar_updated': 'Profile photo updated!',
   },
   de: {
     'nav.home': 'Startseite',
@@ -333,5 +373,25 @@ export const translations: Record<Lang, Record<string, string>> = {
     'admin.response_required': 'Ablehnungsgrund ist erforderlich.',
     'admin.review_history': 'Überprüfungsverlauf',
     'admin.anonymous_members': 'anonyme(s) Mitglied(er)',
+
+    'nav.map': 'Karte',
+    'map.title': 'Weltkarte',
+    'map.subtitle': 'Entdecken Sie unsere Gemeinschaft auf der Karte',
+
+    'member.unverified': 'Nicht verifiziert',
+    'member.anonymous_note': 'Dieses Mitglied wurde manuell hinzugefügt und hat kein verifiziertes Konto.',
+    'member.unverified_description': 'Dieses Profil ist nicht mit einem Konto verknüpft. Die Informationen wurden von einem Administrator eingegeben.',
+
+    'event.participants': 'Teilnehmer',
+    'event.join': 'Teilnehmen',
+    'event.leave': 'Verlassen',
+    'event.login_to_join': 'Anmelden zum Teilnehmen',
+    'event.no_participants': 'Noch keine Teilnehmer.',
+    'event.rsvp_confirmed': 'Sie nehmen an der Veranstaltung teil!',
+    'event.rsvp_cancelled': 'Sie haben die Veranstaltung verlassen.',
+
+    'profile.avatar_url': 'Profilfoto-URL',
+    'profile.avatar_url_hint': 'URL eingeben oder auf das Foto klicken zum Hochladen',
+    'profile.avatar_updated': 'Profilfoto aktualisiert!',
   },
 };
