@@ -11,6 +11,8 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import ProfileDetail from "./pages/ProfileDetail";
 import EventDetail from "./pages/EventDetail";
+import HumansPage from "./pages/HumansPage";
+import EventsPage from "./pages/EventsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/humans" element={<HumansPage />} />
+            <Route path="/events" element={<EventsPage />} />
             <Route path="/profile/:id" element={<ProfileDetail />} />
             <Route path="/event/:id" element={<EventDetail />} />
             <Route path="/kvkk" element={<LegalPage />} />

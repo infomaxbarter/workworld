@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Moon, Sun, LogIn, LogOut, User, Globe, Shield } from 'lucide-react';
+import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,17 +51,43 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold tracking-tight text-foreground">
-          Work<span className="text-primary">World</span>
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link to="/" className="text-xl font-bold tracking-tight text-foreground">
+            Work<span className="text-primary">World</span>
+          </Link>
+          <nav className="hidden sm:flex items-center gap-1">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/humans" className="gap-1.5">
+                <Users className="w-4 h-4" />
+                {t('nav.humans')}
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/events" className="gap-1.5">
+                <CalendarDays className="w-4 h-4" />
+                {t('nav.events')}
+              </Link>
+            </Button>
+          </nav>
+        </div>
 
         <div className="flex items-center gap-1">
+          {/* Mobile nav */}
+          <div className="sm:hidden flex items-center gap-1">
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/humans"><Users className="w-4 h-4" /></Link>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/events"><CalendarDays className="w-4 h-4" /></Link>
+            </Button>
+          </div>
+
           {/* Language Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-1.5">
                 <Globe className="w-4 h-4" />
-                {langLabels[lang]}
+                <span className="hidden sm:inline">{langLabels[lang]}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -82,14 +108,14 @@ const Header = () => {
           {user ? (
             <>
               {isAdmin && (
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="icon" asChild>
                   <Link to="/admin"><Shield className="w-4 h-4" /></Link>
                 </Button>
               )}
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="ghost" size="icon" asChild>
                 <Link to={`/profile/${user.id}`}><User className="w-4 h-4" /></Link>
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="w-4 h-4" />
               </Button>
             </>
@@ -97,7 +123,7 @@ const Header = () => {
             <Button variant="default" size="sm" asChild>
               <Link to="/auth" className="gap-1.5">
                 <LogIn className="w-4 h-4" />
-                {t('nav.login')}
+                <span className="hidden sm:inline">{t('nav.login')}</span>
               </Link>
             </Button>
           )}
