@@ -2,20 +2,19 @@ export type Lang = 'tr' | 'en' | 'de';
 
 export const translations: Record<Lang, Record<string, string>> = {
   tr: {
-    // Header
     'nav.home': 'Ana Sayfa',
+    'nav.humans': 'İnsanlar',
+    'nav.events': 'Etkinlikler',
     'nav.login': 'Giriş Yap',
     'nav.signup': 'Kayıt Ol',
     'nav.profile': 'Profil',
     'nav.logout': 'Çıkış',
     'nav.admin': 'Yönetim',
 
-    // Hero
     'hero.title_1': 'Work',
     'hero.title_2': 'World',
     'hero.subtitle': 'Sınırları aşarak insanları ve fikirleri birleştiren küresel bir topluluk.',
 
-    // Application form
     'form.title': 'Topluluğumuza Katılın',
     'form.subtitle': 'Kendinizi tanıtın ve neden katılmak istediğinizi söyleyin.',
     'form.name': 'İsim',
@@ -32,13 +31,13 @@ export const translations: Record<Lang, Record<string, string>> = {
     'form.email_invalid': 'Geçersiz e-posta',
     'form.message_required': 'Mesaj gereklidir',
 
-    // Map popups
     'map.member': 'Üye',
     'map.event': 'Etkinlik',
     'map.view_profile': 'Profili Gör',
     'map.view_event': 'Detaylar',
+    'map.pick_location': 'Konumu haritadan seçin',
+    'map.click_to_select': 'Haritaya tıklayarak konumu seçin',
 
-    // Auth
     'auth.login_title': 'Giriş Yap',
     'auth.signup_title': 'Kayıt Ol',
     'auth.email': 'E-posta',
@@ -48,10 +47,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     'auth.no_account': 'Hesabınız yok mu?',
     'auth.has_account': 'Zaten hesabınız var mı?',
     'auth.google': 'Google ile devam et',
-    'auth.check_email': 'E-postanızı kontrol edin!',
-    'auth.check_email_desc': 'Hesabınızı doğrulamak için e-postanızı kontrol edin.',
 
-    // Profile detail
     'profile.member_since': 'Üyelik tarihi',
     'profile.location': 'Konum',
     'profile.website': 'Web sitesi',
@@ -60,20 +56,47 @@ export const translations: Record<Lang, Record<string, string>> = {
     'profile.save': 'Kaydet',
     'profile.display_name': 'Görünen Ad',
     'profile.bio': 'Bio',
+    'profile.cancel': 'İptal',
+    'profile.pending': 'Onay bekliyor',
+    'profile.approved': 'Onaylı',
 
-    // Event detail
+    'humans.title': 'İnsanlar',
+    'humans.subtitle': 'Topluluğumuzdaki üyeler',
+    'humans.no_members': 'Henüz onaylı üye yok.',
+
+    'events.title': 'Etkinlikler',
+    'events.subtitle': 'Yaklaşan ve geçmiş etkinlikler',
+    'events.no_events': 'Henüz etkinlik yok.',
+
     'event.date': 'Tarih',
     'event.description': 'Açıklama',
     'event.location': 'Konum',
     'event.back': 'Geri Dön',
 
-    // Footer
     'footer.kvkk': 'KVKK',
     'footer.cookies': 'Çerez Politikası',
     'footer.consent': 'Açık Rıza Formu',
+
+    'admin.title': 'Yönetim Paneli',
+    'admin.submissions': 'Başvurular',
+    'admin.members': 'Üyeler',
+    'admin.events': 'Etkinlikler',
+    'admin.profiles': 'Profiller',
+    'admin.approve': 'Onayla',
+    'admin.reject': 'Reddet',
+    'admin.pending': 'Bekleyen',
+    'admin.approved': 'Onaylı',
+    'admin.all': 'Tümü',
+    'admin.access_denied': 'Erişim reddedildi',
+    'admin.no_privileges': 'Admin yetkiniz yok.',
+    'admin.export_csv': 'CSV İndir',
+    'admin.add_member': 'Üye Ekle',
+    'admin.add_event': 'Etkinlik Ekle',
   },
   en: {
     'nav.home': 'Home',
+    'nav.humans': 'Humans',
+    'nav.events': 'Events',
     'nav.login': 'Log In',
     'nav.signup': 'Sign Up',
     'nav.profile': 'Profile',
@@ -104,6 +127,8 @@ export const translations: Record<Lang, Record<string, string>> = {
     'map.event': 'Event',
     'map.view_profile': 'View Profile',
     'map.view_event': 'Details',
+    'map.pick_location': 'Pick location on map',
+    'map.click_to_select': 'Click on the map to select location',
 
     'auth.login_title': 'Log In',
     'auth.signup_title': 'Sign Up',
@@ -114,8 +139,6 @@ export const translations: Record<Lang, Record<string, string>> = {
     'auth.no_account': 'Don\'t have an account?',
     'auth.has_account': 'Already have an account?',
     'auth.google': 'Continue with Google',
-    'auth.check_email': 'Check your email!',
-    'auth.check_email_desc': 'Please check your email to verify your account.',
 
     'profile.member_since': 'Member since',
     'profile.location': 'Location',
@@ -125,6 +148,17 @@ export const translations: Record<Lang, Record<string, string>> = {
     'profile.save': 'Save',
     'profile.display_name': 'Display Name',
     'profile.bio': 'Bio',
+    'profile.cancel': 'Cancel',
+    'profile.pending': 'Pending approval',
+    'profile.approved': 'Approved',
+
+    'humans.title': 'Humans',
+    'humans.subtitle': 'Members of our community',
+    'humans.no_members': 'No approved members yet.',
+
+    'events.title': 'Events',
+    'events.subtitle': 'Upcoming and past events',
+    'events.no_events': 'No events yet.',
 
     'event.date': 'Date',
     'event.description': 'Description',
@@ -134,9 +168,27 @@ export const translations: Record<Lang, Record<string, string>> = {
     'footer.kvkk': 'KVKK',
     'footer.cookies': 'Cookie Policy',
     'footer.consent': 'Consent Form',
+
+    'admin.title': 'Admin Panel',
+    'admin.submissions': 'Submissions',
+    'admin.members': 'Members',
+    'admin.events': 'Events',
+    'admin.profiles': 'Profiles',
+    'admin.approve': 'Approve',
+    'admin.reject': 'Reject',
+    'admin.pending': 'Pending',
+    'admin.approved': 'Approved',
+    'admin.all': 'All',
+    'admin.access_denied': 'Access Denied',
+    'admin.no_privileges': 'You don\'t have admin privileges.',
+    'admin.export_csv': 'Export CSV',
+    'admin.add_member': 'Add Member',
+    'admin.add_event': 'Add Event',
   },
   de: {
     'nav.home': 'Startseite',
+    'nav.humans': 'Menschen',
+    'nav.events': 'Veranstaltungen',
     'nav.login': 'Anmelden',
     'nav.signup': 'Registrieren',
     'nav.profile': 'Profil',
@@ -167,6 +219,8 @@ export const translations: Record<Lang, Record<string, string>> = {
     'map.event': 'Veranstaltung',
     'map.view_profile': 'Profil ansehen',
     'map.view_event': 'Details',
+    'map.pick_location': 'Standort auf der Karte wählen',
+    'map.click_to_select': 'Klicken Sie auf die Karte, um den Standort auszuwählen',
 
     'auth.login_title': 'Anmelden',
     'auth.signup_title': 'Registrieren',
@@ -177,8 +231,6 @@ export const translations: Record<Lang, Record<string, string>> = {
     'auth.no_account': 'Noch kein Konto?',
     'auth.has_account': 'Bereits ein Konto?',
     'auth.google': 'Weiter mit Google',
-    'auth.check_email': 'Überprüfen Sie Ihre E-Mail!',
-    'auth.check_email_desc': 'Bitte überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen.',
 
     'profile.member_since': 'Mitglied seit',
     'profile.location': 'Standort',
@@ -188,6 +240,17 @@ export const translations: Record<Lang, Record<string, string>> = {
     'profile.save': 'Speichern',
     'profile.display_name': 'Anzeigename',
     'profile.bio': 'Bio',
+    'profile.cancel': 'Abbrechen',
+    'profile.pending': 'Genehmigung ausstehend',
+    'profile.approved': 'Genehmigt',
+
+    'humans.title': 'Menschen',
+    'humans.subtitle': 'Mitglieder unserer Gemeinschaft',
+    'humans.no_members': 'Noch keine genehmigten Mitglieder.',
+
+    'events.title': 'Veranstaltungen',
+    'events.subtitle': 'Kommende und vergangene Veranstaltungen',
+    'events.no_events': 'Noch keine Veranstaltungen.',
 
     'event.date': 'Datum',
     'event.description': 'Beschreibung',
@@ -197,5 +260,21 @@ export const translations: Record<Lang, Record<string, string>> = {
     'footer.kvkk': 'KVKK',
     'footer.cookies': 'Cookie-Richtlinie',
     'footer.consent': 'Einwilligungsformular',
+
+    'admin.title': 'Admin-Panel',
+    'admin.submissions': 'Bewerbungen',
+    'admin.members': 'Mitglieder',
+    'admin.events': 'Veranstaltungen',
+    'admin.profiles': 'Profile',
+    'admin.approve': 'Genehmigen',
+    'admin.reject': 'Ablehnen',
+    'admin.pending': 'Ausstehend',
+    'admin.approved': 'Genehmigt',
+    'admin.all': 'Alle',
+    'admin.access_denied': 'Zugriff verweigert',
+    'admin.no_privileges': 'Sie haben keine Admin-Rechte.',
+    'admin.export_csv': 'CSV exportieren',
+    'admin.add_member': 'Mitglied hinzufügen',
+    'admin.add_event': 'Veranstaltung hinzufügen',
   },
 };

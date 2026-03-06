@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Mail, Chrome } from 'lucide-react';
+import { Chrome } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 const Auth = () => {
@@ -18,7 +18,6 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [checkEmail, setCheckEmail] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -41,7 +40,8 @@ const Auth = () => {
           options: { emailRedirectTo: window.location.origin },
         });
         if (error) throw error;
-        setCheckEmail(true);
+        toast.success('Account created!');
+        navigate('/');
       }
     } catch (err: any) {
       toast.error(err.message || t('form.error'));
@@ -56,22 +56,6 @@ const Auth = () => {
     });
     if (error) toast.error(error.message || t('form.error'));
   };
-
-  if (checkEmail) {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center px-4">
-        <Card className="w-full max-w-sm text-center">
-          <CardHeader>
-            <Mail className="w-10 h-10 mx-auto text-primary mb-2" />
-            <CardTitle>{t('auth.check_email')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm">{t('auth.check_email_desc')}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">

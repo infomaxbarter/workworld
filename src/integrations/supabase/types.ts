@@ -46,12 +46,16 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approved: boolean
           avatar_url: string | null
           bio: string | null
           created_at: string
           display_name: string
           id: string
+          instagram: string | null
+          lat: number | null
           linkedin: string | null
+          lng: number | null
           location: string | null
           twitter: string | null
           updated_at: string
@@ -59,12 +63,16 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          approved?: boolean
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string
           id?: string
+          instagram?: string | null
+          lat?: number | null
           linkedin?: string | null
+          lng?: number | null
           location?: string | null
           twitter?: string | null
           updated_at?: string
@@ -72,12 +80,16 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          approved?: boolean
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string
           id?: string
+          instagram?: string | null
+          lat?: number | null
           linkedin?: string | null
+          lng?: number | null
           location?: string | null
           twitter?: string | null
           updated_at?: string
