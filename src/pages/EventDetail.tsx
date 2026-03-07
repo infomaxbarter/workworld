@@ -10,36 +10,12 @@ import { ArrowLeft, Calendar, MapPin, FileText, UserPlus, UserMinus, Users, Exte
 import { toast } from 'sonner';
 
 interface EventData {
-  id: string;
-  title: string;
-  date: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  description: string | null;
-  lat: number;
-  lng: number;
-  slug: string | null;
-  city: string | null;
-  country: string | null;
-  capacity: number | null;
-  external_url: string | null;
-  created_at: string;
+  id: string; title: string; date: string | null; start_date: string | null; end_date: string | null;
+  description: string | null; lat: number; lng: number; slug: string | null; city: string | null;
+  country: string | null; capacity: number | null; external_url: string | null; created_at: string;
 }
-
-interface GalleryItem {
-  id: string;
-  url: string;
-  type: string;
-  caption: string | null;
-  sort_order: number;
-}
-
-interface RsvpProfile {
-  user_id: string;
-  display_name: string;
-  avatar_url: string | null;
-  slug: string | null;
-}
+interface GalleryItem { id: string; url: string; type: string; caption: string | null; sort_order: number; }
+interface RsvpProfile { user_id: string; display_name: string; avatar_url: string | null; slug: string | null; }
 
 const EventDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -56,27 +32,20 @@ const EventDetail = () => {
   useEffect(() => {
     const load = async () => {
       let { data } = await supabase.from('event_markers').select('*').eq('slug', slug!).single();
-      if (!data) {
-        const res = await supabase.from('event_markers').select('*').eq('id', slug!).single();
-        data = res.data;
-      }
+      if (!data) { const res = await supabase.from('event_markers').select('*').eq('id', slug!).single(); data = res.data; }
       if (data) {
         const ev = data as unknown as EventData;
         setEvent(ev);
-
         const [{ data: rsvpData }, { data: galleryData }] = await Promise.all([
           supabase.from('event_rsvps').select('user_id').eq('event_id', ev.id),
           supabase.from('event_gallery').select('*').eq('event_id', ev.id).order('sort_order'),
         ]);
-
         if (rsvpData && rsvpData.length > 0) {
           const userIds = rsvpData.map(r => (r as any).user_id);
           const { data: profiles } = await supabase.from('profiles').select('user_id, display_name, avatar_url, slug').in('user_id', userIds);
           if (profiles) setRsvps(profiles as unknown as RsvpProfile[]);
         }
-
         if (galleryData) setGallery(galleryData as unknown as GalleryItem[]);
-
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           setCurrentUserId(session.user.id);
@@ -91,15 +60,11 @@ const EventDetail = () => {
 
   const handleRsvp = async () => {
     if (!event || !currentUserId) return;
-    if (event.capacity && !hasRsvped && rsvps.length >= event.capacity) {
-      toast.error(t('event.capacity_full'));
-      return;
-    }
+    if (event.capacity && !hasRsvped && rsvps.length >= event.capacity) { toast.error(t('event.capacity_full')); return; }
     setRsvpLoading(true);
     if (hasRsvped) {
       await supabase.from('event_rsvps').delete().eq('event_id', event.id).eq('user_id', currentUserId);
-      setHasRsvped(false);
-      setRsvps(prev => prev.filter(r => r.user_id !== currentUserId));
+      setHasRsvped(false); setRsvps(prev => prev.filter(r => r.user_id !== currentUserId));
       toast.success(t('event.rsvp_cancelled'));
     } else {
       const { error } = await supabase.from('event_rsvps').insert({ event_id: event.id, user_id: currentUserId } as any);
@@ -122,32 +87,27 @@ const EventDetail = () => {
   const videos = gallery.filter(g => g.type === 'video');
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
+    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
       <Link to="/events" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
         <ArrowLeft className="w-4 h-4" /> {t('event.back')}
       </Link>
 
       <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <CardTitle className="text-2xl">{event.title}</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+            <CardTitle className="text-xl sm:text-2xl">{event.title}</CardTitle>
             {event.capacity && (
-              <Badge variant="outline" className="shrink-0">
-                👥 {rsvps.length}/{event.capacity}
-              </Badge>
+              <Badge variant="outline" className="shrink-0">👥 {rsvps.length}/{event.capacity}</Badge>
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
           {(event.start_date || event.date) && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Calendar className="w-4 h-4 text-primary" />
+            <div className="flex items-start gap-2 text-muted-foreground text-sm">
+              <Calendar className="w-4 h-4 text-primary shrink-0 mt-0.5" />
               <span>
                 {event.start_date ? (
-                  <>
-                    {t('event.start')}: {event.start_date}
-                    {event.end_date && <> — {t('event.end')}: {event.end_date}</>}
-                  </>
+                  <>{t('event.start')}: {event.start_date}{event.end_date && <> — {t('event.end')}: {event.end_date}</>}</>
                 ) : (
                   <>{t('event.date')}: {event.date}</>
                 )}
@@ -155,8 +115,8 @@ const EventDetail = () => {
             </div>
           )}
 
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
+            <MapPin className="w-4 h-4 text-primary shrink-0" />
             <span>{t('event.location')}: {locationText}</span>
           </div>
 
@@ -172,7 +132,7 @@ const EventDetail = () => {
                 <FileText className="w-4 h-4 text-primary" />
                 <span className="font-medium">{t('event.description')}</span>
               </div>
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap">{event.description}</p>
+              <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm sm:text-base">{event.description}</p>
             </div>
           )}
 
@@ -203,12 +163,7 @@ const EventDetail = () => {
                 {videos.map(vid => (
                   <div key={vid.id} className="rounded-lg overflow-hidden border border-border">
                     {vid.url.includes('youtube') || vid.url.includes('youtu.be') ? (
-                      <iframe
-                        src={vid.url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
-                        className="w-full aspect-video"
-                        allowFullScreen
-                        title={vid.caption || 'Video'}
-                      />
+                      <iframe src={vid.url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')} className="w-full aspect-video" allowFullScreen title={vid.caption || 'Video'} />
                     ) : (
                       <video src={vid.url} controls className="w-full aspect-video" />
                     )}
@@ -221,22 +176,19 @@ const EventDetail = () => {
 
           {/* RSVP Section */}
           <div className="border-t border-border pt-4 mt-4">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-foreground">{t('event.participants')} ({rsvps.length}{event.capacity ? `/${event.capacity}` : ''})</span>
+                <span className="font-semibold text-foreground text-sm sm:text-base">{t('event.participants')} ({rsvps.length}{event.capacity ? `/${event.capacity}` : ''})</span>
               </div>
-              {currentUserId && (
-                <Button size="sm" variant={hasRsvped ? 'outline' : 'default'} onClick={handleRsvp} disabled={rsvpLoading} className="gap-1">
+              {currentUserId ? (
+                <Button size="sm" variant={hasRsvped ? 'outline' : 'default'} onClick={handleRsvp} disabled={rsvpLoading} className="gap-1 w-full sm:w-auto">
                   {hasRsvped ? <UserMinus className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
                   {hasRsvped ? t('event.leave') : t('event.join')}
                 </Button>
-              )}
-              {!currentUserId && (
-                <Link to="/auth">
-                  <Button size="sm" variant="outline" className="gap-1">
-                    <UserPlus className="w-4 h-4" /> {t('event.login_to_join')}
-                  </Button>
+              ) : (
+                <Link to="/auth" className="w-full sm:w-auto">
+                  <Button size="sm" variant="outline" className="gap-1 w-full"><UserPlus className="w-4 h-4" /> {t('event.login_to_join')}</Button>
                 </Link>
               )}
             </div>
@@ -261,7 +213,6 @@ const EventDetail = () => {
         </CardContent>
       </Card>
 
-      {/* Lightbox */}
       {selectedImage && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
           <img src={selectedImage} alt="" className="max-w-full max-h-full rounded-lg" />

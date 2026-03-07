@@ -15,6 +15,8 @@ interface Profile {
   avatar_url: string | null;
   bio: string | null;
   location: string | null;
+  city: string | null;
+  country: string | null;
   website: string | null;
   twitter: string | null;
   linkedin: string | null;
@@ -29,6 +31,8 @@ interface AnonMember {
   name: string;
   lat: number;
   lng: number;
+  city: string | null;
+  country: string | null;
   slug: string | null;
   created_at: string;
 }
@@ -52,42 +56,53 @@ const HumansPage = () => {
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading...</div>;
 
+  const getLocation = (p: Profile) => {
+    if (p.city && p.country) return `${p.city}, ${p.country}`;
+    return p.location || null;
+  };
+
+  const getAnonLocation = (m: AnonMember) => {
+    if (m.city && m.country) return `${m.city}, ${m.country}`;
+    if (m.city) return m.city;
+    if (m.country) return m.country;
+    return `${m.lat.toFixed(2)}, ${m.lng.toFixed(2)}`;
+  };
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <div className="text-center mb-10">
-        <h1 className="text-3xl font-bold text-foreground">{t('humans.title')}</h1>
-        <p className="text-muted-foreground mt-2">{t('humans.subtitle')}</p>
+    <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
+      <div className="text-center mb-8 sm:mb-10">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('humans.title')}</h1>
+        <p className="text-muted-foreground mt-2 text-sm sm:text-base">{t('humans.subtitle')}</p>
       </div>
 
-      {/* Verified profiles */}
       {profiles.length === 0 && anonMembers.length === 0 ? (
         <p className="text-center text-muted-foreground py-12">{t('humans.no_members')}</p>
       ) : (
         <>
           {profiles.length > 0 && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {profiles.map((p) => (
                 <Link key={p.id} to={`/humans/${p.slug || p.user_id}`}>
                   <Card className="hover:shadow-md transition-shadow h-full">
-                    <CardContent className="p-5">
+                    <CardContent className="p-4 sm:p-5">
                       <div className="flex items-center gap-3 mb-3">
-                        <Avatar className="w-12 h-12">
+                        <Avatar className="w-10 h-10 sm:w-12 sm:h-12 shrink-0">
                           <AvatarImage src={p.avatar_url || undefined} />
-                          <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                          <AvatarFallback className="bg-primary text-primary-foreground font-bold text-sm">
                             {p.display_name?.charAt(0)?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-foreground truncate">{p.display_name}</h3>
-                          {p.location && (
+                          <h3 className="font-semibold text-foreground truncate text-sm sm:text-base">{p.display_name}</h3>
+                          {getLocation(p) && (
                             <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                              <MapPin className="w-3 h-3 shrink-0" />{p.location}
+                              <MapPin className="w-3 h-3 shrink-0" />{getLocation(p)}
                             </p>
                           )}
                         </div>
                       </div>
                       {p.bio && <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{p.bio}</p>}
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {p.website && <Badge variant="secondary" className="text-xs gap-1"><Globe className="w-3 h-3" /> Web</Badge>}
                         {p.twitter && <Badge variant="secondary" className="text-xs gap-1"><Twitter className="w-3 h-3" /> Twitter</Badge>}
                         {p.linkedin && <Badge variant="secondary" className="text-xs gap-1"><Linkedin className="w-3 h-3" /> LinkedIn</Badge>}
@@ -100,32 +115,31 @@ const HumansPage = () => {
             </div>
           )}
 
-          {/* Anonymous members */}
           {anonMembers.length > 0 && (
             <>
-              {profiles.length > 0 && <Separator className="my-10" />}
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              {profiles.length > 0 && <Separator className="my-8 sm:my-10" />}
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-muted-foreground" />
                   {t('humans.anonymous_title')}
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1">{t('humans.anonymous_subtitle')}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">{t('humans.anonymous_subtitle')}</p>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {anonMembers.map((m) => (
                   <Link key={m.id} to={`/members/${m.slug || m.id}`}>
                     <Card className="hover:shadow-md transition-shadow h-full border-dashed">
-                      <CardContent className="p-5">
+                      <CardContent className="p-4 sm:p-5">
                         <div className="flex items-center gap-3 mb-2">
-                          <Avatar className="w-12 h-12">
-                            <AvatarFallback className="bg-muted text-muted-foreground font-bold">
+                          <Avatar className="w-10 h-10 sm:w-12 sm:h-12 shrink-0">
+                            <AvatarFallback className="bg-muted text-muted-foreground font-bold text-sm">
                               {m.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0 flex-1">
-                            <h3 className="font-semibold text-foreground truncate">{m.name}</h3>
+                            <h3 className="font-semibold text-foreground truncate text-sm sm:text-base">{m.name}</h3>
                             <p className="text-xs text-muted-foreground flex items-center gap-1">
-                              <MapPin className="w-3 h-3 shrink-0" />{m.lat.toFixed(2)}, {m.lng.toFixed(2)}
+                              <MapPin className="w-3 h-3 shrink-0" />{getAnonLocation(m)}
                             </p>
                           </div>
                         </div>
