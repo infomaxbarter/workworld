@@ -34,11 +34,7 @@ const Auth = () => {
         if (error) throw error;
         navigate('/dashboard');
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: window.location.origin },
-        });
+        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
         if (error) throw error;
         toast.success('Account created!');
         navigate('/dashboard');
@@ -60,10 +56,10 @@ const Auth = () => {
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <CardTitle>{isLogin ? t('auth.login_title') : t('auth.signup_title')}</CardTitle>
+        <CardHeader className="text-center p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">{isLogin ? t('auth.login_title') : t('auth.signup_title')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
           <Button variant="outline" className="w-full gap-2" onClick={handleGoogle}>
             <Chrome className="w-4 h-4" />
             {t('auth.google')}
