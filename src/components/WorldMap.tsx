@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { Search, X, Filter } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -39,6 +40,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
   const [allData, setAllData] = useState<{ profiles: any[]; anon: any[]; events: any[] }>({ profiles: [], anon: [], events: [] });
   const [countries, setCountries] = useState<string[]>([]);
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -177,18 +179,38 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
 
   const filteredItems = getFilteredItems();
 
+
   return (
-    <div className="flex gap-4 h-[75vh]">
+    <div className="flex flex-col md:flex-row gap-0 md:gap-4 h-[calc(100vh-10rem)] md:h-[75vh] relative">
+      {/* Mobile toggle */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="md:hidden absolute top-3 left-3 z-[1000] bg-card border border-border rounded-lg p-2 shadow-lg"
+      >
+        {sidebarOpen ? <X className="w-5 h-5 text-foreground" /> : <Filter className="w-5 h-5 text-foreground" />}
+      </button>
+
       {/* Sidebar */}
-      <div className="w-80 shrink-0 flex flex-col border border-border rounded-xl bg-card overflow-hidden">
+      <div className={`
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        absolute md:relative z-[999] md:z-auto
+        w-[85vw] sm:w-80 md:w-72 lg:w-80 shrink-0
+        h-full flex flex-col
+        border border-border rounded-xl bg-card overflow-hidden
+        transition-transform duration-200 ease-in-out
+        shadow-xl md:shadow-none
+      `}>
         <div className="p-3 border-b border-border space-y-2">
-          <input
-            type="text"
-            placeholder="🔍 Ara..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="🔍 Ara..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
           <div className="flex gap-1 flex-wrap">
             {(['all', 'profiles', 'anon', 'events'] as const).map(f => (
               <button
@@ -196,7 +218,8 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
                 onClick={() => setFilterType(f)}
                 className={`px-2 py-1 text-xs rounded-md font-medium transition-colors ${filterType === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
               >
-                {f === 'all' ? 'Tümü' : f === 'profiles' ? '👤 Profiller' : f === 'anon' ? '👻 Anonim' : '📅 Etkinlikler'}
+                {f === 'all' ? 'Tümü' : f === 'profiles' ? '👤' : f === 'anon' ? '👻' : '📅'}
+                <span className="hidden sm:inline ml-1">{f === 'all' ? '' : f === 'profiles' ? 'Profiller' : f === 'anon' ? 'Anonim' : 'Etkinlikler'}</span>
               </button>
             ))}
           </div>
@@ -221,7 +244,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
             return (
               <button
                 key={`${item._type}-${item.id}-${i}`}
-                onClick={() => flyTo(item.lat, item.lng)}
+                onClick={() => { flyTo(item.lat, item.lng); setSidebarOpen(false); }}
                 className="w-full text-left px-3 py-2.5 hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center gap-2">
@@ -236,8 +259,14 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
           })}
         </div>
       </div>
+
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-[998] bg-black/30" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* Map */}
-      <div className="flex-1 rounded-xl overflow-hidden shadow-lg border border-border">
+      <div className="flex-1 rounded-xl overflow-hidden shadow-lg border border-border min-h-[50vh]">
         <div ref={containerRef} className="w-full h-full" />
       </div>
     </div>
