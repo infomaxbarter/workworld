@@ -179,7 +179,6 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
 
   const filteredItems = getFilteredItems();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex flex-col md:flex-row gap-0 md:gap-4 h-[calc(100vh-10rem)] md:h-[75vh] relative">
