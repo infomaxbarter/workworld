@@ -122,6 +122,9 @@ const Header = () => {
                 </Button>
               )}
               <Button variant="ghost" size="icon" asChild>
+                <Link to="/dashboard"><LayoutDashboard className="w-4 h-4" /></Link>
+              </Button>
+              <Button variant="ghost" size="icon" asChild>
                 <Link to={`/humans/${profileSlug || user.id}`}><User className="w-4 h-4" /></Link>
               </Button>
               <Button variant="ghost" size="icon" onClick={handleLogout}>
