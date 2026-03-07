@@ -3,16 +3,23 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, MapPin } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, MapPin, Users, ExternalLink } from 'lucide-react';
 
 interface EventData {
   id: string;
   title: string;
   date: string | null;
+  start_date: string | null;
+  end_date: string | null;
   description: string | null;
   lat: number;
   lng: number;
   slug: string | null;
+  city: string | null;
+  country: string | null;
+  capacity: number | null;
+  external_url: string | null;
   created_at: string;
 }
 
@@ -41,24 +48,32 @@ const EventsPage = () => {
         <p className="text-center text-muted-foreground py-12">{t('events.no_events')}</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          {events.map((e) => (
-            <Link key={e.id} to={`/events/${e.slug || e.id}`}>
-              <Card className="hover:shadow-md transition-shadow h-full">
-                <CardContent className="p-5">
-                  <h3 className="font-bold text-lg text-foreground mb-2">{e.title}</h3>
-                  {e.date && (
-                    <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-1">
-                      <Calendar className="w-3.5 h-3.5 text-primary" />{e.date}
+          {events.map((e) => {
+            const loc = e.city && e.country ? `${e.city}, ${e.country}` : `${e.lat.toFixed(2)}, ${e.lng.toFixed(2)}`;
+            return (
+              <Link key={e.id} to={`/events/${e.slug || e.id}`}>
+                <Card className="hover:shadow-md transition-shadow h-full">
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h3 className="font-bold text-lg text-foreground">{e.title}</h3>
+                      {e.capacity && <Badge variant="outline" className="shrink-0 text-xs">👥 {e.capacity}</Badge>}
+                    </div>
+                    {(e.start_date || e.date) && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-1">
+                        <Calendar className="w-3.5 h-3.5 text-primary" />
+                        {e.start_date || e.date}
+                        {e.end_date && ` — ${e.end_date}`}
+                      </p>
+                    )}
+                    <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-2">
+                      <MapPin className="w-3.5 h-3.5 text-primary" />{loc}
                     </p>
-                  )}
-                  <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-2">
-                    <MapPin className="w-3.5 h-3.5 text-primary" />{e.lat.toFixed(2)}, {e.lng.toFixed(2)}
-                  </p>
-                  {e.description && <p className="text-sm text-muted-foreground line-clamp-2">{e.description}</p>}
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                    {e.description && <p className="text-sm text-muted-foreground line-clamp-2">{e.description}</p>}
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

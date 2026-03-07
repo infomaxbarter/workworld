@@ -12,6 +12,8 @@ interface UserMarker {
   name: string;
   lat: number;
   lng: number;
+  city: string | null;
+  country: string | null;
   slug: string | null;
   created_at: string;
 }
@@ -38,6 +40,8 @@ const MemberDetail = () => {
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!member) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Member not found.</div>;
 
+  const locationText = member.city && member.country ? `${member.city}, ${member.country}` : `${member.lat.toFixed(4)}, ${member.lng.toFixed(4)}`;
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
       <Link to="/humans" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
@@ -58,9 +62,7 @@ const MemberDetail = () => {
                 <AlertTriangle className="w-3 h-3" />{t('member.unverified')}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {t('member.anonymous_note')}
-            </p>
+            <p className="text-sm text-muted-foreground">{t('member.anonymous_note')}</p>
           </div>
         </CardHeader>
 
@@ -72,7 +74,7 @@ const MemberDetail = () => {
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MapPin className="w-4 h-4 text-primary" />
-            <span>📍 {member.lat.toFixed(4)}, {member.lng.toFixed(4)}</span>
+            <span>📍 {locationText}</span>
           </div>
 
           <p className="text-sm text-muted-foreground">

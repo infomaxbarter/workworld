@@ -21,7 +21,7 @@ const Auth = () => {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate('/');
+      if (session) navigate('/dashboard');
     });
   }, [navigate]);
 
@@ -32,7 +32,7 @@ const Auth = () => {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate('/');
+        navigate('/dashboard');
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -41,7 +41,7 @@ const Auth = () => {
         });
         if (error) throw error;
         toast.success('Account created!');
-        navigate('/');
+        navigate('/dashboard');
       }
     } catch (err: any) {
       toast.error(err.message || t('form.error'));
@@ -52,7 +52,7 @@ const Auth = () => {
 
   const handleGoogle = async () => {
     const { error } = await lovable.auth.signInWithOAuth('google', {
-      redirect_uri: window.location.origin,
+      redirect_uri: window.location.origin + '/dashboard',
     });
     if (error) toast.error(error.message || t('form.error'));
   };
