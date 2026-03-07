@@ -14,35 +14,91 @@ export type Database = {
   }
   public: {
     Tables: {
+      event_gallery: {
+        Row: {
+          caption: string | null
+          created_at: string
+          event_id: string
+          id: string
+          sort_order: number | null
+          type: string
+          url: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          sort_order?: number | null
+          type?: string
+          url: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          sort_order?: number | null
+          type?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_gallery_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_markers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_markers: {
         Row: {
+          capacity: number | null
+          city: string | null
+          country: string | null
           created_at: string
           date: string | null
           description: string | null
+          end_date: string | null
+          external_url: string | null
           id: string
           lat: number
           lng: number
           slug: string | null
+          start_date: string | null
           title: string
         }
         Insert: {
+          capacity?: number | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           date?: string | null
           description?: string | null
+          end_date?: string | null
+          external_url?: string | null
           id?: string
           lat?: number
           lng?: number
           slug?: string | null
+          start_date?: string | null
           title: string
         }
         Update: {
+          capacity?: number | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           date?: string | null
           description?: string | null
+          end_date?: string | null
+          external_url?: string | null
           id?: string
           lat?: number
           lng?: number
           slug?: string | null
+          start_date?: string | null
           title?: string
         }
         Relationships: []
@@ -158,6 +214,8 @@ export type Database = {
           approved: boolean
           avatar_url: string | null
           bio: string | null
+          city: string | null
+          country: string | null
           created_at: string
           display_name: string
           id: string
@@ -176,6 +234,8 @@ export type Database = {
           approved?: boolean
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           display_name?: string
           id?: string
@@ -194,6 +254,8 @@ export type Database = {
           approved?: boolean
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           display_name?: string
           id?: string
@@ -236,6 +298,8 @@ export type Database = {
       }
       user_markers: {
         Row: {
+          city: string | null
+          country: string | null
           created_at: string
           id: string
           lat: number
@@ -244,6 +308,8 @@ export type Database = {
           slug: string | null
         }
         Insert: {
+          city?: string | null
+          country?: string | null
           created_at?: string
           id?: string
           lat?: number
@@ -252,6 +318,8 @@ export type Database = {
           slug?: string | null
         }
         Update: {
+          city?: string | null
+          country?: string | null
           created_at?: string
           id?: string
           lat?: number
