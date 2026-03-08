@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Users, CalendarDays, Map, Info, LayoutDashboard, Shield, User, LogIn, LogOut, Home, Moon, Sun, Globe, Search } from 'lucide-react';
+import { Users, CalendarDays, Map, Info, LayoutDashboard, Shield, User, LogIn, LogOut, Home, Moon, Sun, Globe, Search, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
