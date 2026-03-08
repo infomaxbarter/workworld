@@ -167,6 +167,13 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
     if (filterType === 'all' || filterType === 'events') items.push(...allData.events.map(e => ({ ...e, _type: 'event' })));
 
     if (selectedCountry) items = items.filter(i => i.country === selectedCountry);
+    if (selectedProfession) {
+      items = items.filter(i => {
+        if (i._type !== 'profile') return false;
+        const profIds = profileProfessions.get(i.id) || [];
+        return profIds.includes(selectedProfession);
+      });
+    }
     if (search) {
       const q = search.toLowerCase();
       items = items.filter(i => {
