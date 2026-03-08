@@ -10,11 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X, Image, Video, Flag, AlertTriangle, Settings, Monitor, Tablet, Smartphone, Briefcase } from 'lucide-react';
+import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X, Image, Video, Flag, AlertTriangle, Settings, Monitor, Tablet, Smartphone, Briefcase, Upload, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
 import { useNavigation, type NavMode, type NavSettings, type DeviceType } from '@/contexts/NavigationContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import DataExportImport from '@/components/admin/DataExportImport';
+import DetailedReports from '@/components/admin/DetailedReports';
 
 interface Submission { id: string; name: string; email: string; message: string; created_at: string; }
 interface UserMarker { id: string; name: string; lat: number; lng: number; city: string | null; country: string | null; slug: string | null; status: string; }
@@ -375,6 +377,8 @@ const AdminDashboard = () => {
               <MessageSquare className="w-4 h-4" /> {t('admin.comments')}
               {pendingComments.length > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingComments.length}</Badge>}
             </TabsTrigger>
+            <TabsTrigger value="data" className="gap-1.5"><Upload className="w-4 h-4" /> Veri Aktar</TabsTrigger>
+            <TabsTrigger value="detailed_reports" className="gap-1.5"><BarChart3 className="w-4 h-4" /> Detaylı Raporlar</TabsTrigger>
             <TabsTrigger value="settings" className="gap-1.5"><Settings className="w-4 h-4" /> {t('admin.settings')}</TabsTrigger>
           </TabsList>
 
@@ -819,6 +823,16 @@ const AdminDashboard = () => {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Data Export/Import */}
+          <TabsContent value="data">
+            <DataExportImport onReload={reload} />
+          </TabsContent>
+
+          {/* Detailed Reports */}
+          <TabsContent value="detailed_reports">
+            <DetailedReports />
           </TabsContent>
 
           {/* Navigation Settings */}
