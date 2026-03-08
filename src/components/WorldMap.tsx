@@ -244,15 +244,27 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
       return true;
     };
 
-    // Clear and rebuild each layer
+    // Clear and rebuild each layer, collect visible bounds
+    const allBounds: L.LatLng[] = [];
     (['profiles', 'anon', 'events', 'professions'] as const).forEach(key => {
       const layer = layers[key];
       layer.clearLayers();
       md[key].forEach(({ marker, data }) => {
-        if (shouldShow(data)) layer.addLayer(marker);
+        if (shouldShow(data)) {
+          layer.addLayer(marker);
+          allBounds.push(marker.getLatLng());
+        }
       });
       if (!map.hasLayer(layer)) map.addLayer(layer);
     });
+
+    // Fly to filtered bounds
+    if ((selectedCountry || selectedProfession) && allBounds.length > 0) {
+      const bounds = L.latLngBounds(allBounds);
+      map.flyToBounds(bounds, { padding: [40, 40], maxZoom: 6, duration: 1 });
+    } else if (!selectedCountry && !selectedProfession) {
+      map.flyTo([30, 20], 2, { duration: 0.5 });
+    }
   }, [filterType, selectedCountry, selectedProfession]);
 
   const getFilteredItems = () => {
