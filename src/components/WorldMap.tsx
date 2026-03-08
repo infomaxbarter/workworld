@@ -244,16 +244,28 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
               </button>
             ))}
           </div>
-          {countries.length > 0 && (
-            <select
-              value={selectedCountry}
-              onChange={e => setSelectedCountry(e.target.value)}
-              className="w-full px-3 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
-            >
-              <option value="">Tüm Ülkeler</option>
-              {countries.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          )}
+          <div className="flex gap-2">
+            {countries.length > 0 && (
+              <select
+                value={selectedCountry}
+                onChange={e => setSelectedCountry(e.target.value)}
+                className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
+              >
+                <option value="">Tüm Ülkeler</option>
+                {countries.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            )}
+            {professions.length > 0 && (
+              <select
+                value={selectedProfession}
+                onChange={e => setSelectedProfession(e.target.value)}
+                className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
+              >
+                <option value="">Tüm Meslekler</option>
+                {professions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            )}
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto divide-y divide-border">
           {filteredItems.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Sonuç bulunamadı</p>}
