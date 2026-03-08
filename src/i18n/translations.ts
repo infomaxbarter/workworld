@@ -216,6 +216,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     'professions.members': 'üye',
     'professions.members_title': 'Bu Meslekteki Üyeler',
     'professions.no_members': 'Henüz bu mesleğe sahip üye yok.',
+    'professions.map_title': 'Haritada Üyeler',
     'professions.no_results': 'Sonuç bulunamadı.',
     'professions.not_found': 'Meslek bulunamadı.',
     'professions.back': 'Geri Dön',
