@@ -692,5 +692,3 @@ const NavSettingsPanel = () => {
 };
 
 export default Admin;
-
-export default Admin;
