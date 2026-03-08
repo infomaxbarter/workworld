@@ -366,6 +366,15 @@ const AdminDashboard = () => {
             <TabsTrigger value="submissions" className="gap-1.5"><FileText className="w-4 h-4" /> {t('admin.submissions')}</TabsTrigger>
             <TabsTrigger value="markers" className="gap-1.5"><MapPin className="w-4 h-4" /> {t('admin.members')}</TabsTrigger>
             <TabsTrigger value="events" className="gap-1.5"><CalendarDays className="w-4 h-4" /> {t('admin.events')}</TabsTrigger>
+            <TabsTrigger value="professions" className="gap-1.5"><Briefcase className="w-4 h-4" /> {t('admin.professions')}</TabsTrigger>
+            <TabsTrigger value="posts" className="gap-1.5">
+              <FileText className="w-4 h-4" /> {t('admin.posts')}
+              {pendingPosts.length > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingPosts.length}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="gap-1.5">
+              <MessageSquare className="w-4 h-4" /> {t('admin.comments')}
+              {pendingComments.length > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingComments.length}</Badge>}
+            </TabsTrigger>
             <TabsTrigger value="settings" className="gap-1.5"><Settings className="w-4 h-4" /> {t('admin.settings')}</TabsTrigger>
           </TabsList>
 
