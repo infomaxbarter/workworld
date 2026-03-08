@@ -6,13 +6,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Search, CalendarDays } from 'lucide-react';
+import { Calendar, MapPin, Search, CalendarDays, Clock } from 'lucide-react';
 import Footer from '@/components/Footer';
 
 interface EventData {
   id: string; title: string; date: string | null; start_date: string | null; end_date: string | null;
   description: string | null; lat: number; lng: number; slug: string | null; city: string | null;
   country: string | null; capacity: number | null; external_url: string | null; created_at: string;
+  status: string;
 }
 
 const EventsPage = () => {
@@ -20,7 +21,7 @@ const EventsPage = () => {
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [tab, setTab] = useState<'upcoming' | 'past' | 'all'>('all');
+  const [tab, setTab] = useState<'all' | 'active' | 'coming_soon' | 'past' | 'inactive'>('all');
 
   useEffect(() => {
     supabase.from('event_markers').select('*').order('start_date', { ascending: false }).then(({ data }) => {
@@ -34,11 +35,12 @@ const EventsPage = () => {
   const filtered = useMemo(() => {
     let list = events;
 
-    if (tab === 'upcoming') {
-      list = list.filter(e => {
-        const d = e.start_date || e.end_date || e.date;
-        return !d || d >= now;
-      });
+    if (tab === 'active') {
+      list = list.filter(e => (e.status || 'active') === 'active');
+    } else if (tab === 'coming_soon') {
+      list = list.filter(e => (e.status || 'active') === 'coming_soon');
+    } else if (tab === 'inactive') {
+      list = list.filter(e => (e.status || 'active') === 'inactive');
     } else if (tab === 'past') {
       list = list.filter(e => {
         const d = e.end_date || e.start_date || e.date;
@@ -58,6 +60,17 @@ const EventsPage = () => {
 
     return list;
   }, [events, search, tab, now]);
+
+  const getStatusBadge = (event: EventData) => {
+    const status = event.status || 'active';
+    const eventDate = event.end_date || event.start_date || event.date;
+    const isPast = eventDate && eventDate < now;
+
+    if (isPast) return <Badge variant="secondary" className="text-xs">{t('status.past')}</Badge>;
+    if (status === 'coming_soon') return <Badge className="text-xs bg-amber-500/15 text-amber-600 border-amber-500/30 hover:bg-amber-500/20">{t('status.coming_soon')}</Badge>;
+    if (status === 'inactive') return <Badge variant="secondary" className="text-xs opacity-60">{t('status.inactive')}</Badge>;
+    return <Badge className="text-xs bg-emerald-500/15 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20">{t('status.active')}</Badge>;
+  };
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading...</div>;
 
@@ -84,8 +97,8 @@ const EventsPage = () => {
               className="pl-9"
             />
           </div>
-          <div className="flex gap-1">
-            {(['all', 'upcoming', 'past'] as const).map(f => (
+          <div className="flex gap-1 flex-wrap">
+            {(['all', 'active', 'coming_soon', 'past', 'inactive'] as const).map(f => (
               <Button
                 key={f}
                 variant={tab === f ? 'default' : 'outline'}
@@ -93,7 +106,7 @@ const EventsPage = () => {
                 onClick={() => setTab(f)}
                 className="text-xs"
               >
-                {t(`events.tab_${f}`)}
+                {t(`status.tab_${f}`)}
               </Button>
             ))}
           </div>
@@ -105,16 +118,17 @@ const EventsPage = () => {
           <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
             {filtered.map((e) => {
               const loc = e.city && e.country ? `${e.city}, ${e.country}` : e.city || e.country || `${e.lat.toFixed(2)}, ${e.lng.toFixed(2)}`;
+              const status = e.status || 'active';
               const eventDate = e.end_date || e.start_date || e.date;
               const isPast = eventDate && eventDate < now;
               return (
                 <Link key={e.id} to={`/events/${e.slug || e.id}`}>
-                  <Card className={`hover:shadow-md transition-shadow h-full ${isPast ? 'opacity-70' : ''}`}>
+                  <Card className={`hover:shadow-md transition-shadow h-full ${status === 'inactive' || isPast ? 'opacity-70' : ''}`}>
                     <CardContent className="p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <h3 className="font-bold text-base sm:text-lg text-foreground">{e.title}</h3>
-                        <div className="flex gap-1 shrink-0">
-                          {isPast && <Badge variant="secondary" className="text-xs">{t('events.past')}</Badge>}
+                        <div className="flex gap-1 shrink-0 flex-wrap justify-end">
+                          {getStatusBadge(e)}
                           {e.capacity && <Badge variant="outline" className="text-xs">👥 {e.capacity}</Badge>}
                         </div>
                       </div>
