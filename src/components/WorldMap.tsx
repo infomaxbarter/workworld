@@ -40,6 +40,9 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
   const [allData, setAllData] = useState<{ profiles: any[]; anon: any[]; events: any[] }>({ profiles: [], anon: [], events: [] });
   const [countries, setCountries] = useState<string[]>([]);
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [professions, setProfessions] = useState<{ id: string; name: string }[]>([]);
+  const [selectedProfession, setSelectedProfession] = useState('');
+  const [profileProfessions, setProfileProfessions] = useState<Map<string, string[]>>(new Map());
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
