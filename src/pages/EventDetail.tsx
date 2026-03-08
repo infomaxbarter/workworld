@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Calendar, MapPin, FileText, UserPlus, UserMinus, Users, ExternalLink, Image, Video } from 'lucide-react';
 import { toast } from 'sonner';
+import CommentsSection from '@/components/CommentsSection';
+import PostsSection from '@/components/PostsSection';
 
 interface EventData {
   id: string; title: string; date: string | null; start_date: string | null; end_date: string | null;
