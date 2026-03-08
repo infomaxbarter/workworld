@@ -626,6 +626,11 @@ const AdminDashboard = () => {
               ))}
             </div>
           </TabsContent>
+
+          {/* Navigation Settings */}
+          <TabsContent value="settings">
+            <NavSettingsPanel />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
