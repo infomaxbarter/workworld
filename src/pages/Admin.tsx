@@ -730,6 +730,97 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
 
+          {/* Professions */}
+          <TabsContent value="professions">
+            <Card className="mb-4">
+              <CardContent className="p-4 space-y-3">
+                <h3 className="font-semibold text-sm">{t('admin.add_profession')}</h3>
+                <Input value={newProfName} onChange={e => setNewProfName(e.target.value)} placeholder="Profession name" />
+                <Textarea value={newProfDesc} onChange={e => setNewProfDesc(e.target.value)} placeholder="Description (optional)" rows={2} />
+                <div className="space-y-1">
+                  <Label>{t('admin.status')}</Label>
+                  <StatusSelect value={newProfStatus} onChange={setNewProfStatus} />
+                </div>
+                <Button size="sm" onClick={addProfession}><Plus className="w-4 h-4 mr-1" /> {t('admin.add_profession')}</Button>
+              </CardContent>
+            </Card>
+            <p className="text-sm text-muted-foreground mb-3">{professions.length} {t('admin.professions').toLowerCase()}</p>
+            <div className="space-y-3">
+              {professions.map(p => (
+                <Card key={p.id}>
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{p.name}</span>
+                        <StatusBadge status={p.status} />
+                      </div>
+                      {p.description && <p className="text-xs text-muted-foreground mt-1 truncate max-w-md">{p.description}</p>}
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => removeProfession(p.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                  </CardContent>
+                </Card>
+              ))}
+              {professions.length === 0 && <p className="text-center text-muted-foreground py-8">{t('admin.no_professions')}</p>}
+            </div>
+          </TabsContent>
+
+          {/* Posts Moderation */}
+          <TabsContent value="posts">
+            {pendingPosts.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_posts')}</p>
+            ) : (
+              <div className="space-y-3">
+                {pendingPosts.map(p => (
+                  <Card key={p.id}>
+                    <CardContent className="p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium text-sm">{p.title}</span>
+                          <span className="text-xs text-muted-foreground ml-2">— {p.author_name}</span>
+                          <span className="text-xs text-muted-foreground ml-2">{p.target_type}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-sm text-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">{p.content}</p>
+                      <div className="flex gap-2 justify-end">
+                        <Button variant="outline" size="sm" onClick={() => rejectPost(p.id)} className="gap-1"><XCircle className="w-4 h-4" /> {t('admin.reject')}</Button>
+                        <Button size="sm" onClick={() => approvePost(p)} className="gap-1"><CheckCircle className="w-4 h-4" /> {t('admin.approve')}</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Comments Moderation */}
+          <TabsContent value="comments">
+            {pendingComments.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_comments')}</p>
+            ) : (
+              <div className="space-y-3">
+                {pendingComments.map(c => (
+                  <Card key={c.id}>
+                    <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-sm">{c.author_name}</span>
+                          <Badge variant="outline" className="text-xs">{c.target_type}</Badge>
+                          <span className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-sm text-foreground">{c.content}</p>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button variant="outline" size="sm" onClick={() => rejectComment(c.id)} className="gap-1"><XCircle className="w-4 h-4" /></Button>
+                        <Button size="sm" onClick={() => approveComment(c)} className="gap-1"><CheckCircle className="w-4 h-4" /></Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
           {/* Navigation Settings */}
           <TabsContent value="settings">
             <NavSettingsPanel />
