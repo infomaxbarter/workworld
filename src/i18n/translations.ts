@@ -79,6 +79,8 @@ export const translations: Record<Lang, Record<string, string>> = {
     'profile.avatar_url': 'Profil Fotoğrafı URL',
     'profile.avatar_url_hint': 'URL girin veya fotoğrafın üstüne tıklayarak yükleyin',
     'profile.avatar_updated': 'Profil fotoğrafı güncellendi!',
+    'profile.events_joined': 'Katıldığı Etkinlikler',
+    'profile.edit_history': 'Düzenleme Geçmişi',
 
     'humans.title': 'İnsanlar',
     'humans.subtitle': 'Topluluğumuzdaki üyeler',
