@@ -528,6 +528,8 @@ export const translations: Record<Lang, Record<string, string>> = {
     'admin.anonymous_members': 'anonyme(s) Mitglied(er)',
     'admin.city': 'Stadt',
     'admin.country': 'Land',
+    'admin.reports': 'Berichte',
+    'admin.no_reports': 'Keine Berichte.',
 
     'member.unverified': 'Nicht verifiziert',
     'member.anonymous_note': 'Dieses Mitglied wurde manuell hinzugefügt und hat kein verifiziertes Konto.',
