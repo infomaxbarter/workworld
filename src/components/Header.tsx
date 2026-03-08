@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays, Map, Info, LayoutDashboard, Menu, Search, ChevronDown } from 'lucide-react';
+import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays, Map, Info, LayoutDashboard, Menu, Search, ChevronDown, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
