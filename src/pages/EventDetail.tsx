@@ -215,6 +215,9 @@ const EventDetail = () => {
         </CardContent>
       </Card>
 
+      <PostsSection targetType="event" targetId={event.id} />
+      <CommentsSection targetType="event" targetId={event.id} />
+
       {selectedImage && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
           <img src={selectedImage} alt="" className="max-w-full max-h-full rounded-lg" />
