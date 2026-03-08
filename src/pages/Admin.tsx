@@ -290,6 +290,39 @@ const AdminDashboard = () => {
     toast.success('Report dismissed');
   };
 
+  // Professions
+  const addProfession = async () => {
+    if (!newProfName.trim()) { toast.error('Name required'); return; }
+    await supabase.from('professions').insert({ name: newProfName, description: newProfDesc || null, status: newProfStatus } as any);
+    setNewProfName(''); setNewProfDesc(''); setNewProfStatus('active'); reload();
+  };
+  const removeProfession = async (id: string) => {
+    await supabase.from('professions').delete().eq('id', id);
+    setProfessions(prev => prev.filter(p => p.id !== id));
+  };
+
+  // Posts moderation
+  const approvePost = async (post: PostRow) => {
+    await supabase.from('posts').update({ status: 'approved' } as any).eq('id', post.id);
+    await supabase.rpc('create_notification', { _user_id: post.author_id, _type: 'post_approved', _title: 'Yazınız yayınlandı! ✅', _message: post.title } as any);
+    toast.success('Post approved'); reload();
+  };
+  const rejectPost = async (id: string) => {
+    await supabase.from('posts').update({ status: 'rejected' } as any).eq('id', id);
+    toast.success('Post rejected'); reload();
+  };
+
+  // Comments moderation
+  const approveComment = async (comment: CommentRow) => {
+    await supabase.from('comments').update({ status: 'approved' } as any).eq('id', comment.id);
+    await supabase.rpc('create_notification', { _user_id: comment.user_id, _type: 'comment_approved', _title: 'Yorumunuz onaylandı! ✅' } as any);
+    toast.success('Comment approved'); reload();
+  };
+  const rejectComment = async (id: string) => {
+    await supabase.from('comments').delete().eq('id', id);
+    toast.success('Comment rejected'); reload();
+  };
+
   const filteredProfiles = profiles.filter(p => {
     if (profileFilter === 'pending') return !p.approved;
     if (profileFilter === 'approved') return p.approved;
