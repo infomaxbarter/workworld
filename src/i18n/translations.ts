@@ -57,6 +57,10 @@ export const translations: Record<Lang, Record<string, string>> = {
     'dashboard.title': 'Panelim',
     'dashboard.my_events': 'Katıldığım Etkinlikler',
     'dashboard.no_events': 'Henüz bir etkinliğe katılmadınız.',
+    'dashboard.events_count': 'Etkinlik',
+    'dashboard.profile_status': 'Profil Durumu',
+    'dashboard.pending_edits': 'Bekleyen',
+    'dashboard.edit_requests': 'Düzenleme İstekleri',
 
     'profile.member_since': 'Üyelik tarihi',
     'profile.location': 'Konum',
