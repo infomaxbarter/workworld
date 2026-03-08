@@ -463,6 +463,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     'professions.members': 'members',
     'professions.members_title': 'Members in this Profession',
     'professions.no_members': 'No members with this profession yet.',
+    'professions.map_title': 'Members on Map',
     'professions.no_results': 'No results found.',
     'professions.not_found': 'Profession not found.',
     'professions.back': 'Go Back',
