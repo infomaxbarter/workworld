@@ -82,7 +82,7 @@ const EventDetail = () => {
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!event) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Event not found.</div>;
 
-  const locationText = event.city && event.country ? `${event.city}, ${event.country}` : `${event.lat.toFixed(2)}, ${event.lng.toFixed(2)}`;
+  const locationText = event.city && event.country ? `${event.city}, ${event.country}` : event.city || event.country || `${event.lat.toFixed(2)}, ${event.lng.toFixed(2)}`;
   const images = gallery.filter(g => g.type === 'image');
   const videos = gallery.filter(g => g.type === 'video');
 

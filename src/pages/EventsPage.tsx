@@ -104,7 +104,7 @@ const EventsPage = () => {
         ) : (
           <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
             {filtered.map((e) => {
-              const loc = e.city && e.country ? `${e.city}, ${e.country}` : `${e.lat.toFixed(2)}, ${e.lng.toFixed(2)}`;
+              const loc = e.city && e.country ? `${e.city}, ${e.country}` : e.city || e.country || `${e.lat.toFixed(2)}, ${e.lng.toFixed(2)}`;
               const eventDate = e.end_date || e.start_date || e.date;
               const isPast = eventDate && eventDate < now;
               return (

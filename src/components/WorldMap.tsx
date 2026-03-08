@@ -185,7 +185,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
       {/* Mobile toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="md:hidden absolute top-3 left-3 z-[1000] bg-card border border-border rounded-lg p-2 shadow-lg"
+        className="md:hidden absolute top-3 right-3 z-[1000] bg-card border border-border rounded-lg p-2 shadow-lg"
       >
         {sidebarOpen ? <X className="w-5 h-5 text-foreground" /> : <Filter className="w-5 h-5 text-foreground" />}
       </button>
