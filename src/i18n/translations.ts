@@ -174,6 +174,17 @@ export const translations: Record<Lang, Record<string, string>> = {
     'admin.nav_mode_header_desc': 'Klasik üst navigasyon çubuğu.',
     'admin.nav_mode_sidebar_desc': 'Daraltılabilir sol kenar çubuğu.',
     'admin.nav_mode_mega_desc': 'Kategorili açılır alt menüler.',
+    'admin.status': 'Durum',
+
+    'status.active': 'Aktif',
+    'status.inactive': 'Pasif',
+    'status.coming_soon': 'Pek Yakında',
+    'status.past': 'Geçmiş',
+    'status.tab_all': 'Tümü',
+    'status.tab_active': 'Aktif',
+    'status.tab_coming_soon': 'Pek Yakında',
+    'status.tab_past': 'Geçmiş',
+    'status.tab_inactive': 'Pasif',
 
     'member.unverified': 'Doğrulanmamış',
     'member.anonymous_note': 'Bu üye manuel olarak eklenmiştir, hesabı doğrulanmamıştır.',
