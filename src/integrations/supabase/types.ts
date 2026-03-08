@@ -218,6 +218,7 @@ export type Database = {
           country: string | null
           created_at: string
           display_name: string
+          github: string | null
           id: string
           instagram: string | null
           lat: number | null
@@ -238,6 +239,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           display_name?: string
+          github?: string | null
           id?: string
           instagram?: string | null
           lat?: number | null
@@ -258,6 +260,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           display_name?: string
+          github?: string | null
           id?: string
           instagram?: string | null
           lat?: number | null
@@ -269,6 +272,33 @@ export type Database = {
           updated_at?: string
           user_id?: string
           website?: string | null
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          reason: string
+          target_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          reason: string
+          target_id: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          reason?: string
+          target_id?: string
+          type?: string
         }
         Relationships: []
       }
