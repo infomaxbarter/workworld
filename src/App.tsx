@@ -21,6 +21,8 @@ import EventsPage from "./pages/EventsPage";
 import MapPage from "./pages/MapPage";
 import MemberDetail from "./pages/MemberDetail";
 import AboutPage from "./pages/AboutPage";
+import ProfessionsPage from "./pages/ProfessionsPage";
+import ProfessionDetail from "./pages/ProfessionDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
