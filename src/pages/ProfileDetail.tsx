@@ -13,6 +13,8 @@ import { MapPin, Globe, Twitter, Linkedin, Instagram, ArrowLeft, Edit2, Save, Cl
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
 import Footer from '@/components/Footer';
+import CommentsSection from '@/components/CommentsSection';
+import PostsSection from '@/components/PostsSection';
 
 interface Profile {
   id: string; user_id: string; display_name: string; avatar_url: string | null;
