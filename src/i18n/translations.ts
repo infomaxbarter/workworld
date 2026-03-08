@@ -241,6 +241,10 @@ export const translations: Record<Lang, Record<string, string>> = {
     'dashboard.title': 'My Dashboard',
     'dashboard.my_events': 'My Events',
     'dashboard.no_events': 'You haven\'t joined any events yet.',
+    'dashboard.events_count': 'Events',
+    'dashboard.profile_status': 'Profile Status',
+    'dashboard.pending_edits': 'Pending',
+    'dashboard.edit_requests': 'Edit Requests',
 
     'profile.member_since': 'Member since',
     'profile.location': 'Location',
