@@ -62,11 +62,22 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
     layersRef.current = { profiles: profilesLayer, anon: anonLayer, events: eventsLayer };
 
     const loadMarkers = async () => {
-      const [{ data: profiles }, { data: anonMarkers }, { data: events }] = await Promise.all([
+      const [{ data: profiles }, { data: anonMarkers }, { data: events }, { data: profs }, { data: pp }] = await Promise.all([
         supabase.from('profiles').select('*').eq('approved', true).not('lat', 'is', null).not('lng', 'is', null),
         supabase.from('user_markers').select('*'),
         supabase.from('event_markers').select('*'),
+        supabase.from('professions').select('id, name').eq('status', 'active').order('name'),
+        supabase.from('profile_professions').select('profile_id, profession_id'),
       ]);
+
+      if (profs) setProfessions(profs as any[]);
+      const ppMap = new Map<string, string[]>();
+      (pp as any[] | null)?.forEach((item: any) => {
+        const existing = ppMap.get(item.profile_id) || [];
+        existing.push(item.profession_id);
+        ppMap.set(item.profile_id, existing);
+      });
+      setProfileProfessions(ppMap);
 
       const allCountries = new Set<string>();
 
