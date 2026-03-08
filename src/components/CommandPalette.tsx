@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, CalendarDays, Map, Info, LayoutDashboard, Shield, User, Home, MapPin } from 'lucide-react';
+import { Users, CalendarDays, Map, Info, LayoutDashboard, Shield, User, Home, MapPin, Clock } from 'lucide-react';
 
 interface ProfileHit { id: string; display_name: string; slug: string | null; user_id: string; city: string | null; country: string | null; avatar_url: string | null; }
 interface EventHit { id: string; title: string; slug: string | null; city: string | null; country: string | null; start_date: string | null; }
