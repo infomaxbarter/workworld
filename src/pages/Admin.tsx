@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X, Image, Video } from 'lucide-react';
+import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X, Image, Video, Flag, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
 
@@ -18,8 +18,9 @@ interface Submission { id: string; name: string; email: string; message: string;
 interface UserMarker { id: string; name: string; lat: number; lng: number; city: string | null; country: string | null; slug: string | null; }
 interface EventMarker { id: string; title: string; date: string | null; start_date: string | null; end_date: string | null; description: string | null; lat: number; lng: number; city: string | null; country: string | null; capacity: number | null; external_url: string | null; slug: string | null; }
 interface GalleryItem { id: string; event_id: string; url: string; type: string; caption: string | null; sort_order: number; }
-interface ProfileRow { id: string; user_id: string; display_name: string; bio: string | null; location: string | null; city: string | null; country: string | null; website: string | null; twitter: string | null; linkedin: string | null; instagram: string | null; approved: boolean; slug: string | null; created_at: string; }
+interface ProfileRow { id: string; user_id: string; display_name: string; bio: string | null; location: string | null; city: string | null; country: string | null; website: string | null; twitter: string | null; linkedin: string | null; instagram: string | null; github: string | null; approved: boolean; slug: string | null; created_at: string; }
 interface EditRequest { id: string; profile_id: string; user_id: string; old_data: Record<string, any>; new_data: Record<string, any>; status: string; admin_response: string | null; created_at: string; reviewed_at: string | null; profile_name?: string; }
+interface Report { id: string; type: string; target_id: string; reason: string; created_by: string; created_at: string; }
 
 const Admin = () => {
   const { t } = useLanguage();
@@ -58,9 +59,9 @@ const AdminDashboard = () => {
   const [events, setEvents] = useState<EventMarker[]>([]);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [editRequests, setEditRequests] = useState<EditRequest[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [profileFilter, setProfileFilter] = useState<'all' | 'pending' | 'approved'>('pending');
 
-  // New member form
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberCity, setNewMemberCity] = useState('');
   const [newMemberCountry, setNewMemberCountry] = useState('');
@@ -68,13 +69,11 @@ const AdminDashboard = () => {
   const [newMemberLng, setNewMemberLng] = useState<number | null>(null);
   const [showMemberPicker, setShowMemberPicker] = useState(false);
 
-  // New event form
   const [newEvent, setNewEvent] = useState({ title: '', date: '', start_date: '', end_date: '', description: '', city: '', country: '', capacity: '', external_url: '' });
   const [newEventLat, setNewEventLat] = useState<number | null>(null);
   const [newEventLng, setNewEventLng] = useState<number | null>(null);
   const [showEventPicker, setShowEventPicker] = useState(false);
 
-  // Edit states
   const [editingMember, setEditingMember] = useState<string | null>(null);
   const [editMemberForm, setEditMemberForm] = useState<Partial<UserMarker>>({});
   const [showEditMemberPicker, setShowEditMemberPicker] = useState(false);
@@ -88,7 +87,6 @@ const AdminDashboard = () => {
 
   const [reviewResponse, setReviewResponse] = useState<Record<string, string>>({});
 
-  // Gallery management
   const [galleryEventId, setGalleryEventId] = useState<string | null>(null);
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [newGalleryUrl, setNewGalleryUrl] = useState('');
@@ -96,21 +94,23 @@ const AdminDashboard = () => {
   const [newGalleryCaption, setNewGalleryCaption] = useState('');
 
   const reload = async () => {
-    const [{ data: s }, { data: u }, { data: e }, { data: p }, { data: er }] = await Promise.all([
+    const [{ data: s }, { data: u }, { data: e }, { data: p }, { data: er }, { data: r }] = await Promise.all([
       supabase.from('submissions').select('*').order('created_at', { ascending: false }),
       supabase.from('user_markers').select('*'),
       supabase.from('event_markers').select('*'),
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
       supabase.from('profile_edit_requests').select('*').order('created_at', { ascending: false }),
+      supabase.from('reports').select('*').order('created_at', { ascending: false }),
     ]);
     if (s) setSubmissions(s);
     if (u) setUsers(u as unknown as UserMarker[]);
     if (e) setEvents(e as unknown as EventMarker[]);
     if (p) setProfiles(p as unknown as ProfileRow[]);
+    if (r) setReports(r as unknown as Report[]);
     if (er) {
       const requests = er as unknown as EditRequest[];
       const profileMap = new Map((p as unknown as ProfileRow[])?.map(pr => [pr.id, pr.display_name]) || []);
-      requests.forEach(r => { r.profile_name = profileMap.get(r.profile_id) || 'Unknown'; });
+      requests.forEach(req => { req.profile_name = profileMap.get(req.profile_id) || 'Unknown'; });
       setEditRequests(requests);
     }
   };
@@ -139,7 +139,7 @@ const AdminDashboard = () => {
   const saveProfile = async () => {
     if (!editingProfile) return;
     const f = editProfileForm;
-    await supabase.from('profiles').update({ display_name: f.display_name || '', bio: f.bio, location: f.location, city: f.city, country: f.country, website: f.website, twitter: f.twitter, linkedin: f.linkedin, instagram: f.instagram } as any).eq('id', editingProfile);
+    await supabase.from('profiles').update({ display_name: f.display_name || '', bio: f.bio, location: f.location, city: f.city, country: f.country, website: f.website, twitter: f.twitter, linkedin: f.linkedin, instagram: f.instagram, github: f.github } as any).eq('id', editingProfile);
     setEditingProfile(null); toast.success('Profile updated'); reload();
   };
 
@@ -182,7 +182,6 @@ const AdminDashboard = () => {
     setEditingEvent(null); setShowEditEventPicker(false); toast.success('Event updated'); reload();
   };
 
-  // Gallery
   const openGallery = async (eventId: string) => {
     setGalleryEventId(eventId);
     const { data } = await supabase.from('event_gallery').select('*').eq('event_id', eventId).order('sort_order');
@@ -213,6 +212,12 @@ const AdminDashboard = () => {
     toast.success('Rejected'); reload();
   };
 
+  const deleteReport = async (id: string) => {
+    await supabase.from('reports').delete().eq('id', id);
+    setReports(prev => prev.filter(r => r.id !== id));
+    toast.success('Report dismissed');
+  };
+
   const filteredProfiles = profiles.filter(p => {
     if (profileFilter === 'pending') return !p.approved;
     if (profileFilter === 'approved') return p.approved;
@@ -222,21 +227,46 @@ const AdminDashboard = () => {
   const pendingEdits = editRequests.filter(r => r.status === 'pending').length;
   const fieldLabels: Record<string, string> = {
     display_name: t('profile.display_name'), bio: t('profile.bio'), location: t('profile.location'),
-    website: t('profile.website'), twitter: 'Twitter', linkedin: 'LinkedIn', instagram: 'Instagram', lat: 'Lat', lng: 'Lng', city: t('admin.city'), country: t('admin.country'),
+    website: t('profile.website'), twitter: 'Twitter', linkedin: 'LinkedIn', instagram: 'Instagram', github: 'GitHub', lat: 'Lat', lng: 'Lng', city: t('admin.city'), country: t('admin.country'),
   };
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
+        {/* Stats Overview */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-foreground">{t('admin.title')}</h1>
-          <div className="flex gap-3 text-sm text-muted-foreground flex-wrap">
-            <span className="flex items-center gap-1"><Users className="w-4 h-4" />{profiles.length}</span>
-            <span className="flex items-center gap-1"><CalendarDays className="w-4 h-4" />{events.length}</span>
-            <span className="flex items-center gap-1"><FileText className="w-4 h-4" />{submissions.length}</span>
-            {pendingCount > 0 && <Badge variant="destructive" className="gap-1"><Clock className="w-3 h-3" />{pendingCount}</Badge>}
-            {pendingEdits > 0 && <Badge variant="destructive" className="gap-1"><GitCompare className="w-3 h-3" />{pendingEdits}</Badge>}
-          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <Card>
+            <CardContent className="p-3 text-center">
+              <Users className="w-5 h-5 text-primary mx-auto mb-1" />
+              <p className="text-xl font-bold text-foreground">{profiles.length}</p>
+              <p className="text-xs text-muted-foreground">{t('admin.profiles')}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-3 text-center">
+              <CalendarDays className="w-5 h-5 text-primary mx-auto mb-1" />
+              <p className="text-xl font-bold text-foreground">{events.length}</p>
+              <p className="text-xs text-muted-foreground">{t('admin.events')}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-3 text-center">
+              <FileText className="w-5 h-5 text-primary mx-auto mb-1" />
+              <p className="text-xl font-bold text-foreground">{submissions.length}</p>
+              <p className="text-xs text-muted-foreground">{t('admin.submissions')}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-3 text-center">
+              <AlertTriangle className="w-5 h-5 text-destructive mx-auto mb-1" />
+              <p className="text-xl font-bold text-foreground">{reports.length}</p>
+              <p className="text-xs text-muted-foreground">{t('admin.reports')}</p>
+            </CardContent>
+          </Card>
         </div>
 
         <Tabs defaultValue="edit_requests">
@@ -248,6 +278,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="profiles" className="gap-1.5">
               <Users className="w-4 h-4" /> {t('admin.profiles')}
               {pendingCount > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingCount}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="gap-1.5">
+              <Flag className="w-4 h-4" /> {t('admin.reports')}
+              {reports.length > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{reports.length}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="submissions" className="gap-1.5"><FileText className="w-4 h-4" /> {t('admin.submissions')}</TabsTrigger>
             <TabsTrigger value="markers" className="gap-1.5"><MapPin className="w-4 h-4" /> {t('admin.members')}</TabsTrigger>
@@ -306,6 +340,33 @@ const AdminDashboard = () => {
             </div>
           </TabsContent>
 
+          {/* Reports */}
+          <TabsContent value="reports">
+            {reports.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">{t('admin.no_reports')}</p>
+            ) : (
+              <div className="space-y-3">
+                {reports.map(r => (
+                  <Card key={r.id}>
+                    <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge variant="outline" className="text-xs">{r.type}</Badge>
+                          <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                        </div>
+                        <p className="text-sm text-foreground">{r.reason}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Target: {r.target_id.substring(0, 8)}...</p>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={() => deleteReport(r.id)}>
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
           {/* Profiles */}
           <TabsContent value="profiles">
             <div className="flex gap-2 mb-4">
@@ -330,9 +391,10 @@ const AdminDashboard = () => {
                         <div className="space-y-1"><Label>{t('profile.bio')}</Label><Textarea value={editProfileForm.bio || ''} onChange={e => setEditProfileForm({ ...editProfileForm, bio: e.target.value })} rows={2} /></div>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1"><Label>{t('profile.website')}</Label><Input value={editProfileForm.website || ''} onChange={e => setEditProfileForm({ ...editProfileForm, website: e.target.value })} /></div>
+                          <div className="space-y-1"><Label>GitHub</Label><Input value={editProfileForm.github || ''} onChange={e => setEditProfileForm({ ...editProfileForm, github: e.target.value })} /></div>
                           <div className="space-y-1"><Label>Twitter</Label><Input value={editProfileForm.twitter || ''} onChange={e => setEditProfileForm({ ...editProfileForm, twitter: e.target.value })} /></div>
                           <div className="space-y-1"><Label>LinkedIn</Label><Input value={editProfileForm.linkedin || ''} onChange={e => setEditProfileForm({ ...editProfileForm, linkedin: e.target.value })} /></div>
-                          <div className="space-y-1"><Label>Instagram</Label><Input value={editProfileForm.instagram || ''} onChange={e => setEditProfileForm({ ...editProfileForm, instagram: e.target.value })} /></div>
+                          <div className="space-y-1 col-span-2"><Label>Instagram</Label><Input value={editProfileForm.instagram || ''} onChange={e => setEditProfileForm({ ...editProfileForm, instagram: e.target.value })} /></div>
                         </div>
                         <div className="flex gap-2 justify-end">
                           <Button variant="outline" size="sm" onClick={() => setEditingProfile(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
@@ -475,7 +537,6 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Gallery Modal */}
             {galleryEventId && (
               <Card className="mb-4 border-primary/30">
                 <CardContent className="p-4 space-y-3">
