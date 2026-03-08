@@ -381,6 +381,17 @@ export const translations: Record<Lang, Record<string, string>> = {
     'admin.nav_mode_header_desc': 'Classic top navigation bar.',
     'admin.nav_mode_sidebar_desc': 'Collapsible left sidebar.',
     'admin.nav_mode_mega_desc': 'Dropdown menus with categories.',
+    'admin.status': 'Status',
+
+    'status.active': 'Active',
+    'status.inactive': 'Inactive',
+    'status.coming_soon': 'Coming Soon',
+    'status.past': 'Past',
+    'status.tab_all': 'All',
+    'status.tab_active': 'Active',
+    'status.tab_coming_soon': 'Coming Soon',
+    'status.tab_past': 'Past',
+    'status.tab_inactive': 'Inactive',
 
     'member.unverified': 'Unverified',
     'member.anonymous_note': 'This member was added manually and has no verified account.',
