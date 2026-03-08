@@ -71,6 +71,13 @@ const Header = () => {
       ],
     },
     {
+      label: t('nav.professions'),
+      icon: Briefcase,
+      children: [
+        { to: '/professions', label: t('professions.title'), desc: t('professions.subtitle')?.substring(0, 60) + '...' },
+      ],
+    },
+    {
       label: t('nav.about'),
       icon: Info,
       children: [
