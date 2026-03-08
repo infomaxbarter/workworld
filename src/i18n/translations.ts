@@ -160,6 +160,8 @@ export const translations: Record<Lang, Record<string, string>> = {
     'admin.anonymous_members': 'anonim üye',
     'admin.city': 'Şehir',
     'admin.country': 'Ülke',
+    'admin.reports': 'Raporlar',
+    'admin.no_reports': 'Rapor yok.',
 
     'member.unverified': 'Doğrulanmamış',
     'member.anonymous_note': 'Bu üye manuel olarak eklenmiştir, hesabı doğrulanmamıştır.',
