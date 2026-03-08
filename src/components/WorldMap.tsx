@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Search, X, Filter } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -26,6 +26,12 @@ const anonIcon = new L.Icon({
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41],
 });
 
+const professionIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41],
+});
+
 interface WorldMapProps {
   showSidebar?: boolean;
 }
@@ -33,53 +39,84 @@ interface WorldMapProps {
 const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const layersRef = useRef<{ profiles: L.LayerGroup; anon: L.LayerGroup; events: L.LayerGroup } | null>(null);
+  const layersRef = useRef<{
+    profiles: L.MarkerClusterGroup;
+    anon: L.MarkerClusterGroup;
+    events: L.MarkerClusterGroup;
+    professions: L.MarkerClusterGroup;
+  } | null>(null);
+  // Store raw markers with metadata for filtering
+  const markersDataRef = useRef<{
+    profiles: { marker: L.Marker; data: any }[];
+    anon: { marker: L.Marker; data: any }[];
+    events: { marker: L.Marker; data: any }[];
+    professions: { marker: L.Marker; data: any }[];
+  }>({ profiles: [], anon: [], events: [], professions: [] });
 
   const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'profiles' | 'anon' | 'events'>('all');
-  const [allData, setAllData] = useState<{ profiles: any[]; anon: any[]; events: any[] }>({ profiles: [], anon: [], events: [] });
+  const [filterType, setFilterType] = useState<'all' | 'profiles' | 'anon' | 'events' | 'professions'>('all');
+  const [allData, setAllData] = useState<{ profiles: any[]; anon: any[]; events: any[]; professions: any[] }>({ profiles: [], anon: [], events: [], professions: [] });
   const [countries, setCountries] = useState<string[]>([]);
   const [selectedCountry, setSelectedCountry] = useState('');
-  const [professions, setProfessions] = useState<{ id: string; name: string }[]>([]);
+  const [professionsList, setProfessionsList] = useState<{ id: string; name: string }[]>([]);
   const [selectedProfession, setSelectedProfession] = useState('');
   const [profileProfessions, setProfileProfessions] = useState<Map<string, string[]>>(new Map());
+  const [anonProfessions, setAnonProfessions] = useState<Map<string, string[]>>(new Map());
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [stats, setStats] = useState({ profiles: 0, anon: 0, events: 0, professions: 0, total: 0 });
 
+  // Build markers
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
     const map = L.map(containerRef.current, { center: [30, 20], zoom: 2, scrollWheelZoom: true });
     mapRef.current = map;
 
-    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    });
-    osmLayer.addTo(map);
+    }).addTo(map);
 
     const profilesLayer = L.markerClusterGroup();
     const anonLayer = L.markerClusterGroup();
     const eventsLayer = L.markerClusterGroup();
-    layersRef.current = { profiles: profilesLayer, anon: anonLayer, events: eventsLayer };
+    const professionsLayer = L.markerClusterGroup();
+    layersRef.current = { profiles: profilesLayer, anon: anonLayer, events: eventsLayer, professions: professionsLayer };
 
     const loadMarkers = async () => {
-      const [{ data: profiles }, { data: anonMarkers }, { data: events }, { data: profs }, { data: pp }] = await Promise.all([
+      const [{ data: profiles }, { data: anonMarkers }, { data: events }, { data: profs }, { data: pp }, { data: ump }] = await Promise.all([
         supabase.from('profiles').select('*').eq('approved', true).not('lat', 'is', null).not('lng', 'is', null),
         supabase.from('user_markers').select('*'),
         supabase.from('event_markers').select('*'),
-        supabase.from('professions').select('id, name').eq('status', 'active').order('name'),
+        supabase.from('professions').select('*').eq('status', 'active').order('name'),
         supabase.from('profile_professions').select('profile_id, profession_id'),
+        supabase.from('user_marker_professions' as any).select('user_marker_id, profession_id'),
       ]);
 
-      if (profs) setProfessions(profs as any[]);
+      if (profs) setProfessionsList((profs as any[]).map(p => ({ id: p.id, name: p.name })));
+
+      // Profile → professions map
       const ppMap = new Map<string, string[]>();
       (pp as any[] | null)?.forEach((item: any) => {
-        const existing = ppMap.get(item.profile_id) || [];
-        existing.push(item.profession_id);
-        ppMap.set(item.profile_id, existing);
+        const arr = ppMap.get(item.profile_id) || [];
+        arr.push(item.profession_id);
+        ppMap.set(item.profile_id, arr);
       });
       setProfileProfessions(ppMap);
 
+      // Anon → professions map
+      const umpMap = new Map<string, string[]>();
+      (ump as any[] | null)?.forEach((item: any) => {
+        const arr = umpMap.get(item.user_marker_id) || [];
+        arr.push(item.profession_id);
+        umpMap.set(item.user_marker_id, arr);
+      });
+      setAnonProfessions(umpMap);
+
       const allCountries = new Set<string>();
+      const pMarkers: { marker: L.Marker; data: any }[] = [];
+      const aMarkers: { marker: L.Marker; data: any }[] = [];
+      const eMarkers: { marker: L.Marker; data: any }[] = [];
+      const prMarkers: { marker: L.Marker; data: any }[] = [];
 
       (profiles as any[] | null)?.forEach((p) => {
         if (!p.lat || !p.lng) return;
@@ -98,6 +135,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
             <a href="/humans/${p.slug || p.user_id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">View Profile →</a>
           </div>
         `);
+        pMarkers.push({ marker, data: { ...p, _type: 'profile', _professions: ppMap.get(p.id) || [] } });
         profilesLayer.addLayer(marker);
       });
 
@@ -117,6 +155,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
             <a href="/members/${u.slug || u.id}" style="display:block;text-align:center;padding:6px 12px;background:#888;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">View →</a>
           </div>
         `);
+        aMarkers.push({ marker, data: { ...u, _type: 'anon', _professions: umpMap.get(u.id) || [] } });
         anonLayer.addLayer(marker);
       });
 
@@ -129,49 +168,106 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
             <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e.title}</div>
             ${e.start_date ? `<div style="font-size:12px;color:#888;margin-bottom:2px;">📅 ${e.start_date}${e.end_date ? ' — ' + e.end_date : ''}</div>` : e.date ? `<div style="font-size:12px;color:#888;margin-bottom:2px;">📅 ${e.date}</div>` : ''}
             ${loc ? `<div style="font-size:12px;color:#888;margin-bottom:4px;">📍 ${loc}</div>` : ''}
-            ${e.capacity ? `<div style="font-size:12px;color:#888;margin-bottom:4px;">👥 Kontenjan: ${e.capacity}</div>` : ''}
-            ${e.description ? `<div style="font-size:13px;color:#555;margin-bottom:8px;">${e.description.substring(0, 100)}${e.description.length > 100 ? '...' : ''}</div>` : ''}
             <a href="/events/${e.slug || e.id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">Details →</a>
           </div>
         `);
+        eMarkers.push({ marker, data: { ...e, _type: 'event' } });
         eventsLayer.addLayer(marker);
       });
+
+      // Profession markers
+      (profs as any[] | null)?.forEach((pr) => {
+        if (!pr.lat || !pr.lng) return;
+        const marker = L.marker([pr.lat, pr.lng], { icon: professionIcon });
+        marker.bindPopup(`
+          <div style="padding:12px;min-width:180px;font-family:inherit;">
+            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">💼 ${pr.name}</div>
+            ${pr.description ? `<div style="font-size:12px;color:#666;margin-bottom:6px;">${pr.description.substring(0, 120)}${pr.description.length > 120 ? '...' : ''}</div>` : ''}
+            <a href="/professions/${pr.slug || pr.id}" style="display:block;text-align:center;padding:6px 12px;background:#f97316;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">Details →</a>
+          </div>
+        `);
+        prMarkers.push({ marker, data: { ...pr, _type: 'profession' } });
+        professionsLayer.addLayer(marker);
+      });
+
+      markersDataRef.current = { profiles: pMarkers, anon: aMarkers, events: eMarkers, professions: prMarkers };
 
       map.addLayer(profilesLayer);
       map.addLayer(anonLayer);
       map.addLayer(eventsLayer);
+      map.addLayer(professionsLayer);
 
-      setAllData({ profiles: profiles || [], anon: anonMarkers || [], events: events || [] });
+      const profData = (profs as any[] || []).filter(p => p.lat && p.lng);
+      setAllData({ profiles: profiles || [], anon: anonMarkers || [], events: events || [], professions: profData });
       setCountries(Array.from(allCountries).sort());
+      setStats({
+        profiles: (profiles || []).filter((p: any) => p.lat && p.lng).length,
+        anon: (anonMarkers || []).length,
+        events: (events || []).length,
+        professions: profData.length,
+        total: (profiles || []).filter((p: any) => p.lat && p.lng).length + (anonMarkers || []).length + (events || []).length + profData.length,
+      });
     };
 
     loadMarkers();
-
     return () => { map.remove(); mapRef.current = null; };
   }, []);
 
-  // Layer visibility
+  // Reactive filtering: rebuild layers when filter/country/profession changes
   useEffect(() => {
     if (!layersRef.current || !mapRef.current) return;
     const map = mapRef.current;
-    const { profiles, anon, events } = layersRef.current;
-    if (filterType === 'all' || filterType === 'profiles') { if (!map.hasLayer(profiles)) map.addLayer(profiles); } else { map.removeLayer(profiles); }
-    if (filterType === 'all' || filterType === 'anon') { if (!map.hasLayer(anon)) map.addLayer(anon); } else { map.removeLayer(anon); }
-    if (filterType === 'all' || filterType === 'events') { if (!map.hasLayer(events)) map.addLayer(events); } else { map.removeLayer(events); }
-  }, [filterType]);
+    const layers = layersRef.current;
+    const md = markersDataRef.current;
+
+    // Helper: should this item show?
+    const shouldShow = (data: any): boolean => {
+      // Type filter
+      const typeOk = filterType === 'all' || filterType === data._type || (filterType === 'professions' && data._type === 'profession');
+      if (!typeOk) return false;
+
+      // Country filter - hide everything not matching
+      if (selectedCountry && (data.country || '') !== selectedCountry) return false;
+
+      // Profession filter - only show profiles/anon with that profession + the profession itself
+      if (selectedProfession) {
+        if (data._type === 'profile' || data._type === 'anon') {
+          const profs = data._professions || [];
+          if (!profs.includes(selectedProfession)) return false;
+        } else if (data._type === 'profession') {
+          if (data.id !== selectedProfession) return false;
+        } else {
+          return false; // hide events when profession filter active
+        }
+      }
+
+      return true;
+    };
+
+    // Clear and rebuild each layer
+    (['profiles', 'anon', 'events', 'professions'] as const).forEach(key => {
+      const layer = layers[key];
+      layer.clearLayers();
+      md[key].forEach(({ marker, data }) => {
+        if (shouldShow(data)) layer.addLayer(marker);
+      });
+      if (!map.hasLayer(layer)) map.addLayer(layer);
+    });
+  }, [filterType, selectedCountry, selectedProfession]);
 
   const getFilteredItems = () => {
     let items: any[] = [];
-    if (filterType === 'all' || filterType === 'profiles') items.push(...allData.profiles.map(p => ({ ...p, _type: 'profile' })));
-    if (filterType === 'all' || filterType === 'anon') items.push(...allData.anon.map(a => ({ ...a, _type: 'anon' })));
+    if (filterType === 'all' || filterType === 'profiles') items.push(...allData.profiles.filter(p => p.lat && p.lng).map(p => ({ ...p, _type: 'profile', _professions: profileProfessions.get(p.id) || [] })));
+    if (filterType === 'all' || filterType === 'anon') items.push(...allData.anon.map(a => ({ ...a, _type: 'anon', _professions: anonProfessions.get(a.id) || [] })));
     if (filterType === 'all' || filterType === 'events') items.push(...allData.events.map(e => ({ ...e, _type: 'event' })));
+    if (filterType === 'all' || filterType === 'professions') items.push(...allData.professions.map(p => ({ ...p, _type: 'profession' })));
 
     if (selectedCountry) items = items.filter(i => i.country === selectedCountry);
     if (selectedProfession) {
       items = items.filter(i => {
-        if (i._type !== 'profile') return false;
-        const profIds = profileProfessions.get(i.id) || [];
-        return profIds.includes(selectedProfession);
+        if (i._type === 'profile' || i._type === 'anon') return (i._professions || []).includes(selectedProfession);
+        if (i._type === 'profession') return i.id === selectedProfession;
+        return false;
       });
     }
     if (search) {
@@ -190,16 +286,43 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
     mapRef.current?.flyTo([lat, lng], 12, { duration: 1 });
   };
 
+  // Stats panel component
+  const StatsPanel = () => (
+    <div className="absolute bottom-4 left-4 z-[1000] bg-card/90 backdrop-blur-sm border border-border rounded-xl p-3 shadow-lg text-xs space-y-1 min-w-[160px]">
+      <div className="font-semibold text-foreground text-sm mb-1.5">📊 Harita İstatistikleri</div>
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-muted-foreground">👤 Profiller</span>
+        <span className="font-medium text-foreground">{stats.profiles}</span>
+      </div>
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-muted-foreground">👻 Anonim</span>
+        <span className="font-medium text-foreground">{stats.anon}</span>
+      </div>
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-muted-foreground">📅 Etkinlikler</span>
+        <span className="font-medium text-foreground">{stats.events}</span>
+      </div>
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-muted-foreground">💼 Meslekler</span>
+        <span className="font-medium text-foreground">{stats.professions}</span>
+      </div>
+      <div className="border-t border-border pt-1 mt-1 flex items-center justify-between gap-4">
+        <span className="text-muted-foreground font-medium">Toplam</span>
+        <span className="font-bold text-foreground">{stats.total}</span>
+      </div>
+    </div>
+  );
+
   if (!showSidebar) {
     return (
-      <div className="w-full h-[70vh] md:h-[75vh] rounded-xl overflow-hidden shadow-lg border border-border">
+      <div className="w-full h-[70vh] md:h-[75vh] rounded-xl overflow-hidden shadow-lg border border-border relative">
         <div ref={containerRef} className="w-full h-full" />
+        <StatsPanel />
       </div>
     );
   }
 
   const filteredItems = getFilteredItems();
-
 
   return (
     <div className="flex flex-col md:flex-row gap-0 md:gap-4 h-[calc(100vh-10rem)] md:h-[75vh] relative">
@@ -233,14 +356,14 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
             />
           </div>
           <div className="flex gap-1 flex-wrap">
-            {(['all', 'profiles', 'anon', 'events'] as const).map(f => (
+            {(['all', 'profiles', 'anon', 'events', 'professions'] as const).map(f => (
               <button
                 key={f}
                 onClick={() => setFilterType(f)}
                 className={`px-2 py-1 text-xs rounded-md font-medium transition-colors ${filterType === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
               >
-                {f === 'all' ? 'Tümü' : f === 'profiles' ? '👤' : f === 'anon' ? '👻' : '📅'}
-                <span className="hidden sm:inline ml-1">{f === 'all' ? '' : f === 'profiles' ? 'Profiller' : f === 'anon' ? 'Anonim' : 'Etkinlikler'}</span>
+                {f === 'all' ? 'Tümü' : f === 'profiles' ? '👤' : f === 'anon' ? '👻' : f === 'events' ? '📅' : '💼'}
+                <span className="hidden sm:inline ml-1">{f === 'all' ? '' : f === 'profiles' ? 'Profiller' : f === 'anon' ? 'Anonim' : f === 'events' ? 'Etkinlikler' : 'Meslekler'}</span>
               </button>
             ))}
           </div>
@@ -248,21 +371,21 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
             {countries.length > 0 && (
               <select
                 value={selectedCountry}
-                onChange={e => setSelectedCountry(e.target.value)}
+                onChange={e => { setSelectedCountry(e.target.value); }}
                 className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
               >
                 <option value="">Tüm Ülkeler</option>
                 {countries.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             )}
-            {professions.length > 0 && (
+            {professionsList.length > 0 && (
               <select
                 value={selectedProfession}
-                onChange={e => setSelectedProfession(e.target.value)}
+                onChange={e => { setSelectedProfession(e.target.value); }}
                 className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
               >
                 <option value="">Tüm Meslekler</option>
-                {professions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                {professionsList.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             )}
           </div>
@@ -272,6 +395,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
           {filteredItems.map((item, i) => {
             const isProfile = item._type === 'profile';
             const isEvent = item._type === 'event';
+            const isProfession = item._type === 'profession';
             const name = item.display_name || item.name || item.title || '';
             const loc = item.city && item.country ? `${item.city}, ${item.country}` : item.location || '';
             return (
@@ -281,7 +405,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
                 className="w-full text-left px-3 py-2.5 hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm">{isEvent ? '📅' : isProfile ? '👤' : '👻'}</span>
+                  <span className="text-sm">{isProfession ? '💼' : isEvent ? '📅' : isProfile ? '👤' : '👻'}</span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground truncate">{name}</p>
                     {loc && <p className="text-xs text-muted-foreground truncate">{loc}</p>}
@@ -299,8 +423,9 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
       )}
 
       {/* Map */}
-      <div className="flex-1 rounded-xl overflow-hidden shadow-lg border border-border min-h-[50vh]">
+      <div className="flex-1 rounded-xl overflow-hidden shadow-lg border border-border min-h-[50vh] relative">
         <div ref={containerRef} className="w-full h-full" />
+        <StatsPanel />
       </div>
     </div>
   );
