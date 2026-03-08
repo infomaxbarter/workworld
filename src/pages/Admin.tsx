@@ -92,6 +92,9 @@ const AdminDashboard = () => {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [editRequests, setEditRequests] = useState<EditRequest[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
+  const [professions, setProfessions] = useState<ProfessionRow[]>([]);
+  const [pendingPosts, setPendingPosts] = useState<PostRow[]>([]);
+  const [pendingComments, setPendingComments] = useState<CommentRow[]>([]);
   const [profileFilter, setProfileFilter] = useState<'all' | 'pending' | 'approved'>('pending');
 
   const [newMemberName, setNewMemberName] = useState('');
