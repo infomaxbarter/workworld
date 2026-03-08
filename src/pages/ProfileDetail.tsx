@@ -254,6 +254,10 @@ const ProfileDetail = () => {
           </CardContent>
         </Card>
       </div>
+      <div className="max-w-3xl mx-auto px-4 w-full">
+        <PostsSection targetType="profile" targetId={profile.id} />
+        <CommentsSection targetType="profile" targetId={profile.id} />
+      </div>
       <div className="mt-auto"><Footer /></div>
     </div>
   );
