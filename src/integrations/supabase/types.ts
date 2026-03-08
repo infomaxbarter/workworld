@@ -243,6 +243,8 @@ export type Database = {
           description: string | null
           icon: string | null
           id: string
+          lat: number | null
+          lng: number | null
           name: string
           slug: string | null
           status: string
@@ -252,6 +254,8 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          lat?: number | null
+          lng?: number | null
           name: string
           slug?: string | null
           status?: string
@@ -261,6 +265,8 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          lat?: number | null
+          lng?: number | null
           name?: string
           slug?: string | null
           status?: string
