@@ -6,7 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { MapPin, Globe, Twitter, Linkedin, Instagram, AlertTriangle, Search, Github, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MapPin, Globe, Twitter, Linkedin, Instagram, AlertTriangle, Search, Github, Users, Clock } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Footer from '@/components/Footer';
 
@@ -15,11 +16,13 @@ interface Profile {
   bio: string | null; location: string | null; city: string | null; country: string | null;
   website: string | null; twitter: string | null; linkedin: string | null; instagram: string | null;
   github: string | null; slug: string | null; approved: boolean; created_at: string;
+  status: string;
 }
 
 interface AnonMember {
   id: string; name: string; lat: number; lng: number;
   city: string | null; country: string | null; slug: string | null; created_at: string;
+  status: string;
 }
 
 const HumansPage = () => {
@@ -29,6 +32,7 @@ const HumansPage = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'coming_soon' | 'inactive'>('all');
 
   useEffect(() => {
     Promise.all([
@@ -50,6 +54,7 @@ const HumansPage = () => {
 
   const filteredProfiles = useMemo(() => {
     let list = profiles;
+    if (statusFilter !== 'all') list = list.filter(p => (p.status || 'active') === statusFilter);
     if (selectedCountry) list = list.filter(p => p.country === selectedCountry);
     if (search) {
       const q = search.toLowerCase();
@@ -61,10 +66,11 @@ const HumansPage = () => {
       );
     }
     return list;
-  }, [profiles, search, selectedCountry]);
+  }, [profiles, search, selectedCountry, statusFilter]);
 
   const filteredAnon = useMemo(() => {
     let list = anonMembers;
+    if (statusFilter !== 'all') list = list.filter(m => (m.status || 'active') === statusFilter);
     if (selectedCountry) list = list.filter(m => m.country === selectedCountry);
     if (search) {
       const q = search.toLowerCase();
@@ -75,13 +81,20 @@ const HumansPage = () => {
       );
     }
     return list;
-  }, [anonMembers, search, selectedCountry]);
+  }, [anonMembers, search, selectedCountry, statusFilter]);
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading...</div>;
 
   const getLocation = (p: Profile) => p.city && p.country ? `${p.city}, ${p.country}` : p.location || null;
   const getAnonLocation = (m: AnonMember) => m.city && m.country ? `${m.city}, ${m.country}` : m.city || m.country || `${m.lat.toFixed(2)}, ${m.lng.toFixed(2)}`;
   const totalCount = profiles.length + anonMembers.length;
+
+  const getStatusBadge = (status: string) => {
+    const s = status || 'active';
+    if (s === 'coming_soon') return <Badge className="text-xs bg-amber-500/15 text-amber-600 border-amber-500/30">{t('status.coming_soon')}</Badge>;
+    if (s === 'inactive') return <Badge variant="secondary" className="text-xs opacity-60">{t('status.inactive')}</Badge>;
+    return null; // active is default, no badge needed
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -96,7 +109,7 @@ const HumansPage = () => {
         </div>
 
         {/* Search & Filter */}
-        <div className="flex flex-col sm:flex-row gap-2 mb-6">
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -118,6 +131,21 @@ const HumansPage = () => {
           )}
         </div>
 
+        {/* Status tabs */}
+        <div className="flex gap-1 mb-6 flex-wrap">
+          {(['all', 'active', 'coming_soon', 'inactive'] as const).map(f => (
+            <Button
+              key={f}
+              variant={statusFilter === f ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter(f)}
+              className="text-xs"
+            >
+              {t(`status.tab_${f}`)}
+            </Button>
+          ))}
+        </div>
+
         {filteredProfiles.length === 0 && filteredAnon.length === 0 ? (
           <p className="text-center text-muted-foreground py-12">{search || selectedCountry ? t('humans.no_results') : t('humans.no_members')}</p>
         ) : (
@@ -126,7 +154,7 @@ const HumansPage = () => {
               <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredProfiles.map((p) => (
                   <Link key={p.id} to={`/humans/${p.slug || p.user_id}`}>
-                    <Card className="hover:shadow-md transition-shadow h-full">
+                    <Card className={`hover:shadow-md transition-shadow h-full ${(p.status || 'active') === 'inactive' ? 'opacity-70' : ''}`}>
                       <CardContent className="p-4 sm:p-5">
                         <div className="flex items-center gap-3 mb-3">
                           <Avatar className="w-10 h-10 sm:w-12 sm:h-12 shrink-0">
@@ -136,7 +164,10 @@ const HumansPage = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0 flex-1">
-                            <h3 className="font-semibold text-foreground truncate text-sm sm:text-base">{p.display_name}</h3>
+                            <div className="flex items-center gap-1.5">
+                              <h3 className="font-semibold text-foreground truncate text-sm sm:text-base">{p.display_name}</h3>
+                              {getStatusBadge(p.status)}
+                            </div>
                             {getLocation(p) && (
                               <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
                                 <MapPin className="w-3 h-3 shrink-0" />{getLocation(p)}
@@ -172,7 +203,7 @@ const HumansPage = () => {
                 <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredAnon.map((m) => (
                     <Link key={m.id} to={`/members/${m.slug || m.id}`}>
-                      <Card className="hover:shadow-md transition-shadow h-full border-dashed">
+                      <Card className={`hover:shadow-md transition-shadow h-full border-dashed ${(m.status || 'active') === 'inactive' ? 'opacity-70' : ''}`}>
                         <CardContent className="p-4 sm:p-5">
                           <div className="flex items-center gap-3 mb-2">
                             <Avatar className="w-10 h-10 sm:w-12 sm:h-12 shrink-0">
@@ -181,7 +212,10 @@ const HumansPage = () => {
                               </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1">
-                              <h3 className="font-semibold text-foreground truncate text-sm sm:text-base">{m.name}</h3>
+                              <div className="flex items-center gap-1.5">
+                                <h3 className="font-semibold text-foreground truncate text-sm sm:text-base">{m.name}</h3>
+                                {getStatusBadge(m.status)}
+                              </div>
                               <p className="text-xs text-muted-foreground flex items-center gap-1">
                                 <MapPin className="w-3 h-3 shrink-0" />{getAnonLocation(m)}
                               </p>

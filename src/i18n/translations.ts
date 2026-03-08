@@ -588,6 +588,17 @@ export const translations: Record<Lang, Record<string, string>> = {
     'admin.nav_mode_header_desc': 'Klassische obere Navigationsleiste.',
     'admin.nav_mode_sidebar_desc': 'Zusammenklappbare linke Seitenleiste.',
     'admin.nav_mode_mega_desc': 'Dropdown-Menüs mit Kategorien.',
+    'admin.status': 'Status',
+
+    'status.active': 'Aktiv',
+    'status.inactive': 'Inaktiv',
+    'status.coming_soon': 'Demnächst',
+    'status.past': 'Vergangen',
+    'status.tab_all': 'Alle',
+    'status.tab_active': 'Aktiv',
+    'status.tab_coming_soon': 'Demnächst',
+    'status.tab_past': 'Vergangen',
+    'status.tab_inactive': 'Inaktiv',
 
     'member.unverified': 'Nicht verifiziert',
     'member.anonymous_note': 'Dieses Mitglied wurde manuell hinzugefügt und hat kein verifiziertes Konto.',

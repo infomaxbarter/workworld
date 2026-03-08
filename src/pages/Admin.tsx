@@ -17,12 +17,15 @@ import { useNavigation, type NavMode, type NavSettings, type DeviceType } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Submission { id: string; name: string; email: string; message: string; created_at: string; }
-interface UserMarker { id: string; name: string; lat: number; lng: number; city: string | null; country: string | null; slug: string | null; }
-interface EventMarker { id: string; title: string; date: string | null; start_date: string | null; end_date: string | null; description: string | null; lat: number; lng: number; city: string | null; country: string | null; capacity: number | null; external_url: string | null; slug: string | null; }
+interface UserMarker { id: string; name: string; lat: number; lng: number; city: string | null; country: string | null; slug: string | null; status: string; }
+interface EventMarker { id: string; title: string; date: string | null; start_date: string | null; end_date: string | null; description: string | null; lat: number; lng: number; city: string | null; country: string | null; capacity: number | null; external_url: string | null; slug: string | null; status: string; }
 interface GalleryItem { id: string; event_id: string; url: string; type: string; caption: string | null; sort_order: number; }
-interface ProfileRow { id: string; user_id: string; display_name: string; bio: string | null; location: string | null; city: string | null; country: string | null; website: string | null; twitter: string | null; linkedin: string | null; instagram: string | null; github: string | null; approved: boolean; slug: string | null; created_at: string; }
+interface ProfileRow { id: string; user_id: string; display_name: string; bio: string | null; location: string | null; city: string | null; country: string | null; website: string | null; twitter: string | null; linkedin: string | null; instagram: string | null; github: string | null; approved: boolean; slug: string | null; created_at: string; status: string; }
 interface EditRequest { id: string; profile_id: string; user_id: string; old_data: Record<string, any>; new_data: Record<string, any>; status: string; admin_response: string | null; created_at: string; reviewed_at: string | null; profile_name?: string; }
 interface Report { id: string; type: string; target_id: string; reason: string; created_by: string; created_at: string; }
+
+const STATUS_OPTIONS = ['active', 'coming_soon', 'inactive'] as const;
+type StatusType = typeof STATUS_OPTIONS[number];
 
 const Admin = () => {
   const { t } = useLanguage();
@@ -54,6 +57,30 @@ const Admin = () => {
   return <AdminDashboard />;
 };
 
+const StatusSelect = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+  const { t } = useLanguage();
+  return (
+    <Select value={value || 'active'} onValueChange={onChange}>
+      <SelectTrigger className="w-full">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {STATUS_OPTIONS.map(s => (
+          <SelectItem key={s} value={s}>{t(`status.${s}`)}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const { t } = useLanguage();
+  const s = status || 'active';
+  if (s === 'coming_soon') return <Badge className="text-xs bg-amber-500/15 text-amber-600 border-amber-500/30">{t('status.coming_soon')}</Badge>;
+  if (s === 'inactive') return <Badge variant="secondary" className="text-xs opacity-60">{t('status.inactive')}</Badge>;
+  return <Badge className="text-xs bg-emerald-500/15 text-emerald-600 border-emerald-500/30">{t('status.active')}</Badge>;
+};
+
 const AdminDashboard = () => {
   const { t } = useLanguage();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -69,9 +96,10 @@ const AdminDashboard = () => {
   const [newMemberCountry, setNewMemberCountry] = useState('');
   const [newMemberLat, setNewMemberLat] = useState<number | null>(null);
   const [newMemberLng, setNewMemberLng] = useState<number | null>(null);
+  const [newMemberStatus, setNewMemberStatus] = useState<string>('active');
   const [showMemberPicker, setShowMemberPicker] = useState(false);
 
-  const [newEvent, setNewEvent] = useState({ title: '', date: '', start_date: '', end_date: '', description: '', city: '', country: '', capacity: '', external_url: '' });
+  const [newEvent, setNewEvent] = useState({ title: '', date: '', start_date: '', end_date: '', description: '', city: '', country: '', capacity: '', external_url: '', status: 'active' });
   const [newEventLat, setNewEventLat] = useState<number | null>(null);
   const [newEventLng, setNewEventLng] = useState<number | null>(null);
   const [showEventPicker, setShowEventPicker] = useState(false);
@@ -141,21 +169,27 @@ const AdminDashboard = () => {
   const saveProfile = async () => {
     if (!editingProfile) return;
     const f = editProfileForm;
-    await supabase.from('profiles').update({ display_name: f.display_name || '', bio: f.bio, location: f.location, city: f.city, country: f.country, website: f.website, twitter: f.twitter, linkedin: f.linkedin, instagram: f.instagram, github: f.github } as any).eq('id', editingProfile);
+    await supabase.from('profiles').update({ display_name: f.display_name || '', bio: f.bio, location: f.location, city: f.city, country: f.country, website: f.website, twitter: f.twitter, linkedin: f.linkedin, instagram: f.instagram, github: f.github, status: f.status || 'active' } as any).eq('id', editingProfile);
     setEditingProfile(null); toast.success('Profile updated'); reload();
+  };
+
+  const updateProfileStatus = async (id: string, status: string) => {
+    await supabase.from('profiles').update({ status } as any).eq('id', id);
+    setProfiles(prev => prev.map(p => p.id === id ? { ...p, status } : p));
+    toast.success(`Status: ${status}`);
   };
 
   const addUser = async () => {
     if (!newMemberName.trim()) { toast.error('Name required'); return; }
-    await supabase.from('user_markers').insert({ name: newMemberName, lat: newMemberLat || 0, lng: newMemberLng || 0, city: newMemberCity || null, country: newMemberCountry || null } as any);
-    setNewMemberName(''); setNewMemberCity(''); setNewMemberCountry(''); setNewMemberLat(null); setNewMemberLng(null); setShowMemberPicker(false);
+    await supabase.from('user_markers').insert({ name: newMemberName, lat: newMemberLat || 0, lng: newMemberLng || 0, city: newMemberCity || null, country: newMemberCountry || null, status: newMemberStatus } as any);
+    setNewMemberName(''); setNewMemberCity(''); setNewMemberCountry(''); setNewMemberLat(null); setNewMemberLng(null); setNewMemberStatus('active'); setShowMemberPicker(false);
     reload();
   };
   const removeUser = async (id: string) => { await supabase.from('user_markers').delete().eq('id', id); setUsers(prev => prev.filter(u => u.id !== id)); };
   const startEditMember = (u: UserMarker) => { setEditingMember(u.id); setEditMemberForm(u); setShowEditMemberPicker(false); };
   const saveMember = async () => {
     if (!editingMember) return;
-    await supabase.from('user_markers').update({ name: editMemberForm.name || '', lat: editMemberForm.lat || 0, lng: editMemberForm.lng || 0, city: (editMemberForm as any).city || null, country: (editMemberForm as any).country || null } as any).eq('id', editingMember);
+    await supabase.from('user_markers').update({ name: editMemberForm.name || '', lat: editMemberForm.lat || 0, lng: editMemberForm.lng || 0, city: (editMemberForm as any).city || null, country: (editMemberForm as any).country || null, status: editMemberForm.status || 'active' } as any).eq('id', editingMember);
     setEditingMember(null); setShowEditMemberPicker(false); toast.success('Member updated'); reload();
   };
 
@@ -166,8 +200,9 @@ const AdminDashboard = () => {
       description: newEvent.description || null, lat: newEventLat || 0, lng: newEventLng || 0,
       city: newEvent.city || null, country: newEvent.country || null,
       capacity: newEvent.capacity ? parseInt(newEvent.capacity) : null, external_url: newEvent.external_url || null,
+      status: newEvent.status || 'active',
     } as any);
-    setNewEvent({ title: '', date: '', start_date: '', end_date: '', description: '', city: '', country: '', capacity: '', external_url: '' });
+    setNewEvent({ title: '', date: '', start_date: '', end_date: '', description: '', city: '', country: '', capacity: '', external_url: '', status: 'active' });
     setNewEventLat(null); setNewEventLng(null); setShowEventPicker(false); reload();
   };
   const removeEvent = async (id: string) => { await supabase.from('event_markers').delete().eq('id', id); setEvents(prev => prev.filter(e => e.id !== id)); };
@@ -180,6 +215,7 @@ const AdminDashboard = () => {
       description: f.description || null, lat: f.lat || 0, lng: f.lng || 0,
       city: (f as any).city || null, country: (f as any).country || null,
       capacity: (f as any).capacity || null, external_url: (f as any).external_url || null,
+      status: f.status || 'active',
     } as any).eq('id', editingEvent);
     setEditingEvent(null); setShowEditEventPicker(false); toast.success('Event updated'); reload();
   };
@@ -235,40 +271,15 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        {/* Stats Overview */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-foreground">{t('admin.title')}</h1>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          <Card>
-            <CardContent className="p-3 text-center">
-              <Users className="w-5 h-5 text-primary mx-auto mb-1" />
-              <p className="text-xl font-bold text-foreground">{profiles.length}</p>
-              <p className="text-xs text-muted-foreground">{t('admin.profiles')}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3 text-center">
-              <CalendarDays className="w-5 h-5 text-primary mx-auto mb-1" />
-              <p className="text-xl font-bold text-foreground">{events.length}</p>
-              <p className="text-xs text-muted-foreground">{t('admin.events')}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3 text-center">
-              <FileText className="w-5 h-5 text-primary mx-auto mb-1" />
-              <p className="text-xl font-bold text-foreground">{submissions.length}</p>
-              <p className="text-xs text-muted-foreground">{t('admin.submissions')}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3 text-center">
-              <AlertTriangle className="w-5 h-5 text-destructive mx-auto mb-1" />
-              <p className="text-xl font-bold text-foreground">{reports.length}</p>
-              <p className="text-xs text-muted-foreground">{t('admin.reports')}</p>
-            </CardContent>
-          </Card>
+          <Card><CardContent className="p-3 text-center"><Users className="w-5 h-5 text-primary mx-auto mb-1" /><p className="text-xl font-bold text-foreground">{profiles.length}</p><p className="text-xs text-muted-foreground">{t('admin.profiles')}</p></CardContent></Card>
+          <Card><CardContent className="p-3 text-center"><CalendarDays className="w-5 h-5 text-primary mx-auto mb-1" /><p className="text-xl font-bold text-foreground">{events.length}</p><p className="text-xs text-muted-foreground">{t('admin.events')}</p></CardContent></Card>
+          <Card><CardContent className="p-3 text-center"><FileText className="w-5 h-5 text-primary mx-auto mb-1" /><p className="text-xl font-bold text-foreground">{submissions.length}</p><p className="text-xs text-muted-foreground">{t('admin.submissions')}</p></CardContent></Card>
+          <Card><CardContent className="p-3 text-center"><AlertTriangle className="w-5 h-5 text-destructive mx-auto mb-1" /><p className="text-xl font-bold text-foreground">{reports.length}</p><p className="text-xs text-muted-foreground">{t('admin.reports')}</p></CardContent></Card>
         </div>
 
         <Tabs defaultValue="edit_requests">
@@ -397,7 +408,8 @@ const AdminDashboard = () => {
                           <div className="space-y-1"><Label>GitHub</Label><Input value={editProfileForm.github || ''} onChange={e => setEditProfileForm({ ...editProfileForm, github: e.target.value })} /></div>
                           <div className="space-y-1"><Label>Twitter</Label><Input value={editProfileForm.twitter || ''} onChange={e => setEditProfileForm({ ...editProfileForm, twitter: e.target.value })} /></div>
                           <div className="space-y-1"><Label>LinkedIn</Label><Input value={editProfileForm.linkedin || ''} onChange={e => setEditProfileForm({ ...editProfileForm, linkedin: e.target.value })} /></div>
-                          <div className="space-y-1 col-span-2"><Label>Instagram</Label><Input value={editProfileForm.instagram || ''} onChange={e => setEditProfileForm({ ...editProfileForm, instagram: e.target.value })} /></div>
+                          <div className="space-y-1"><Label>Instagram</Label><Input value={editProfileForm.instagram || ''} onChange={e => setEditProfileForm({ ...editProfileForm, instagram: e.target.value })} /></div>
+                          <div className="space-y-1"><Label>{t('admin.status')}</Label><StatusSelect value={editProfileForm.status || 'active'} onChange={v => setEditProfileForm({ ...editProfileForm, status: v })} /></div>
                         </div>
                         <div className="flex gap-2 justify-end">
                           <Button variant="outline" size="sm" onClick={() => setEditingProfile(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
@@ -410,6 +422,7 @@ const AdminDashboard = () => {
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-semibold text-foreground truncate">{p.display_name || '(unnamed)'}</span>
                             {p.approved ? <Badge variant="default" className="gap-1 text-xs"><CheckCircle className="w-3 h-3" />{t('admin.approved')}</Badge> : <Badge variant="secondary" className="gap-1 text-xs"><Clock className="w-3 h-3" />{t('admin.pending')}</Badge>}
+                            <StatusBadge status={p.status} />
                           </div>
                           {(p.city || p.country) && <p className="text-xs text-muted-foreground">📍 {[p.city, p.country].filter(Boolean).join(', ')}</p>}
                           {p.bio && <p className="text-xs text-muted-foreground truncate max-w-md">{p.bio}</p>}
@@ -464,6 +477,10 @@ const AdminDashboard = () => {
                   <Input value={newMemberCity} onChange={e => setNewMemberCity(e.target.value)} placeholder={t('admin.city')} />
                   <Input value={newMemberCountry} onChange={e => setNewMemberCountry(e.target.value)} placeholder={t('admin.country')} />
                 </div>
+                <div className="space-y-1">
+                  <Label>{t('admin.status')}</Label>
+                  <StatusSelect value={newMemberStatus} onChange={setNewMemberStatus} />
+                </div>
                 <Button variant="outline" size="sm" onClick={() => setShowMemberPicker(!showMemberPicker)} className="gap-1">
                   <MapPin className="w-4 h-4" /> {t('map.pick_location')}
                   {newMemberLat != null && newMemberLng != null && <span className="text-xs">({newMemberLat.toFixed(2)}, {newMemberLng.toFixed(2)})</span>}
@@ -484,6 +501,7 @@ const AdminDashboard = () => {
                           <div className="space-y-1"><Label>{t('admin.city')}</Label><Input value={(editMemberForm as any).city || ''} onChange={e => setEditMemberForm({ ...editMemberForm, city: e.target.value } as any)} /></div>
                           <div className="space-y-1"><Label>{t('admin.country')}</Label><Input value={(editMemberForm as any).country || ''} onChange={e => setEditMemberForm({ ...editMemberForm, country: e.target.value } as any)} /></div>
                         </div>
+                        <div className="space-y-1"><Label>{t('admin.status')}</Label><StatusSelect value={editMemberForm.status || 'active'} onChange={v => setEditMemberForm({ ...editMemberForm, status: v })} /></div>
                         <Button variant="outline" size="sm" onClick={() => setShowEditMemberPicker(!showEditMemberPicker)} className="gap-1">
                           <MapPin className="w-4 h-4" /> {t('map.pick_location')}
                           {editMemberForm.lat != null && editMemberForm.lng != null && <span className="text-xs">({editMemberForm.lat.toFixed(2)}, {editMemberForm.lng.toFixed(2)})</span>}
@@ -498,6 +516,7 @@ const AdminDashboard = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <span className="font-medium text-sm">{u.name}</span>
+                          <StatusBadge status={u.status} />
                           <span className="text-xs text-muted-foreground">📍 {u.city && u.country ? `${u.city}, ${u.country}` : `${u.lat.toFixed(2)}, ${u.lng.toFixed(2)}`}</span>
                         </div>
                         <div className="flex gap-1">
@@ -529,6 +548,10 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <Input value={newEvent.city} onChange={e => setNewEvent({ ...newEvent, city: e.target.value })} placeholder={t('admin.city')} />
                   <Input value={newEvent.country} onChange={e => setNewEvent({ ...newEvent, country: e.target.value })} placeholder={t('admin.country')} />
+                </div>
+                <div className="space-y-1">
+                  <Label>{t('admin.status')}</Label>
+                  <StatusSelect value={newEvent.status} onChange={v => setNewEvent({ ...newEvent, status: v })} />
                 </div>
                 <Textarea value={newEvent.description} onChange={e => setNewEvent({ ...newEvent, description: e.target.value })} placeholder="Description" rows={2} />
                 <Button variant="outline" size="sm" onClick={() => setShowEventPicker(!showEventPicker)} className="gap-1">
@@ -594,6 +617,7 @@ const AdminDashboard = () => {
                           <div className="space-y-1"><Label>{t('admin.city')}</Label><Input value={(editEventForm as any).city || ''} onChange={ev => setEditEventForm({ ...editEventForm, city: ev.target.value } as any)} /></div>
                           <div className="space-y-1"><Label>{t('admin.country')}</Label><Input value={(editEventForm as any).country || ''} onChange={ev => setEditEventForm({ ...editEventForm, country: ev.target.value } as any)} /></div>
                         </div>
+                        <div className="space-y-1"><Label>{t('admin.status')}</Label><StatusSelect value={editEventForm.status || 'active'} onChange={v => setEditEventForm({ ...editEventForm, status: v })} /></div>
                         <div className="space-y-1"><Label>Description</Label><Textarea value={editEventForm.description || ''} onChange={ev => setEditEventForm({ ...editEventForm, description: ev.target.value })} rows={3} /></div>
                         <Button variant="outline" size="sm" onClick={() => setShowEditEventPicker(!showEditEventPicker)} className="gap-1">
                           <MapPin className="w-4 h-4" /> {t('map.pick_location')}
@@ -608,8 +632,11 @@ const AdminDashboard = () => {
                     ) : (
                       <div className="flex items-center justify-between">
                         <div>
-                          <span className="font-medium text-sm">{e.title}</span>
-                          {(e.start_date || e.date) && <span className="text-xs text-muted-foreground ml-2">📅 {e.start_date || e.date}{e.end_date ? ` — ${e.end_date}` : ''}</span>}
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm">{e.title}</span>
+                            <StatusBadge status={e.status} />
+                          </div>
+                          {(e.start_date || e.date) && <span className="text-xs text-muted-foreground ml-0">📅 {e.start_date || e.date}{e.end_date ? ` — ${e.end_date}` : ''}</span>}
                           <span className="text-xs text-muted-foreground ml-2">📍 {e.city && e.country ? `${e.city}, ${e.country}` : `${e.lat.toFixed(2)}, ${e.lng.toFixed(2)}`}</span>
                           {e.capacity && <span className="text-xs text-muted-foreground ml-2">👥 {e.capacity}</span>}
                           {e.description && <p className="text-xs text-muted-foreground mt-1 truncate max-w-md">{e.description}</p>}
