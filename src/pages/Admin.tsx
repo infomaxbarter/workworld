@@ -10,9 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X, Image, Video, Flag, AlertTriangle } from 'lucide-react';
+import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X, Image, Video, Flag, AlertTriangle, Settings, Monitor, Tablet, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
+import { useNavigation, type NavMode, type NavSettings, type DeviceType } from '@/contexts/NavigationContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Submission { id: string; name: string; email: string; message: string; created_at: string; }
 interface UserMarker { id: string; name: string; lat: number; lng: number; city: string | null; country: string | null; slug: string | null; }
