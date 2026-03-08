@@ -112,10 +112,22 @@ const CommandPalette = () => {
       <CommandList>
         <CommandEmpty>{t('humans.no_results') || 'No results found.'}</CommandEmpty>
 
+        {/* Recent */}
+        {!q && recents.length > 0 && (
+          <CommandGroup heading="Recent">
+            {recents.map(r => (
+              <CommandItem key={r.path} onSelect={() => go(r.path, r.label)} className="gap-2 cursor-pointer">
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                <span>{r.label}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+
         {/* Pages */}
         <CommandGroup heading={t('nav.home') || 'Pages'}>
           {pages.map(p => (
-            <CommandItem key={p.path} onSelect={() => go(p.path)} className="gap-2 cursor-pointer">
+            <CommandItem key={p.path} onSelect={() => go(p.path, p.label)} className="gap-2 cursor-pointer">
               <p.icon className="w-4 h-4 text-muted-foreground" />
               <span>{p.label}</span>
             </CommandItem>
@@ -126,7 +138,7 @@ const CommandPalette = () => {
         {filteredProfiles.length > 0 && (
           <CommandGroup heading={t('nav.humans') || 'Members'}>
             {filteredProfiles.map(p => (
-              <CommandItem key={p.id} onSelect={() => go(`/humans/${p.slug || p.user_id}`)} className="gap-2 cursor-pointer">
+              <CommandItem key={p.id} onSelect={() => go(`/humans/${p.slug || p.user_id}`, p.display_name)} className="gap-2 cursor-pointer">
                 <Users className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="truncate">{p.display_name}</span>
                 {loc(p.city, p.country) && (
@@ -143,7 +155,7 @@ const CommandPalette = () => {
         {filteredEvents.length > 0 && (
           <CommandGroup heading={t('nav.events') || 'Events'}>
             {filteredEvents.map(e => (
-              <CommandItem key={e.id} onSelect={() => go(`/events/${e.slug || e.id}`)} className="gap-2 cursor-pointer">
+              <CommandItem key={e.id} onSelect={() => go(`/events/${e.slug || e.id}`, e.title)} className="gap-2 cursor-pointer">
                 <CalendarDays className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="truncate">{e.title}</span>
                 <span className="ml-auto text-xs text-muted-foreground shrink-0">
@@ -158,7 +170,7 @@ const CommandPalette = () => {
         {filteredAnons.length > 0 && (
           <CommandGroup heading={t('humans.anonymous_title') || 'Anonymous'}>
             {filteredAnons.map(a => (
-              <CommandItem key={a.id} onSelect={() => go(`/members/${a.slug || a.id}`)} className="gap-2 cursor-pointer">
+              <CommandItem key={a.id} onSelect={() => go(`/members/${a.slug || a.id}`, a.name)} className="gap-2 cursor-pointer">
                 <User className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="truncate">{a.name}</span>
                 {loc(a.city, a.country) && (
