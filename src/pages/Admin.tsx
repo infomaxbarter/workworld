@@ -637,4 +637,60 @@ const AdminDashboard = () => {
   );
 };
 
+const NavSettingsPanel = () => {
+  const { t } = useLanguage();
+  const { settings, updateSettings } = useNavigation();
+
+  const devices: { key: DeviceType; icon: any; label: string }[] = [
+    { key: 'desktop', icon: Monitor, label: t('admin.nav_desktop') },
+    { key: 'tablet', icon: Tablet, label: t('admin.nav_tablet') },
+    { key: 'mobile', icon: Smartphone, label: t('admin.nav_mobile') },
+  ];
+
+  const modeLabels: Record<NavMode, string> = {
+    header: t('admin.nav_mode_header'),
+    sidebar: t('admin.nav_mode_sidebar'),
+    mega: t('admin.nav_mode_mega'),
+  };
+
+  const handleChange = (device: DeviceType, mode: NavMode) => {
+    updateSettings({ ...settings, [device]: mode });
+    toast.success(`${devices.find(d => d.key === device)?.label}: ${modeLabels[mode]}`);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-foreground mb-1">{t('admin.nav_settings_title')}</h3>
+        <p className="text-sm text-muted-foreground mb-4">{t('admin.nav_settings_desc')}</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {devices.map(({ key, icon: Icon, label }) => (
+          <Card key={key}>
+            <CardContent className="p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Icon className="w-5 h-5 text-primary" />
+                <span className="font-medium text-sm text-foreground">{label}</span>
+              </div>
+              <Select value={settings[key]} onValueChange={(v) => handleChange(key, v as NavMode)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="header">{modeLabels.header}</SelectItem>
+                  <SelectItem value="sidebar">{modeLabels.sidebar}</SelectItem>
+                  <SelectItem value="mega">{modeLabels.mega}</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">{t(`admin.nav_mode_${settings[key]}_desc`)}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Admin;
+
 export default Admin;
