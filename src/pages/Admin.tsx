@@ -15,6 +15,8 @@ import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
 import { useNavigation, type NavMode, type NavSettings, type DeviceType } from '@/contexts/NavigationContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import DataExportImport from '@/components/admin/DataExportImport';
+import DetailedReports from '@/components/admin/DetailedReports';
 
 interface Submission { id: string; name: string; email: string; message: string; created_at: string; }
 interface UserMarker { id: string; name: string; lat: number; lng: number; city: string | null; country: string | null; slug: string | null; status: string; }
