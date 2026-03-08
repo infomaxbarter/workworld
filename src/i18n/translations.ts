@@ -263,6 +263,8 @@ export const translations: Record<Lang, Record<string, string>> = {
     'profile.avatar_url': 'Profile Photo URL',
     'profile.avatar_url_hint': 'Enter a URL or click on the photo to upload',
     'profile.avatar_updated': 'Profile photo updated!',
+    'profile.events_joined': 'Events Joined',
+    'profile.edit_history': 'Edit History',
 
     'humans.title': 'Humans',
     'humans.subtitle': 'Members of our community',
