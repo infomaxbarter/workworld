@@ -40,6 +40,9 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
   const [allData, setAllData] = useState<{ profiles: any[]; anon: any[]; events: any[] }>({ profiles: [], anon: [], events: [] });
   const [countries, setCountries] = useState<string[]>([]);
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [professions, setProfessions] = useState<{ id: string; name: string }[]>([]);
+  const [selectedProfession, setSelectedProfession] = useState('');
+  const [profileProfessions, setProfileProfessions] = useState<Map<string, string[]>>(new Map());
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -59,11 +62,22 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
     layersRef.current = { profiles: profilesLayer, anon: anonLayer, events: eventsLayer };
 
     const loadMarkers = async () => {
-      const [{ data: profiles }, { data: anonMarkers }, { data: events }] = await Promise.all([
+      const [{ data: profiles }, { data: anonMarkers }, { data: events }, { data: profs }, { data: pp }] = await Promise.all([
         supabase.from('profiles').select('*').eq('approved', true).not('lat', 'is', null).not('lng', 'is', null),
         supabase.from('user_markers').select('*'),
         supabase.from('event_markers').select('*'),
+        supabase.from('professions').select('id, name').eq('status', 'active').order('name'),
+        supabase.from('profile_professions').select('profile_id, profession_id'),
       ]);
+
+      if (profs) setProfessions(profs as any[]);
+      const ppMap = new Map<string, string[]>();
+      (pp as any[] | null)?.forEach((item: any) => {
+        const existing = ppMap.get(item.profile_id) || [];
+        existing.push(item.profession_id);
+        ppMap.set(item.profile_id, existing);
+      });
+      setProfileProfessions(ppMap);
 
       const allCountries = new Set<string>();
 
@@ -153,6 +167,13 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
     if (filterType === 'all' || filterType === 'events') items.push(...allData.events.map(e => ({ ...e, _type: 'event' })));
 
     if (selectedCountry) items = items.filter(i => i.country === selectedCountry);
+    if (selectedProfession) {
+      items = items.filter(i => {
+        if (i._type !== 'profile') return false;
+        const profIds = profileProfessions.get(i.id) || [];
+        return profIds.includes(selectedProfession);
+      });
+    }
     if (search) {
       const q = search.toLowerCase();
       items = items.filter(i => {
@@ -223,16 +244,28 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
               </button>
             ))}
           </div>
-          {countries.length > 0 && (
-            <select
-              value={selectedCountry}
-              onChange={e => setSelectedCountry(e.target.value)}
-              className="w-full px-3 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
-            >
-              <option value="">Tüm Ülkeler</option>
-              {countries.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          )}
+          <div className="flex gap-2">
+            {countries.length > 0 && (
+              <select
+                value={selectedCountry}
+                onChange={e => setSelectedCountry(e.target.value)}
+                className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
+              >
+                <option value="">Tüm Ülkeler</option>
+                {countries.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            )}
+            {professions.length > 0 && (
+              <select
+                value={selectedProfession}
+                onChange={e => setSelectedProfession(e.target.value)}
+                className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
+              >
+                <option value="">Tüm Meslekler</option>
+                {professions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            )}
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto divide-y divide-border">
           {filteredItems.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Sonuç bulunamadı</p>}
