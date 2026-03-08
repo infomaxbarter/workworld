@@ -9,14 +9,33 @@ interface ProfileHit { id: string; display_name: string; slug: string | null; us
 interface EventHit { id: string; title: string; slug: string | null; city: string | null; country: string | null; start_date: string | null; }
 interface AnonHit { id: string; name: string; slug: string | null; city: string | null; country: string | null; }
 
+const RECENT_KEY = 'cmd_palette_recent';
+const MAX_RECENT = 5;
+
+interface RecentItem { path: string; label: string; timestamp: number; }
+
 const CommandPalette = () => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [profiles, setProfiles] = useState<ProfileHit[]>([]);
   const [events, setEvents] = useState<EventHit[]>([]);
   const [anons, setAnons] = useState<AnonHit[]>([]);
+  const [recents, setRecents] = useState<RecentItem[]>([]);
   const navigate = useNavigate();
   const { t } = useLanguage();
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+      setRecents(stored);
+    } catch { setRecents([]); }
+  }, [open]);
+
+  const addRecent = (path: string, label: string) => {
+    const updated = [{ path, label, timestamp: Date.now() }, ...recents.filter(r => r.path !== path)].slice(0, MAX_RECENT);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
+    setRecents(updated);
+  };
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
