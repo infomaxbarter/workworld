@@ -59,7 +59,7 @@ const CommandPalette = () => {
     });
   }, [open]);
 
-  const go = (path: string) => { navigate(path); setOpen(false); setQuery(''); };
+  const go = (path: string, label?: string) => { if (label) addRecent(path, label); navigate(path); setOpen(false); setQuery(''); };
 
   const pages = [
     { path: '/', label: t('nav.home'), icon: Home },
