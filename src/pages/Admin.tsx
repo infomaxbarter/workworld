@@ -129,20 +129,48 @@ const AdminDashboard = () => {
   const [newGalleryType, setNewGalleryType] = useState<'image' | 'video'>('image');
   const [newGalleryCaption, setNewGalleryCaption] = useState('');
 
+  const [newProfName, setNewProfName] = useState('');
+  const [newProfDesc, setNewProfDesc] = useState('');
+  const [newProfStatus, setNewProfStatus] = useState('active');
+
   const reload = async () => {
-    const [{ data: s }, { data: u }, { data: e }, { data: p }, { data: er }, { data: r }] = await Promise.all([
+    const [{ data: s }, { data: u }, { data: e }, { data: p }, { data: er }, { data: r }, { data: profs }, { data: posts }, { data: comments }] = await Promise.all([
       supabase.from('submissions').select('*').order('created_at', { ascending: false }),
       supabase.from('user_markers').select('*'),
       supabase.from('event_markers').select('*'),
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
       supabase.from('profile_edit_requests').select('*').order('created_at', { ascending: false }),
       supabase.from('reports').select('*').order('created_at', { ascending: false }),
+      supabase.from('professions').select('*').order('name'),
+      supabase.from('posts').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
+      supabase.from('comments').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
     ]);
     if (s) setSubmissions(s);
     if (u) setUsers(u as unknown as UserMarker[]);
     if (e) setEvents(e as unknown as EventMarker[]);
     if (p) setProfiles(p as unknown as ProfileRow[]);
     if (r) setReports(r as unknown as Report[]);
+    if (profs) setProfessions(profs as unknown as ProfessionRow[]);
+    if (posts) {
+      const postRows = posts as unknown as PostRow[];
+      const authorIds = [...new Set(postRows.map(pp => pp.author_id))];
+      if (authorIds.length > 0) {
+        const { data: prs } = await supabase.from('profiles').select('user_id, display_name').in('user_id', authorIds);
+        const nameMap = new Map((prs as any[] || []).map(pr => [pr.user_id, pr.display_name]));
+        postRows.forEach(pp => { pp.author_name = nameMap.get(pp.author_id) || '?'; });
+      }
+      setPendingPosts(postRows);
+    }
+    if (comments) {
+      const commentRows = comments as unknown as CommentRow[];
+      const cUserIds = [...new Set(commentRows.map(c => c.user_id))];
+      if (cUserIds.length > 0) {
+        const { data: prs } = await supabase.from('profiles').select('user_id, display_name').in('user_id', cUserIds);
+        const nameMap = new Map((prs as any[] || []).map(pr => [pr.user_id, pr.display_name]));
+        commentRows.forEach(c => { c.author_name = nameMap.get(c.user_id) || '?'; });
+      }
+      setPendingComments(commentRows);
+    }
     if (er) {
       const requests = er as unknown as EditRequest[];
       const profileMap = new Map((p as unknown as ProfileRow[])?.map(pr => [pr.id, pr.display_name]) || []);
