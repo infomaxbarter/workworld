@@ -464,6 +464,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_marker_professions: {
+        Row: {
+          id: string
+          profession_id: string
+          user_marker_id: string
+        }
+        Insert: {
+          id?: string
+          profession_id: string
+          user_marker_id: string
+        }
+        Update: {
+          id?: string
+          profession_id?: string
+          user_marker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_marker_professions_profession_id_fkey"
+            columns: ["profession_id"]
+            isOneToOne: false
+            referencedRelation: "professions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_marker_professions_user_marker_id_fkey"
+            columns: ["user_marker_id"]
+            isOneToOne: false
+            referencedRelation: "user_markers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_markers: {
         Row: {
           city: string | null
