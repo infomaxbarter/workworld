@@ -447,6 +447,8 @@ export const translations: Record<Lang, Record<string, string>> = {
     'profile.avatar_url': 'Profilfoto-URL',
     'profile.avatar_url_hint': 'URL eingeben oder auf das Foto klicken zum Hochladen',
     'profile.avatar_updated': 'Profilfoto aktualisiert!',
+    'profile.events_joined': 'Teilgenommene Veranstaltungen',
+    'profile.edit_history': 'Bearbeitungsverlauf',
 
     'humans.title': 'Menschen',
     'humans.subtitle': 'Mitglieder unserer Gemeinschaft',
