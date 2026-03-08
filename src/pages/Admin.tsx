@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X, Image, Video, Flag, AlertTriangle, Settings, Monitor, Tablet, Smartphone } from 'lucide-react';
+import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X, Image, Video, Flag, AlertTriangle, Settings, Monitor, Tablet, Smartphone, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
 import { useNavigation, type NavMode, type NavSettings, type DeviceType } from '@/contexts/NavigationContext';
@@ -23,6 +23,9 @@ interface GalleryItem { id: string; event_id: string; url: string; type: string;
 interface ProfileRow { id: string; user_id: string; display_name: string; bio: string | null; location: string | null; city: string | null; country: string | null; website: string | null; twitter: string | null; linkedin: string | null; instagram: string | null; github: string | null; approved: boolean; slug: string | null; created_at: string; status: string; }
 interface EditRequest { id: string; profile_id: string; user_id: string; old_data: Record<string, any>; new_data: Record<string, any>; status: string; admin_response: string | null; created_at: string; reviewed_at: string | null; profile_name?: string; }
 interface Report { id: string; type: string; target_id: string; reason: string; created_by: string; created_at: string; }
+interface ProfessionRow { id: string; name: string; slug: string | null; description: string | null; icon: string; status: string; created_at: string; }
+interface PostRow { id: string; author_id: string; title: string; content: string; slug: string | null; status: string; target_type: string; target_id: string | null; created_at: string; author_name?: string; }
+interface CommentRow { id: string; user_id: string; target_type: string; target_id: string; content: string; status: string; created_at: string; author_name?: string; }
 
 const STATUS_OPTIONS = ['active', 'coming_soon', 'inactive'] as const;
 type StatusType = typeof STATUS_OPTIONS[number];
@@ -89,6 +92,9 @@ const AdminDashboard = () => {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [editRequests, setEditRequests] = useState<EditRequest[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
+  const [professions, setProfessions] = useState<ProfessionRow[]>([]);
+  const [pendingPosts, setPendingPosts] = useState<PostRow[]>([]);
+  const [pendingComments, setPendingComments] = useState<CommentRow[]>([]);
   const [profileFilter, setProfileFilter] = useState<'all' | 'pending' | 'approved'>('pending');
 
   const [newMemberName, setNewMemberName] = useState('');
@@ -123,20 +129,48 @@ const AdminDashboard = () => {
   const [newGalleryType, setNewGalleryType] = useState<'image' | 'video'>('image');
   const [newGalleryCaption, setNewGalleryCaption] = useState('');
 
+  const [newProfName, setNewProfName] = useState('');
+  const [newProfDesc, setNewProfDesc] = useState('');
+  const [newProfStatus, setNewProfStatus] = useState('active');
+
   const reload = async () => {
-    const [{ data: s }, { data: u }, { data: e }, { data: p }, { data: er }, { data: r }] = await Promise.all([
+    const [{ data: s }, { data: u }, { data: e }, { data: p }, { data: er }, { data: r }, { data: profs }, { data: posts }, { data: comments }] = await Promise.all([
       supabase.from('submissions').select('*').order('created_at', { ascending: false }),
       supabase.from('user_markers').select('*'),
       supabase.from('event_markers').select('*'),
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
       supabase.from('profile_edit_requests').select('*').order('created_at', { ascending: false }),
       supabase.from('reports').select('*').order('created_at', { ascending: false }),
+      supabase.from('professions').select('*').order('name'),
+      supabase.from('posts').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
+      supabase.from('comments').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
     ]);
     if (s) setSubmissions(s);
     if (u) setUsers(u as unknown as UserMarker[]);
     if (e) setEvents(e as unknown as EventMarker[]);
     if (p) setProfiles(p as unknown as ProfileRow[]);
     if (r) setReports(r as unknown as Report[]);
+    if (profs) setProfessions(profs as unknown as ProfessionRow[]);
+    if (posts) {
+      const postRows = posts as unknown as PostRow[];
+      const authorIds = [...new Set(postRows.map(pp => pp.author_id))];
+      if (authorIds.length > 0) {
+        const { data: prs } = await supabase.from('profiles').select('user_id, display_name').in('user_id', authorIds);
+        const nameMap = new Map((prs as any[] || []).map(pr => [pr.user_id, pr.display_name]));
+        postRows.forEach(pp => { pp.author_name = nameMap.get(pp.author_id) || '?'; });
+      }
+      setPendingPosts(postRows);
+    }
+    if (comments) {
+      const commentRows = comments as unknown as CommentRow[];
+      const cUserIds = [...new Set(commentRows.map(c => c.user_id))];
+      if (cUserIds.length > 0) {
+        const { data: prs } = await supabase.from('profiles').select('user_id, display_name').in('user_id', cUserIds);
+        const nameMap = new Map((prs as any[] || []).map(pr => [pr.user_id, pr.display_name]));
+        commentRows.forEach(c => { c.author_name = nameMap.get(c.user_id) || '?'; });
+      }
+      setPendingComments(commentRows);
+    }
     if (er) {
       const requests = er as unknown as EditRequest[];
       const profileMap = new Map((p as unknown as ProfileRow[])?.map(pr => [pr.id, pr.display_name]) || []);
@@ -256,6 +290,39 @@ const AdminDashboard = () => {
     toast.success('Report dismissed');
   };
 
+  // Professions
+  const addProfession = async () => {
+    if (!newProfName.trim()) { toast.error('Name required'); return; }
+    await supabase.from('professions').insert({ name: newProfName, description: newProfDesc || null, status: newProfStatus } as any);
+    setNewProfName(''); setNewProfDesc(''); setNewProfStatus('active'); reload();
+  };
+  const removeProfession = async (id: string) => {
+    await supabase.from('professions').delete().eq('id', id);
+    setProfessions(prev => prev.filter(p => p.id !== id));
+  };
+
+  // Posts moderation
+  const approvePost = async (post: PostRow) => {
+    await supabase.from('posts').update({ status: 'approved' } as any).eq('id', post.id);
+    await supabase.rpc('create_notification', { _user_id: post.author_id, _type: 'post_approved', _title: 'Yazınız yayınlandı! ✅', _message: post.title } as any);
+    toast.success('Post approved'); reload();
+  };
+  const rejectPost = async (id: string) => {
+    await supabase.from('posts').update({ status: 'rejected' } as any).eq('id', id);
+    toast.success('Post rejected'); reload();
+  };
+
+  // Comments moderation
+  const approveComment = async (comment: CommentRow) => {
+    await supabase.from('comments').update({ status: 'approved' } as any).eq('id', comment.id);
+    await supabase.rpc('create_notification', { _user_id: comment.user_id, _type: 'comment_approved', _title: 'Yorumunuz onaylandı! ✅' } as any);
+    toast.success('Comment approved'); reload();
+  };
+  const rejectComment = async (id: string) => {
+    await supabase.from('comments').delete().eq('id', id);
+    toast.success('Comment rejected'); reload();
+  };
+
   const filteredProfiles = profiles.filter(p => {
     if (profileFilter === 'pending') return !p.approved;
     if (profileFilter === 'approved') return p.approved;
@@ -299,6 +366,15 @@ const AdminDashboard = () => {
             <TabsTrigger value="submissions" className="gap-1.5"><FileText className="w-4 h-4" /> {t('admin.submissions')}</TabsTrigger>
             <TabsTrigger value="markers" className="gap-1.5"><MapPin className="w-4 h-4" /> {t('admin.members')}</TabsTrigger>
             <TabsTrigger value="events" className="gap-1.5"><CalendarDays className="w-4 h-4" /> {t('admin.events')}</TabsTrigger>
+            <TabsTrigger value="professions" className="gap-1.5"><Briefcase className="w-4 h-4" /> {t('admin.professions')}</TabsTrigger>
+            <TabsTrigger value="posts" className="gap-1.5">
+              <FileText className="w-4 h-4" /> {t('admin.posts')}
+              {pendingPosts.length > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingPosts.length}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="gap-1.5">
+              <MessageSquare className="w-4 h-4" /> {t('admin.comments')}
+              {pendingComments.length > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingComments.length}</Badge>}
+            </TabsTrigger>
             <TabsTrigger value="settings" className="gap-1.5"><Settings className="w-4 h-4" /> {t('admin.settings')}</TabsTrigger>
           </TabsList>
 
@@ -652,6 +728,97 @@ const AdminDashboard = () => {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          {/* Professions */}
+          <TabsContent value="professions">
+            <Card className="mb-4">
+              <CardContent className="p-4 space-y-3">
+                <h3 className="font-semibold text-sm">{t('admin.add_profession')}</h3>
+                <Input value={newProfName} onChange={e => setNewProfName(e.target.value)} placeholder="Profession name" />
+                <Textarea value={newProfDesc} onChange={e => setNewProfDesc(e.target.value)} placeholder="Description (optional)" rows={2} />
+                <div className="space-y-1">
+                  <Label>{t('admin.status')}</Label>
+                  <StatusSelect value={newProfStatus} onChange={setNewProfStatus} />
+                </div>
+                <Button size="sm" onClick={addProfession}><Plus className="w-4 h-4 mr-1" /> {t('admin.add_profession')}</Button>
+              </CardContent>
+            </Card>
+            <p className="text-sm text-muted-foreground mb-3">{professions.length} {t('admin.professions').toLowerCase()}</p>
+            <div className="space-y-3">
+              {professions.map(p => (
+                <Card key={p.id}>
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{p.name}</span>
+                        <StatusBadge status={p.status} />
+                      </div>
+                      {p.description && <p className="text-xs text-muted-foreground mt-1 truncate max-w-md">{p.description}</p>}
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => removeProfession(p.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                  </CardContent>
+                </Card>
+              ))}
+              {professions.length === 0 && <p className="text-center text-muted-foreground py-8">{t('admin.no_professions')}</p>}
+            </div>
+          </TabsContent>
+
+          {/* Posts Moderation */}
+          <TabsContent value="posts">
+            {pendingPosts.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_posts')}</p>
+            ) : (
+              <div className="space-y-3">
+                {pendingPosts.map(p => (
+                  <Card key={p.id}>
+                    <CardContent className="p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="font-medium text-sm">{p.title}</span>
+                          <span className="text-xs text-muted-foreground ml-2">— {p.author_name}</span>
+                          <span className="text-xs text-muted-foreground ml-2">{p.target_type}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-sm text-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">{p.content}</p>
+                      <div className="flex gap-2 justify-end">
+                        <Button variant="outline" size="sm" onClick={() => rejectPost(p.id)} className="gap-1"><XCircle className="w-4 h-4" /> {t('admin.reject')}</Button>
+                        <Button size="sm" onClick={() => approvePost(p)} className="gap-1"><CheckCircle className="w-4 h-4" /> {t('admin.approve')}</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Comments Moderation */}
+          <TabsContent value="comments">
+            {pendingComments.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_comments')}</p>
+            ) : (
+              <div className="space-y-3">
+                {pendingComments.map(c => (
+                  <Card key={c.id}>
+                    <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-sm">{c.author_name}</span>
+                          <Badge variant="outline" className="text-xs">{c.target_type}</Badge>
+                          <span className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-sm text-foreground">{c.content}</p>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button variant="outline" size="sm" onClick={() => rejectComment(c.id)} className="gap-1"><XCircle className="w-4 h-4" /></Button>
+                        <Button size="sm" onClick={() => approveComment(c)} className="gap-1"><CheckCircle className="w-4 h-4" /></Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* Navigation Settings */}

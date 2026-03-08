@@ -13,6 +13,8 @@ import { MapPin, Globe, Twitter, Linkedin, Instagram, ArrowLeft, Edit2, Save, Cl
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
 import Footer from '@/components/Footer';
+import CommentsSection from '@/components/CommentsSection';
+import PostsSection from '@/components/PostsSection';
 
 interface Profile {
   id: string; user_id: string; display_name: string; avatar_url: string | null;
@@ -251,6 +253,10 @@ const ProfileDetail = () => {
             )}
           </CardContent>
         </Card>
+      </div>
+      <div className="max-w-3xl mx-auto px-4 w-full">
+        <PostsSection targetType="profile" targetId={profile.id} />
+        <CommentsSection targetType="profile" targetId={profile.id} />
       </div>
       <div className="mt-auto"><Footer /></div>
     </div>

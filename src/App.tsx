@@ -21,6 +21,8 @@ import EventsPage from "./pages/EventsPage";
 import MapPage from "./pages/MapPage";
 import MemberDetail from "./pages/MemberDetail";
 import AboutPage from "./pages/AboutPage";
+import ProfessionsPage from "./pages/ProfessionsPage";
+import ProfessionDetail from "./pages/ProfessionDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,8 @@ const AppRoutes = () => (
     <Route path="/humans/:slug" element={<ProfileDetail />} />
     <Route path="/events/:slug" element={<EventDetail />} />
     <Route path="/members/:slug" element={<MemberDetail />} />
+    <Route path="/professions" element={<ProfessionsPage />} />
+    <Route path="/professions/:slug" element={<ProfessionDetail />} />
     <Route path="/kvkk" element={<LegalPage />} />
     <Route path="/cookies" element={<LegalPage />} />
     <Route path="/consent" element={<LegalPage />} />

@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Calendar, MapPin, FileText, UserPlus, UserMinus, Users, ExternalLink, Image, Video } from 'lucide-react';
 import { toast } from 'sonner';
+import CommentsSection from '@/components/CommentsSection';
+import PostsSection from '@/components/PostsSection';
 
 interface EventData {
   id: string; title: string; date: string | null; start_date: string | null; end_date: string | null;
@@ -212,6 +214,9 @@ const EventDetail = () => {
           </div>
         </CardContent>
       </Card>
+
+      <PostsSection targetType="event" targetId={event.id} />
+      <CommentsSection targetType="event" targetId={event.id} />
 
       {selectedImage && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>

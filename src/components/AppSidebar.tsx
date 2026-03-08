@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Users, CalendarDays, Map, Info, LayoutDashboard, Shield, User, LogIn, LogOut, Home, Moon, Sun, Globe, Search } from 'lucide-react';
+import { Users, CalendarDays, Map, Info, LayoutDashboard, Shield, User, LogIn, LogOut, Home, Moon, Sun, Globe, Search, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -58,6 +58,7 @@ const AppSidebar = () => {
     { to: '/', icon: Home, label: t('nav.home') },
     { to: '/humans', icon: Users, label: t('nav.humans') },
     { to: '/events', icon: CalendarDays, label: t('nav.events') },
+    { to: '/professions', icon: Briefcase, label: t('nav.professions') },
     { to: '/map', icon: Map, label: t('nav.map') },
     { to: '/about', icon: Info, label: t('nav.about') },
   ];
