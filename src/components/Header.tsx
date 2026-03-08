@@ -82,6 +82,7 @@ const Header = () => {
   const navItems = [
     { to: '/humans', icon: Users, label: t('nav.humans') },
     { to: '/events', icon: CalendarDays, label: t('nav.events') },
+    { to: '/professions', icon: Briefcase, label: t('nav.professions') },
     { to: '/map', icon: Map, label: t('nav.map') },
     { to: '/about', icon: Info, label: t('nav.about') },
   ];
