@@ -825,6 +825,16 @@ const AdminDashboard = () => {
             )}
           </TabsContent>
 
+          {/* Data Export/Import */}
+          <TabsContent value="data">
+            <DataExportImport onReload={reload} />
+          </TabsContent>
+
+          {/* Detailed Reports */}
+          <TabsContent value="detailed_reports">
+            <DetailedReports />
+          </TabsContent>
+
           {/* Navigation Settings */}
           <TabsContent value="settings">
             <NavSettingsPanel />
