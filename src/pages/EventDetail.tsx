@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { pickI18n } from '@/i18n/i18nField';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,13 +16,14 @@ interface EventData {
   id: string; title: string; date: string | null; start_date: string | null; end_date: string | null;
   description: string | null; lat: number; lng: number; slug: string | null; city: string | null;
   country: string | null; capacity: number | null; external_url: string | null; created_at: string;
+  title_i18n?: any; description_i18n?: any;
 }
 interface GalleryItem { id: string; url: string; type: string; caption: string | null; sort_order: number; }
 interface RsvpProfile { user_id: string; display_name: string; avatar_url: string | null; slug: string | null; }
 
 const EventDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
   const [rsvps, setRsvps] = useState<RsvpProfile[]>([]);
@@ -97,7 +99,7 @@ const EventDetail = () => {
       <Card>
         <CardHeader className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
-            <CardTitle className="text-xl sm:text-2xl">{event.title}</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl">{pickI18n(event.title_i18n, event.title, lang)}</CardTitle>
             {event.capacity && (
               <Badge variant="outline" className="shrink-0">👥 {rsvps.length}/{event.capacity}</Badge>
             )}
@@ -128,15 +130,18 @@ const EventDetail = () => {
             </a>
           )}
 
-          {event.description && (
-            <div className="pt-2">
-              <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                <FileText className="w-4 h-4 text-primary" />
-                <span className="font-medium">{t('event.description')}</span>
+          {(() => {
+            const desc = pickI18n(event.description_i18n, event.description, lang);
+            return desc ? (
+              <div className="pt-2">
+                <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <span className="font-medium">{t('event.description')}</span>
+                </div>
+                <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm sm:text-base">{desc}</p>
               </div>
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap text-sm sm:text-base">{event.description}</p>
-            </div>
-          )}
+            ) : null;
+          })()}
 
           {/* Gallery */}
           {images.length > 0 && (

@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { pickI18n } from '@/i18n/i18nField';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -17,16 +18,18 @@ interface Profile {
   website: string | null; twitter: string | null; linkedin: string | null; instagram: string | null;
   github: string | null; slug: string | null; approved: boolean; created_at: string;
   status: string;
+  bio_i18n?: any;
 }
 
 interface AnonMember {
   id: string; name: string; lat: number; lng: number;
   city: string | null; country: string | null; slug: string | null; created_at: string;
   status: string;
+  name_i18n?: any;
 }
 
 const HumansPage = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [anonMembers, setAnonMembers] = useState<AnonMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,13 +63,13 @@ const HumansPage = () => {
       const q = search.toLowerCase();
       list = list.filter(p =>
         (p.display_name || '').toLowerCase().includes(q) ||
-        (p.bio || '').toLowerCase().includes(q) ||
+        pickI18n(p.bio_i18n, p.bio, lang).toLowerCase().includes(q) ||
         (p.city || '').toLowerCase().includes(q) ||
         (p.country || '').toLowerCase().includes(q)
       );
     }
     return list;
-  }, [profiles, search, selectedCountry, statusFilter]);
+  }, [profiles, search, selectedCountry, statusFilter, lang]);
 
   const filteredAnon = useMemo(() => {
     let list = anonMembers;
@@ -75,13 +78,13 @@ const HumansPage = () => {
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(m =>
-        m.name.toLowerCase().includes(q) ||
+        pickI18n(m.name_i18n, m.name, lang).toLowerCase().includes(q) ||
         (m.city || '').toLowerCase().includes(q) ||
         (m.country || '').toLowerCase().includes(q)
       );
     }
     return list;
-  }, [anonMembers, search, selectedCountry, statusFilter]);
+  }, [anonMembers, search, selectedCountry, statusFilter, lang]);
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading...</div>;
 
@@ -175,7 +178,7 @@ const HumansPage = () => {
                             )}
                           </div>
                         </div>
-                        {p.bio && <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{p.bio}</p>}
+                        {(() => { const b = pickI18n(p.bio_i18n, p.bio, lang); return b ? <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{b}</p> : null; })()}
                         <div className="flex flex-wrap gap-1.5">
                           {p.github && <Badge variant="secondary" className="text-xs gap-1"><Github className="w-3 h-3" /> GitHub</Badge>}
                           {p.website && <Badge variant="secondary" className="text-xs gap-1"><Globe className="w-3 h-3" /> Web</Badge>}
@@ -208,12 +211,12 @@ const HumansPage = () => {
                           <div className="flex items-center gap-3 mb-2">
                             <Avatar className="w-10 h-10 sm:w-12 sm:h-12 shrink-0">
                               <AvatarFallback className="bg-muted text-muted-foreground font-bold text-sm">
-                                {m.name.charAt(0).toUpperCase()}
+                                {pickI18n(m.name_i18n, m.name, lang).charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <h3 className="font-semibold text-foreground truncate text-sm sm:text-base">{m.name}</h3>
+                                <h3 className="font-semibold text-foreground truncate text-sm sm:text-base">{pickI18n(m.name_i18n, m.name, lang)}</h3>
                                 {getStatusBadge(m.status)}
                               </div>
                               <p className="text-xs text-muted-foreground flex items-center gap-1">

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { pickI18n } from '@/i18n/i18nField';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -10,10 +11,11 @@ import { Briefcase, Search, Users } from 'lucide-react';
 interface Profession {
   id: string; name: string; slug: string | null; description: string | null;
   icon: string; status: string; created_at: string; member_count?: number;
+  name_i18n?: any; description_i18n?: any;
 }
 
 const ProfessionsPage = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [professions, setProfessions] = useState<Profession[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -32,10 +34,11 @@ const ProfessionsPage = () => {
     load();
   }, []);
 
-  const filtered = professions.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.description?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = professions.filter(p => {
+    const q = search.toLowerCase();
+    return pickI18n(p.name_i18n, p.name, lang).toLowerCase().includes(q) ||
+      pickI18n(p.description_i18n, p.description, lang).toLowerCase().includes(q);
+  });
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading...</div>;
 
@@ -67,8 +70,8 @@ const ProfessionsPage = () => {
                     <Briefcase className="w-5 h-5 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-foreground truncate">{p.name}</h3>
-                    {p.description && <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{p.description}</p>}
+                    <h3 className="font-semibold text-foreground truncate">{pickI18n(p.name_i18n, p.name, lang)}</h3>
+                    {(() => { const d = pickI18n(p.description_i18n, p.description, lang); return d ? <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{d}</p> : null; })()}
                     <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
                       <Users className="w-3.5 h-3.5" />
                       <span>{p.member_count} {t('professions.members')}</span>

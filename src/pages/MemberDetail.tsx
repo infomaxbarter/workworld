@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { pickI18n } from '@/i18n/i18nField';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ interface UserMarker {
   country: string | null;
   slug: string | null;
   created_at: string;
+  name_i18n?: any;
 }
 
 interface Profession {
@@ -26,11 +28,12 @@ interface Profession {
   name: string;
   slug: string | null;
   icon: string | null;
+  name_i18n?: any;
 }
 
 const MemberDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [member, setMember] = useState<UserMarker | null>(null);
   const [professions, setProfessions] = useState<Profession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,9 +64,9 @@ const MemberDetail = () => {
     if (!member || !mapRef.current) return;
     const map = L.map(mapRef.current).setView([member.lat, member.lng], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
-    L.marker([member.lat, member.lng]).addTo(map).bindPopup(member.name);
+    L.marker([member.lat, member.lng]).addTo(map).bindPopup(pickI18n(member.name_i18n, member.name, lang));
     return () => { map.remove(); };
-  }, [member]);
+  }, [member, lang]);
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!member) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Member not found.</div>;
@@ -81,12 +84,12 @@ const MemberDetail = () => {
           <CardHeader className="flex flex-row items-center gap-4 pb-4">
             <Avatar className="w-16 h-16">
               <AvatarFallback className="text-lg bg-muted text-muted-foreground">
-                {member.name.charAt(0).toUpperCase()}
+                {pickI18n(member.name_i18n, member.name, lang).charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">{member.name}</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">{pickI18n(member.name_i18n, member.name, lang)}</h1>
                 <Badge variant="outline" className="gap-1 shrink-0 text-muted-foreground border-muted-foreground/30">
                   <AlertTriangle className="w-3 h-3" />{t('member.unverified')}
                 </Badge>
@@ -120,7 +123,7 @@ const MemberDetail = () => {
                 <div className="flex flex-wrap gap-2">
                   {professions.map(p => (
                     <Link key={p.id} to={`/professions/${p.slug || p.id}`}>
-                      <Badge variant="secondary" className="hover:bg-accent cursor-pointer">{p.name}</Badge>
+                      <Badge variant="secondary" className="hover:bg-accent cursor-pointer">{pickI18n(p.name_i18n, p.name, lang)}</Badge>
                     </Link>
                   ))}
                 </div>

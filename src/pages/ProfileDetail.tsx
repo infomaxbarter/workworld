@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { pickI18n, setI18nLang } from '@/i18n/i18nField';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,7 @@ import LocationPicker from '@/components/LocationPicker';
 import Footer from '@/components/Footer';
 import CommentsSection from '@/components/CommentsSection';
 import PostsSection from '@/components/PostsSection';
+import TranslateButton from '@/components/TranslateButton';
 
 interface Profile {
   id: string; user_id: string; display_name: string; avatar_url: string | null;
@@ -23,16 +25,18 @@ interface Profile {
   github: string | null; lat: number | null; lng: number | null;
   approved: boolean; slug: string | null; created_at: string;
   city: string | null; country: string | null;
+  bio_i18n?: any;
 }
 
 interface EventData {
   id: string; title: string; slug: string | null; start_date: string | null; date: string | null;
   city: string | null; country: string | null;
+  title_i18n?: any;
 }
 
 const ProfileDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
@@ -55,7 +59,7 @@ const ProfileDetail = () => {
         // Load events user has joined
         const { data: rsvps } = await supabase.from('event_rsvps').select('event_id').eq('user_id', p.user_id);
         if (rsvps && rsvps.length > 0) {
-          const { data: evts } = await supabase.from('event_markers').select('id, title, slug, start_date, date, city, country').in('id', rsvps.map((r: any) => r.event_id));
+          const { data: evts } = await supabase.from('event_markers').select('id, title, title_i18n, slug, start_date, date, city, country').in('id', rsvps.map((r: any) => r.event_id));
           if (evts) setEvents(evts as unknown as EventData[]);
         }
       }
@@ -93,11 +97,11 @@ const ProfileDetail = () => {
 
   const handleSave = async () => {
     if (!profile) return;
-    const fields = ['display_name', 'bio', 'location', 'website', 'twitter', 'linkedin', 'instagram', 'github', 'lat', 'lng'] as const;
+    const fields = ['display_name', 'bio', 'bio_i18n', 'location', 'website', 'twitter', 'linkedin', 'instagram', 'github', 'lat', 'lng'] as const;
     const oldData: Record<string, any> = {};
     const newData: Record<string, any> = {};
     let hasChanges = false;
-    fields.forEach(f => { const o = (profile as any)[f]; const n = (form as any)[f]; if (o !== n) { oldData[f] = o; newData[f] = n; hasChanges = true; } });
+    fields.forEach(f => { const o = (profile as any)[f]; const n = (form as any)[f]; if (JSON.stringify(o) !== JSON.stringify(n)) { oldData[f] = o; newData[f] = n; hasChanges = true; } });
     if (form.avatar_url !== profile.avatar_url && form.avatar_url) {
       await supabase.from('profiles').update({ avatar_url: form.avatar_url }).eq('user_id', profile.user_id);
       setProfile(prev => prev ? { ...prev, avatar_url: form.avatar_url! } : prev);
@@ -180,8 +184,17 @@ const ProfileDetail = () => {
                   <p className="text-xs text-muted-foreground">{t('profile.avatar_url_hint')}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>{t('profile.bio')}</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>{t('profile.bio')}</Label>
+                    <TranslateButton
+                      source={form.bio || ''}
+                      sourceLang="tr"
+                      targets={['en', 'de']}
+                      onResult={(tr) => setForm({ ...form, bio_i18n: { tr: form.bio || '', en: tr.en, de: tr.de } })}
+                    />
+                  </div>
                   <Textarea value={form.bio || ''} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3} />
+                  <p className="text-xs text-muted-foreground">{t('i18n.bio_hint') !== 'i18n.bio_hint' ? t('i18n.bio_hint') : 'Bio shown in your selected UI language; AI translation will fill the others.'}</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1"><Label>{t('profile.location')}</Label><Input value={form.location || ''} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="İstanbul, Türkiye" /></div>
@@ -202,7 +215,7 @@ const ProfileDetail = () => {
               </>
             ) : (
               <>
-                <p className="text-foreground">{profile.bio || t('profile.no_bio')}</p>
+                <p className="text-foreground">{pickI18n(profile.bio_i18n, profile.bio, lang) || t('profile.no_bio')}</p>
                 <div className="flex flex-wrap gap-3 sm:gap-4 text-sm text-muted-foreground">
                   {locationText && <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{locationText}</span>}
                   {profile.website && <a href={profile.website} target="_blank" rel="noopener" className="inline-flex items-center gap-1 hover:text-foreground"><Globe className="w-3.5 h-3.5" />{profile.website.replace(/^https?:\/\//, '')}</a>}
@@ -222,7 +235,7 @@ const ProfileDetail = () => {
                       {events.map(e => (
                         <Link key={e.id} to={`/events/${e.slug || e.id}`} className="block">
                           <div className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                            <span className="text-sm text-foreground">{e.title}</span>
+                            <span className="text-sm text-foreground">{pickI18n((e as any).title_i18n, e.title, lang)}</span>
                             <span className="text-xs text-muted-foreground">{e.start_date || e.date || ''}</span>
                           </div>
                         </Link>
