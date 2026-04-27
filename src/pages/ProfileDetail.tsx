@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { pickI18n, setI18nLang } from '@/i18n/i18nField';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,7 @@ import LocationPicker from '@/components/LocationPicker';
 import Footer from '@/components/Footer';
 import CommentsSection from '@/components/CommentsSection';
 import PostsSection from '@/components/PostsSection';
+import TranslateButton from '@/components/TranslateButton';
 
 interface Profile {
   id: string; user_id: string; display_name: string; avatar_url: string | null;
@@ -23,6 +25,7 @@ interface Profile {
   github: string | null; lat: number | null; lng: number | null;
   approved: boolean; slug: string | null; created_at: string;
   city: string | null; country: string | null;
+  bio_i18n?: any;
 }
 
 interface EventData {
