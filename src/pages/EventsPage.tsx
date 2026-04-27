@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { pickI18n } from '@/i18n/i18nField';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ interface EventData {
   description: string | null; lat: number; lng: number; slug: string | null; city: string | null;
   country: string | null; capacity: number | null; external_url: string | null; created_at: string;
   status: string;
+  title_i18n?: any; description_i18n?: any;
 }
 
 const EventsPage = () => {
