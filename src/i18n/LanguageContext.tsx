@@ -12,7 +12,7 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [lang, setLangState] = useState<Lang>(() => {
     const saved = localStorage.getItem('ww-lang') as Lang | null;
-    return saved && translations[saved] ? saved : 'tr';
+    return saved && translations[saved] ? saved : 'en';
   });
 
   const setLang = useCallback((l: Lang) => {
