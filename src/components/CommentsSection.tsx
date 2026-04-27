@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { pickI18n } from '@/i18n/i18nField';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,20 +10,23 @@ import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Send, Clock, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import TranslateButton from './TranslateButton';
 
 interface Comment {
   id: string; user_id: string; content: string; status: string; created_at: string;
+  content_i18n?: any;
   profile?: { display_name: string; avatar_url: string | null; slug: string | null };
 }
 
 interface Props { targetType: string; targetId: string; }
 
 const CommentsSection = ({ targetType, targetId }: Props) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [contentI18n, setContentI18n] = useState<Record<string, string> | null>(null);
 
   const loadComments = async () => {
     const { data } = await supabase
@@ -49,11 +53,15 @@ const CommentsSection = ({ targetType, targetId }: Props) => {
   const handleSubmit = async () => {
     if (!content.trim() || !userId) return;
     setLoading(true);
-    const { error } = await supabase.from('comments').insert({ user_id: userId, target_type: targetType, target_id: targetId, content: content.trim() } as any);
+    const { error } = await supabase.from('comments').insert({
+      user_id: userId, target_type: targetType, target_id: targetId,
+      content: content.trim(),
+      content_i18n: contentI18n || { tr: content.trim() },
+    } as any);
     if (error) toast.error(error.message);
     else {
       toast.success(t('comments.submitted'));
-      setContent('');
+      setContent(''); setContentI18n(null);
       await supabase.rpc('notify_admins', { _type: 'comment', _title: t('comments.new_comment_admin'), _message: content.trim().substring(0, 100) } as any);
       loadComments();
     }
