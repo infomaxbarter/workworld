@@ -19,7 +19,7 @@ interface EventData {
 }
 
 const EventsPage = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -53,15 +53,15 @@ const EventsPage = () => {
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(e =>
-        (e.title || '').toLowerCase().includes(q) ||
-        (e.description || '').toLowerCase().includes(q) ||
+        pickI18n(e.title_i18n, e.title, lang).toLowerCase().includes(q) ||
+        pickI18n(e.description_i18n, e.description, lang).toLowerCase().includes(q) ||
         (e.city || '').toLowerCase().includes(q) ||
         (e.country || '').toLowerCase().includes(q)
       );
     }
 
     return list;
-  }, [events, search, tab, now]);
+  }, [events, search, tab, now, lang]);
 
   const getStatusBadge = (event: EventData) => {
     const status = event.status || 'active';
@@ -128,7 +128,7 @@ const EventsPage = () => {
                   <Card className={`hover:shadow-md transition-shadow h-full ${status === 'inactive' || isPast ? 'opacity-70' : ''}`}>
                     <CardContent className="p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="font-bold text-base sm:text-lg text-foreground">{e.title}</h3>
+                        <h3 className="font-bold text-base sm:text-lg text-foreground">{pickI18n(e.title_i18n, e.title, lang)}</h3>
                         <div className="flex gap-1 shrink-0 flex-wrap justify-end">
                           {getStatusBadge(e)}
                           {e.capacity && <Badge variant="outline" className="text-xs">👥 {e.capacity}</Badge>}
@@ -144,7 +144,7 @@ const EventsPage = () => {
                       <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-2">
                         <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />{loc}
                       </p>
-                      {e.description && <p className="text-sm text-muted-foreground line-clamp-2">{e.description}</p>}
+                      {(() => { const d = pickI18n(e.description_i18n, e.description, lang); return d ? <p className="text-sm text-muted-foreground line-clamp-2">{d}</p> : null; })()}
                     </CardContent>
                   </Card>
                 </Link>
