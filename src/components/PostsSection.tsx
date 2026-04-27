@@ -151,14 +151,14 @@ const PostsSection = ({ targetType, targetId }: Props) => {
                     <AvatarFallback className="text-[9px] bg-primary text-primary-foreground">{p.profile?.display_name?.charAt(0) || '?'}</AvatarFallback>
                   </Avatar>
                 </Link>
-                <span className="font-medium text-sm truncate">{p.title}</span>
+                <span className="font-medium text-sm truncate">{pickI18n(p.title_i18n, p.title, lang)}</span>
                 <span className="text-xs text-muted-foreground shrink-0">{new Date(p.created_at).toLocaleDateString()}</span>
               </div>
               {expandedPost === p.id ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
             </button>
             {expandedPost === p.id && (
               <div className="px-3 pb-3 border-t border-border">
-                <div className="pt-3 text-sm text-foreground whitespace-pre-wrap leading-relaxed">{p.content}</div>
+                <div className="pt-3 text-sm text-foreground whitespace-pre-wrap leading-relaxed">{pickI18n(p.content_i18n, p.content, lang)}</div>
                 <p className="text-xs text-muted-foreground mt-2">— {p.profile?.display_name}</p>
               </div>
             )}
