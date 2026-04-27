@@ -31,6 +31,7 @@ interface Profile {
 interface EventData {
   id: string; title: string; slug: string | null; start_date: string | null; date: string | null;
   city: string | null; country: string | null;
+  title_i18n?: any;
 }
 
 const ProfileDetail = () => {
