@@ -17,6 +17,7 @@ export type Database = {
       comments: {
         Row: {
           content: string
+          content_i18n: Json | null
           created_at: string
           id: string
           status: string
@@ -26,6 +27,7 @@ export type Database = {
         }
         Insert: {
           content: string
+          content_i18n?: Json | null
           created_at?: string
           id?: string
           status?: string
@@ -35,6 +37,7 @@ export type Database = {
         }
         Update: {
           content?: string
+          content_i18n?: Json | null
           created_at?: string
           id?: string
           status?: string
@@ -90,6 +93,7 @@ export type Database = {
           created_at: string
           date: string | null
           description: string | null
+          description_i18n: Json | null
           end_date: string | null
           external_url: string | null
           id: string
@@ -99,6 +103,7 @@ export type Database = {
           start_date: string | null
           status: string
           title: string
+          title_i18n: Json | null
         }
         Insert: {
           capacity?: number | null
@@ -107,6 +112,7 @@ export type Database = {
           created_at?: string
           date?: string | null
           description?: string | null
+          description_i18n?: Json | null
           end_date?: string | null
           external_url?: string | null
           id?: string
@@ -116,6 +122,7 @@ export type Database = {
           start_date?: string | null
           status?: string
           title: string
+          title_i18n?: Json | null
         }
         Update: {
           capacity?: number | null
@@ -124,6 +131,7 @@ export type Database = {
           created_at?: string
           date?: string | null
           description?: string | null
+          description_i18n?: Json | null
           end_date?: string | null
           external_url?: string | null
           id?: string
@@ -133,6 +141,7 @@ export type Database = {
           start_date?: string | null
           status?: string
           title?: string
+          title_i18n?: Json | null
         }
         Relationships: []
       }
@@ -202,6 +211,7 @@ export type Database = {
         Row: {
           author_id: string
           content: string
+          content_i18n: Json | null
           created_at: string
           id: string
           slug: string | null
@@ -209,11 +219,13 @@ export type Database = {
           target_id: string | null
           target_type: string
           title: string
+          title_i18n: Json | null
           updated_at: string
         }
         Insert: {
           author_id: string
           content: string
+          content_i18n?: Json | null
           created_at?: string
           id?: string
           slug?: string | null
@@ -221,11 +233,13 @@ export type Database = {
           target_id?: string | null
           target_type?: string
           title: string
+          title_i18n?: Json | null
           updated_at?: string
         }
         Update: {
           author_id?: string
           content?: string
+          content_i18n?: Json | null
           created_at?: string
           id?: string
           slug?: string | null
@@ -233,6 +247,7 @@ export type Database = {
           target_id?: string | null
           target_type?: string
           title?: string
+          title_i18n?: Json | null
           updated_at?: string
         }
         Relationships: []
@@ -241,33 +256,39 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          description_i18n: Json | null
           icon: string | null
           id: string
           lat: number | null
           lng: number | null
           name: string
+          name_i18n: Json | null
           slug: string | null
           status: string
         }
         Insert: {
           created_at?: string
           description?: string | null
+          description_i18n?: Json | null
           icon?: string | null
           id?: string
           lat?: number | null
           lng?: number | null
           name: string
+          name_i18n?: Json | null
           slug?: string | null
           status?: string
         }
         Update: {
           created_at?: string
           description?: string | null
+          description_i18n?: Json | null
           icon?: string | null
           id?: string
           lat?: number | null
           lng?: number | null
           name?: string
+          name_i18n?: Json | null
           slug?: string | null
           status?: string
         }
@@ -355,6 +376,7 @@ export type Database = {
           approved: boolean
           avatar_url: string | null
           bio: string | null
+          bio_i18n: Json | null
           city: string | null
           country: string | null
           created_at: string
@@ -377,6 +399,7 @@ export type Database = {
           approved?: boolean
           avatar_url?: string | null
           bio?: string | null
+          bio_i18n?: Json | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -399,6 +422,7 @@ export type Database = {
           approved?: boolean
           avatar_url?: string | null
           bio?: string | null
+          bio_i18n?: Json | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -512,6 +536,7 @@ export type Database = {
           lat: number
           lng: number
           name: string
+          name_i18n: Json | null
           slug: string | null
           status: string
         }
@@ -523,6 +548,7 @@ export type Database = {
           lat?: number
           lng?: number
           name: string
+          name_i18n?: Json | null
           slug?: string | null
           status?: string
         }
@@ -534,6 +560,7 @@ export type Database = {
           lat?: number
           lng?: number
           name?: string
+          name_i18n?: Json | null
           slug?: string | null
           status?: string
         }
