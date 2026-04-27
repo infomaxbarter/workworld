@@ -2,12 +2,13 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { pickI18n } from '@/i18n/i18nField';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, CalendarDays, Map, Info, LayoutDashboard, Shield, User, Home, MapPin, Clock } from 'lucide-react';
 
 interface ProfileHit { id: string; display_name: string; slug: string | null; user_id: string; city: string | null; country: string | null; avatar_url: string | null; }
-interface EventHit { id: string; title: string; slug: string | null; city: string | null; country: string | null; start_date: string | null; }
-interface AnonHit { id: string; name: string; slug: string | null; city: string | null; country: string | null; }
+interface EventHit { id: string; title: string; slug: string | null; city: string | null; country: string | null; start_date: string | null; title_i18n?: any; }
+interface AnonHit { id: string; name: string; slug: string | null; city: string | null; country: string | null; name_i18n?: any; }
 
 const RECENT_KEY = 'cmd_palette_recent';
 const MAX_RECENT = 5;
@@ -22,7 +23,7 @@ const CommandPalette = () => {
   const [anons, setAnons] = useState<AnonHit[]>([]);
   const [recents, setRecents] = useState<RecentItem[]>([]);
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   useEffect(() => {
     try {
@@ -50,8 +51,8 @@ const CommandPalette = () => {
     if (!open) return;
     Promise.all([
       supabase.from('profiles').select('id,display_name,slug,user_id,city,country,avatar_url').eq('approved', true),
-      supabase.from('event_markers').select('id,title,slug,city,country,start_date'),
-      supabase.from('user_markers').select('id,name,slug,city,country'),
+      supabase.from('event_markers').select('id,title,title_i18n,slug,city,country,start_date'),
+      supabase.from('user_markers').select('id,name,name_i18n,slug,city,country'),
     ]).then(([p, e, a]) => {
       if (p.data) setProfiles(p.data as unknown as ProfileHit[]);
       if (e.data) setEvents(e.data as unknown as EventHit[]);
@@ -86,7 +87,7 @@ const CommandPalette = () => {
   const filteredEvents = useMemo(() => {
     if (!q) return events.slice(0, 5);
     return events.filter(e =>
-      e.title.toLowerCase().includes(q) ||
+      pickI18n(e.title_i18n, e.title, lang).toLowerCase().includes(q) ||
       (e.city || '').toLowerCase().includes(q) ||
       (e.country || '').toLowerCase().includes(q)
     ).slice(0, 8);
@@ -95,7 +96,7 @@ const CommandPalette = () => {
   const filteredAnons = useMemo(() => {
     if (!q) return [];
     return anons.filter(a =>
-      a.name.toLowerCase().includes(q) ||
+      pickI18n(a.name_i18n, a.name, lang).toLowerCase().includes(q) ||
       (a.city || '').toLowerCase().includes(q) ||
       (a.country || '').toLowerCase().includes(q)
     ).slice(0, 5);
@@ -170,9 +171,9 @@ const CommandPalette = () => {
         {filteredAnons.length > 0 && (
           <CommandGroup heading={t('humans.anonymous_title') || 'Anonymous'}>
             {filteredAnons.map(a => (
-              <CommandItem key={a.id} onSelect={() => go(`/members/${a.slug || a.id}`, a.name)} className="gap-2 cursor-pointer">
+              <CommandItem key={a.id} onSelect={() => go(`/members/${a.slug || a.id}`, pickI18n(a.name_i18n, a.name, lang))} className="gap-2 cursor-pointer">
                 <User className="w-4 h-4 text-muted-foreground shrink-0" />
-                <span className="truncate">{a.name}</span>
+                <span className="truncate">{pickI18n(a.name_i18n, a.name, lang)}</span>
                 {loc(a.city, a.country) && (
                   <span className="ml-auto text-xs text-muted-foreground flex items-center gap-1 shrink-0">
                     <MapPin className="w-3 h-3" />{loc(a.city, a.country)}
