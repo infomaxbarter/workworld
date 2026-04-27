@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { pickI18n } from '@/i18n/i18nField';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ interface UserMarker {
   country: string | null;
   slug: string | null;
   created_at: string;
+  name_i18n?: any;
 }
 
 interface Profession {
@@ -26,11 +28,12 @@ interface Profession {
   name: string;
   slug: string | null;
   icon: string | null;
+  name_i18n?: any;
 }
 
 const MemberDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [member, setMember] = useState<UserMarker | null>(null);
   const [professions, setProfessions] = useState<Profession[]>([]);
   const [loading, setLoading] = useState(true);
