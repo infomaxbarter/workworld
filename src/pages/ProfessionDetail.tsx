@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { pickI18n } from '@/i18n/i18nField';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,12 +13,12 @@ import Footer from '@/components/Footer';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-interface Profession { id: string; name: string; slug: string | null; description: string | null; icon: string; status: string; }
-interface MemberProfile { id: string; user_id: string; display_name: string; avatar_url: string | null; slug: string | null; bio: string | null; city: string | null; country: string | null; lat: number | null; lng: number | null; status: string; }
+interface Profession { id: string; name: string; slug: string | null; description: string | null; icon: string; status: string; name_i18n?: any; description_i18n?: any; }
+interface MemberProfile { id: string; user_id: string; display_name: string; avatar_url: string | null; slug: string | null; bio: string | null; bio_i18n?: any; city: string | null; country: string | null; lat: number | null; lng: number | null; status: string; }
 
 const ProfessionDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [profession, setProfession] = useState<Profession | null>(null);
   const [members, setMembers] = useState<MemberProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,14 +105,14 @@ const ProfessionDetail = () => {
                 <Briefcase className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-xl sm:text-2xl">{profession.name}</CardTitle>
+                <CardTitle className="text-xl sm:text-2xl">{pickI18n(profession.name_i18n, profession.name, lang)}</CardTitle>
                 <p className="text-sm text-muted-foreground">{members.length} {t('professions.members')}</p>
               </div>
               {getStatusBadge(profession.status)}
             </div>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-6">
-            {profession.description && <p className="text-foreground leading-relaxed">{profession.description}</p>}
+            {(() => { const d = pickI18n(profession.description_i18n, profession.description, lang); return d ? <p className="text-foreground leading-relaxed">{d}</p> : null; })()}
 
             {/* Members list */}
             <div className="border-t border-border pt-4">
