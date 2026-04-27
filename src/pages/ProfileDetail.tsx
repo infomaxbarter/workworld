@@ -97,11 +97,11 @@ const ProfileDetail = () => {
 
   const handleSave = async () => {
     if (!profile) return;
-    const fields = ['display_name', 'bio', 'location', 'website', 'twitter', 'linkedin', 'instagram', 'github', 'lat', 'lng'] as const;
+    const fields = ['display_name', 'bio', 'bio_i18n', 'location', 'website', 'twitter', 'linkedin', 'instagram', 'github', 'lat', 'lng'] as const;
     const oldData: Record<string, any> = {};
     const newData: Record<string, any> = {};
     let hasChanges = false;
-    fields.forEach(f => { const o = (profile as any)[f]; const n = (form as any)[f]; if (o !== n) { oldData[f] = o; newData[f] = n; hasChanges = true; } });
+    fields.forEach(f => { const o = (profile as any)[f]; const n = (form as any)[f]; if (JSON.stringify(o) !== JSON.stringify(n)) { oldData[f] = o; newData[f] = n; hasChanges = true; } });
     if (form.avatar_url !== profile.avatar_url && form.avatar_url) {
       await supabase.from('profiles').update({ avatar_url: form.avatar_url }).eq('user_id', profile.user_id);
       setProfile(prev => prev ? { ...prev, avatar_url: form.avatar_url! } : prev);
