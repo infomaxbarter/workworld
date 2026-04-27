@@ -39,6 +39,7 @@ interface WorldMapProps {
 }
 
 const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
+  const { lang } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layersRef = useRef<{
@@ -94,7 +95,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
         supabase.from('user_marker_professions' as any).select('user_marker_id, profession_id'),
       ]);
 
-      if (profs) setProfessionsList((profs as any[]).map(p => ({ id: p.id, name: p.name })));
+      if (profs) setProfessionsList((profs as any[]).map(p => ({ id: p.id, name: pickI18n(p.name_i18n, p.name, lang) })));
 
       // Profile → professions map
       const ppMap = new Map<string, string[]>();
@@ -148,10 +149,11 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
         marker.bindPopup(`
           <div style="padding:12px;min-width:160px;font-family:inherit;">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-              <div style="width:32px;height:32px;border-radius:50%;background:#888;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;">${u.name.charAt(0).toUpperCase()}</div>
+              <div style="width:32px;height:32px;border-radius:50%;background:#888;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;">${pickI18n(u.name_i18n, u.name, lang).charAt(0).toUpperCase()}</div>
               <div>
-                <div style="font-weight:600;font-size:14px;">${u.name}</div>
+                <div style="font-weight:600;font-size:14px;">${pickI18n(u.name_i18n, u.name, lang)}</div>
                 <div style="font-size:11px;color:#888;">${loc}</div>
+              </div>
               </div>
             </div>
             <a href="/members/${u.slug || u.id}" style="display:block;text-align:center;padding:6px 12px;background:#888;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">View →</a>
@@ -167,7 +169,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
         const marker = L.marker([e.lat, e.lng], { icon: eventIcon });
         marker.bindPopup(`
           <div style="padding:12px;min-width:200px;font-family:inherit;">
-            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${e.title}</div>
+            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${pickI18n(e.title_i18n, e.title, lang)}</div>
             ${e.start_date ? `<div style="font-size:12px;color:#888;margin-bottom:2px;">📅 ${e.start_date}${e.end_date ? ' — ' + e.end_date : ''}</div>` : e.date ? `<div style="font-size:12px;color:#888;margin-bottom:2px;">📅 ${e.date}</div>` : ''}
             ${loc ? `<div style="font-size:12px;color:#888;margin-bottom:4px;">📍 ${loc}</div>` : ''}
             <a href="/events/${e.slug || e.id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">Details →</a>
@@ -183,8 +185,8 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
         const marker = L.marker([pr.lat, pr.lng], { icon: professionIcon });
         marker.bindPopup(`
           <div style="padding:12px;min-width:180px;font-family:inherit;">
-            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">💼 ${pr.name}</div>
-            ${pr.description ? `<div style="font-size:12px;color:#666;margin-bottom:6px;">${pr.description.substring(0, 120)}${pr.description.length > 120 ? '...' : ''}</div>` : ''}
+            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">💼 ${pickI18n(pr.name_i18n, pr.name, lang)}</div>
+            ${(() => { const d = pickI18n(pr.description_i18n, pr.description, lang); return d ? `<div style="font-size:12px;color:#666;margin-bottom:6px;">${d.substring(0, 120)}${d.length > 120 ? '...' : ''}</div>` : ''; })()}
             <a href="/professions/${pr.slug || pr.id}" style="display:block;text-align:center;padding:6px 12px;background:#f97316;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">Details →</a>
           </div>
         `);
@@ -287,7 +289,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
     if (search) {
       const q = search.toLowerCase();
       items = items.filter(i => {
-        const name = (i.display_name || i.name || i.title || '').toLowerCase();
+        const name = (i.display_name || pickI18n(i.name_i18n, i.name, lang) || pickI18n(i.title_i18n, i.title, lang) || '').toLowerCase();
         const city = (i.city || '').toLowerCase();
         const country = (i.country || '').toLowerCase();
         return name.includes(q) || city.includes(q) || country.includes(q);
@@ -410,7 +412,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
             const isProfile = item._type === 'profile';
             const isEvent = item._type === 'event';
             const isProfession = item._type === 'profession';
-            const name = item.display_name || item.name || item.title || '';
+            const name = item.display_name || pickI18n(item.name_i18n, item.name, lang) || pickI18n(item.title_i18n, item.title, lang) || '';
             const loc = item.city && item.country ? `${item.city}, ${item.country}` : item.location || '';
             return (
               <button
