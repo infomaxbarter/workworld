@@ -97,7 +97,7 @@ const CommentsSection = ({ targetType, targetId }: Props) => {
                   <span className="text-sm font-medium">{c.profile?.display_name || '?'}</span>
                   <Badge variant="outline" className="text-[10px] gap-1"><Clock className="w-2.5 h-2.5" />{t('comments.pending')}</Badge>
                 </div>
-                <p className="text-sm text-muted-foreground">{c.content}</p>
+                <p className="text-sm text-muted-foreground">{pickI18n(c.content_i18n, c.content, lang)}</p>
               </div>
               <Button variant="ghost" size="icon" className="shrink-0" onClick={() => handleDelete(c.id)}><Trash2 className="w-3.5 h-3.5 text-destructive" /></Button>
             </div>
@@ -115,7 +115,7 @@ const CommentsSection = ({ targetType, targetId }: Props) => {
                   <Link to={`/humans/${c.profile?.slug || c.user_id}`} className="text-sm font-medium hover:underline">{c.profile?.display_name || '?'}</Link>
                   <span className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</span>
                 </div>
-                <p className="text-sm text-foreground">{c.content}</p>
+                <p className="text-sm text-foreground">{pickI18n(c.content_i18n, c.content, lang)}</p>
               </div>
               {c.user_id === userId && (
                 <Button variant="ghost" size="icon" className="shrink-0" onClick={() => handleDelete(c.id)}><Trash2 className="w-3.5 h-3.5 text-destructive" /></Button>
@@ -129,15 +129,22 @@ const CommentsSection = ({ targetType, targetId }: Props) => {
 
         {/* Write comment */}
         {userId ? (
-          <div className="flex gap-2 pt-2 border-t border-border">
-            <Textarea
-              value={content} onChange={e => setContent(e.target.value)}
-              placeholder={t('comments.placeholder')}
-              rows={2} className="min-h-[60px]"
+          <div className="space-y-2 pt-2 border-t border-border">
+            <div className="flex gap-2">
+              <Textarea
+                value={content} onChange={e => { setContent(e.target.value); setContentI18n(null); }}
+                placeholder={t('comments.placeholder')}
+                rows={2} className="min-h-[60px]"
+              />
+              <Button size="icon" className="shrink-0 self-end" onClick={handleSubmit} disabled={loading || !content.trim()}>
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+            <TranslateButton
+              source={content}
+              onResult={(r) => { setContentI18n({ tr: content, ...r }); toast.success('Translations attached'); }}
+              disabled={!content.trim()}
             />
-            <Button size="icon" className="shrink-0 self-end" onClick={handleSubmit} disabled={loading || !content.trim()}>
-              <Send className="w-4 h-4" />
-            </Button>
           </div>
         ) : (
           <p className="text-sm text-muted-foreground text-center pt-2 border-t border-border">
