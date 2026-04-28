@@ -305,25 +305,25 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
   // Stats panel component
   const StatsPanel = () => (
     <div className="absolute bottom-4 left-4 z-[1000] bg-card/90 backdrop-blur-sm border border-border rounded-xl p-3 shadow-lg text-xs space-y-1 min-w-[160px]">
-      <div className="font-semibold text-foreground text-sm mb-1.5">📊 Harita İstatistikleri</div>
+      <div className="font-semibold text-foreground text-sm mb-1.5">📊 {t('map.stats_title')}</div>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">👤 Profiller</span>
+        <span className="text-muted-foreground">👤 {t('map.stats_profiles')}</span>
         <span className="font-medium text-foreground">{stats.profiles}</span>
       </div>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">👻 Anonim</span>
+        <span className="text-muted-foreground">👻 {t('map.stats_anon')}</span>
         <span className="font-medium text-foreground">{stats.anon}</span>
       </div>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">📅 Etkinlikler</span>
+        <span className="text-muted-foreground">📅 {t('map.stats_events')}</span>
         <span className="font-medium text-foreground">{stats.events}</span>
       </div>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">💼 Meslekler</span>
+        <span className="text-muted-foreground">💼 {t('map.stats_professions')}</span>
         <span className="font-medium text-foreground">{stats.professions}</span>
       </div>
       <div className="border-t border-border pt-1 mt-1 flex items-center justify-between gap-4">
-        <span className="text-muted-foreground font-medium">Toplam</span>
+        <span className="text-muted-foreground font-medium">{t('map.stats_total')}</span>
         <span className="font-bold text-foreground">{stats.total}</span>
       </div>
     </div>
