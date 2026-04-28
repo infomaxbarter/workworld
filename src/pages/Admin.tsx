@@ -89,7 +89,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 const AdminDashboard = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [users, setUsers] = useState<UserMarker[]>([]);
   const [events, setEvents] = useState<EventMarker[]>([]);
