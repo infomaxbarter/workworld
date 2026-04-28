@@ -27,8 +27,9 @@ interface ProfileRow { id: string; user_id: string; display_name: string; bio: s
 interface EditRequest { id: string; profile_id: string; user_id: string; old_data: Record<string, any>; new_data: Record<string, any>; status: string; admin_response: string | null; created_at: string; reviewed_at: string | null; profile_name?: string; }
 interface Report { id: string; type: string; target_id: string; reason: string; created_by: string; created_at: string; }
 interface ProfessionRow { id: string; name: string; slug: string | null; description: string | null; icon: string; status: string; created_at: string; }
-interface PostRow { id: string; author_id: string; title: string; content: string; slug: string | null; status: string; target_type: string; target_id: string | null; created_at: string; author_name?: string; }
-interface CommentRow { id: string; user_id: string; target_type: string; target_id: string; content: string; status: string; created_at: string; author_name?: string; }
+interface PostRow { id: string; author_id: string; title: string; content: string; slug: string | null; status: string; target_type: string; target_id: string | null; created_at: string; author_name?: string; title_i18n?: any; content_i18n?: any; }
+interface CommentRow { id: string; user_id: string; target_type: string; target_id: string; content: string; status: string; created_at: string; author_name?: string; content_i18n?: any; }
+type ModStatus = 'all' | 'pending' | 'approved' | 'rejected';
 
 const STATUS_OPTIONS = ['active', 'coming_soon', 'inactive'] as const;
 type StatusType = typeof STATUS_OPTIONS[number];
