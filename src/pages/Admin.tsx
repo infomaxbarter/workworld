@@ -100,6 +100,8 @@ const AdminDashboard = () => {
   const [pendingPosts, setPendingPosts] = useState<PostRow[]>([]);
   const [pendingComments, setPendingComments] = useState<CommentRow[]>([]);
   const [profileFilter, setProfileFilter] = useState<'all' | 'pending' | 'approved'>('pending');
+  const [postFilter, setPostFilter] = useState<ModStatus>('pending');
+  const [commentFilter, setCommentFilter] = useState<ModStatus>('pending');
 
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberCity, setNewMemberCity] = useState('');
