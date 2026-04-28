@@ -17,6 +17,7 @@ import { useNavigation, type NavMode, type NavSettings, type DeviceType } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataExportImport from '@/components/admin/DataExportImport';
 import DetailedReports from '@/components/admin/DetailedReports';
+import { pickI18n } from '@/i18n/i18nField';
 
 interface Submission { id: string; name: string; email: string; message: string; created_at: string; }
 interface UserMarker { id: string; name: string; lat: number; lng: number; city: string | null; country: string | null; slug: string | null; status: string; }
