@@ -187,7 +187,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
           <div style="padding:12px;min-width:180px;font-family:inherit;">
             <div style="font-weight:700;font-size:15px;margin-bottom:4px;">💼 ${pickI18n(pr.name_i18n, pr.name, lang)}</div>
             ${(() => { const d = pickI18n(pr.description_i18n, pr.description, lang); return d ? `<div style="font-size:12px;color:#666;margin-bottom:6px;">${d.substring(0, 120)}${d.length > 120 ? '...' : ''}</div>` : ''; })()}
-            <a href="/professions/${pr.slug || pr.id}" style="display:block;text-align:center;padding:6px 12px;background:#f97316;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">Details →</a>
+            <a href="/professions/${pr.slug || pr.id}" style="display:block;text-align:center;padding:6px 12px;background:#f97316;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">${t('map.view_details')}</a>
           </div>
         `);
         prMarkers.push({ marker, data: { ...pr, _type: 'profession' } });
