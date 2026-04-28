@@ -156,7 +156,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
               </div>
               </div>
             </div>
-            <a href="/members/${u.slug || u.id}" style="display:block;text-align:center;padding:6px 12px;background:#888;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">View →</a>
+            <a href="/members/${u.slug || u.id}" style="display:block;text-align:center;padding:6px 12px;background:#888;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">${t('map.view_member_btn')}</a>
           </div>
         `);
         aMarkers.push({ marker, data: { ...u, _type: 'anon', _professions: umpMap.get(u.id) || [] } });
