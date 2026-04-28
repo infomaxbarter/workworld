@@ -215,7 +215,8 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
 
     loadMarkers();
     return () => { map.remove(); mapRef.current = null; };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
   // Reactive filtering: rebuild layers when filter/country/profession changes
   useEffect(() => {
