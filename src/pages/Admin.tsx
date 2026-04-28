@@ -144,8 +144,8 @@ const AdminDashboard = () => {
       supabase.from('profile_edit_requests').select('*').order('created_at', { ascending: false }),
       supabase.from('reports').select('*').order('created_at', { ascending: false }),
       supabase.from('professions').select('*').order('name'),
-      supabase.from('posts').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
-      supabase.from('comments').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
+      supabase.from('posts').select('*').order('created_at', { ascending: false }),
+      supabase.from('comments').select('*').order('created_at', { ascending: false }),
     ]);
     if (s) setSubmissions(s);
     if (u) setUsers(u as unknown as UserMarker[]);
@@ -325,6 +325,57 @@ const AdminDashboard = () => {
     toast.success('Comment rejected'); reload();
   };
 
+  // Inline edit state for submissions / reports / posts / comments
+  const [editingSubmission, setEditingSubmission] = useState<string | null>(null);
+  const [editSubForm, setEditSubForm] = useState<Partial<Submission>>({});
+  const [editingReport, setEditingReport] = useState<string | null>(null);
+  const [editReportForm, setEditReportForm] = useState<Partial<Report>>({});
+  const [editingPost, setEditingPost] = useState<string | null>(null);
+  const [editPostForm, setEditPostForm] = useState<Partial<PostRow>>({});
+  const [editingComment, setEditingComment] = useState<string | null>(null);
+  const [editCommentForm, setEditCommentForm] = useState<Partial<CommentRow>>({});
+
+  const saveSubmission = async () => {
+    if (!editingSubmission) return;
+    const { error } = await supabase.from('submissions').update({
+      name: editSubForm.name, email: editSubForm.email, message: editSubForm.message,
+    } as any).eq('id', editingSubmission);
+    if (error) return toast.error(error.message);
+    toast.success('Saved'); setEditingSubmission(null); reload();
+  };
+  const saveReport = async () => {
+    if (!editingReport) return;
+    const { error } = await supabase.from('reports').update({
+      reason: editReportForm.reason, type: editReportForm.type,
+    } as any).eq('id', editingReport);
+    if (error) return toast.error(error.message);
+    toast.success('Saved'); setEditingReport(null); reload();
+  };
+  const savePost = async () => {
+    if (!editingPost) return;
+    const { error } = await supabase.from('posts').update({
+      title: editPostForm.title, content: editPostForm.content, status: editPostForm.status,
+    } as any).eq('id', editingPost);
+    if (error) return toast.error(error.message);
+    toast.success('Saved'); setEditingPost(null); reload();
+  };
+  const deletePost = async (id: string) => {
+    await supabase.from('posts').delete().eq('id', id);
+    toast.success('Deleted'); reload();
+  };
+  const saveComment = async () => {
+    if (!editingComment) return;
+    const { error } = await supabase.from('comments').update({
+      content: editCommentForm.content, status: editCommentForm.status,
+    } as any).eq('id', editingComment);
+    if (error) return toast.error(error.message);
+    toast.success('Saved'); setEditingComment(null); reload();
+  };
+  const deleteComment = async (id: string) => {
+    await supabase.from('comments').delete().eq('id', id);
+    toast.success('Deleted'); reload();
+  };
+
   const filteredProfiles = profiles.filter(p => {
     if (profileFilter === 'pending') return !p.approved;
     if (profileFilter === 'approved') return p.approved;
@@ -332,6 +383,8 @@ const AdminDashboard = () => {
   });
   const pendingCount = profiles.filter(p => !p.approved).length;
   const pendingEdits = editRequests.filter(r => r.status === 'pending').length;
+  const pendingPostsCount = pendingPosts.filter(p => p.status === 'pending').length;
+  const pendingCommentsCount = pendingComments.filter(c => c.status === 'pending').length;
   const fieldLabels: Record<string, string> = {
     display_name: t('profile.display_name'), bio: t('profile.bio'), location: t('profile.location'),
     website: t('profile.website'), twitter: 'Twitter', linkedin: 'LinkedIn', instagram: 'Instagram', github: 'GitHub', lat: 'Lat', lng: 'Lng', city: t('admin.city'), country: t('admin.country'),
@@ -371,11 +424,11 @@ const AdminDashboard = () => {
             <TabsTrigger value="professions" className="gap-1.5"><Briefcase className="w-4 h-4" /> {t('admin.professions')}</TabsTrigger>
             <TabsTrigger value="posts" className="gap-1.5">
               <FileText className="w-4 h-4" /> {t('admin.posts')}
-              {pendingPosts.length > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingPosts.length}</Badge>}
+              {pendingPostsCount > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingPostsCount}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="comments" className="gap-1.5">
               <MessageSquare className="w-4 h-4" /> {t('admin.comments')}
-              {pendingComments.length > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingComments.length}</Badge>}
+              {pendingCommentsCount > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingCommentsCount}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="data" className="gap-1.5"><Upload className="w-4 h-4" /> Veri Aktar</TabsTrigger>
             <TabsTrigger value="detailed_reports" className="gap-1.5"><BarChart3 className="w-4 h-4" /> Detaylı Raporlar</TabsTrigger>
@@ -442,18 +495,32 @@ const AdminDashboard = () => {
               <div className="space-y-3">
                 {reports.map(r => (
                   <Card key={r.id}>
-                    <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge variant="outline" className="text-xs">{r.type}</Badge>
-                          <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                    <CardContent className="p-4">
+                      {editingReport === r.id ? (
+                        <div className="space-y-2">
+                          <Input value={editReportForm.type || ''} onChange={e => setEditReportForm({ ...editReportForm, type: e.target.value })} placeholder="Type" />
+                          <Textarea value={editReportForm.reason || ''} onChange={e => setEditReportForm({ ...editReportForm, reason: e.target.value })} rows={2} placeholder="Reason" />
+                          <div className="flex gap-2 justify-end">
+                            <Button variant="outline" size="sm" onClick={() => setEditingReport(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
+                            <Button size="sm" onClick={saveReport} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
+                          </div>
                         </div>
-                        <p className="text-sm text-foreground">{r.reason}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Target: {r.target_id.substring(0, 8)}...</p>
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={() => deleteReport(r.id)}>
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
+                      ) : (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="outline" className="text-xs">{r.type}</Badge>
+                              <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                            </div>
+                            <p className="text-sm text-foreground">{r.reason}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Target: {r.target_id.substring(0, 8)}...</p>
+                          </div>
+                          <div className="flex gap-1 shrink-0">
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingReport(r.id); setEditReportForm(r); }}><Edit2 className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => deleteReport(r.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
@@ -534,11 +601,29 @@ const AdminDashboard = () => {
                 <TableBody>
                   {submissions.map(s => (
                     <TableRow key={s.id}>
-                      <TableCell className="font-medium">{s.name}</TableCell>
-                      <TableCell>{s.email}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{s.message}</TableCell>
-                      <TableCell className="text-muted-foreground text-xs">{new Date(s.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell><Button variant="ghost" size="icon" onClick={() => deleteSubmission(s.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button></TableCell>
+                      {editingSubmission === s.id ? (
+                        <>
+                          <TableCell><Input value={editSubForm.name || ''} onChange={e => setEditSubForm({ ...editSubForm, name: e.target.value })} /></TableCell>
+                          <TableCell><Input value={editSubForm.email || ''} onChange={e => setEditSubForm({ ...editSubForm, email: e.target.value })} /></TableCell>
+                          <TableCell><Textarea rows={2} value={editSubForm.message || ''} onChange={e => setEditSubForm({ ...editSubForm, message: e.target.value })} /></TableCell>
+                          <TableCell className="text-muted-foreground text-xs">{new Date(s.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="flex gap-1">
+                            <Button variant="ghost" size="icon" onClick={saveSubmission}><Save className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => setEditingSubmission(null)}><X className="w-4 h-4" /></Button>
+                          </TableCell>
+                        </>
+                      ) : (
+                        <>
+                          <TableCell className="font-medium">{s.name}</TableCell>
+                          <TableCell>{s.email}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">{s.message}</TableCell>
+                          <TableCell className="text-muted-foreground text-xs">{new Date(s.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="flex gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingSubmission(s.id); setEditSubForm(s); }}><Edit2 className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => deleteSubmission(s.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                          </TableCell>
+                        </>
+                      )}
                     </TableRow>
                   ))}
                   {!submissions.length && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No submissions yet.</TableCell></TableRow>}

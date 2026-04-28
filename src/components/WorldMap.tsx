@@ -39,7 +39,7 @@ interface WorldMapProps {
 }
 
 const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layersRef = useRef<{
@@ -135,7 +135,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
                 <div style="font-size:11px;color:#888;">${loc}</div>
               </div>
             </div>
-            <a href="/humans/${p.slug || p.user_id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">View Profile →</a>
+            <a href="/humans/${p.slug || p.user_id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">${t('map.view_profile_btn')}</a>
           </div>
         `);
         pMarkers.push({ marker, data: { ...p, _type: 'profile', _professions: ppMap.get(p.id) || [] } });
@@ -156,7 +156,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
               </div>
               </div>
             </div>
-            <a href="/members/${u.slug || u.id}" style="display:block;text-align:center;padding:6px 12px;background:#888;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">View →</a>
+            <a href="/members/${u.slug || u.id}" style="display:block;text-align:center;padding:6px 12px;background:#888;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">${t('map.view_member_btn')}</a>
           </div>
         `);
         aMarkers.push({ marker, data: { ...u, _type: 'anon', _professions: umpMap.get(u.id) || [] } });
@@ -172,7 +172,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
             <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${pickI18n(e.title_i18n, e.title, lang)}</div>
             ${e.start_date ? `<div style="font-size:12px;color:#888;margin-bottom:2px;">📅 ${e.start_date}${e.end_date ? ' — ' + e.end_date : ''}</div>` : e.date ? `<div style="font-size:12px;color:#888;margin-bottom:2px;">📅 ${e.date}</div>` : ''}
             ${loc ? `<div style="font-size:12px;color:#888;margin-bottom:4px;">📍 ${loc}</div>` : ''}
-            <a href="/events/${e.slug || e.id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">Details →</a>
+            <a href="/events/${e.slug || e.id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">${t('map.view_details')}</a>
           </div>
         `);
         eMarkers.push({ marker, data: { ...e, _type: 'event' } });
@@ -187,7 +187,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
           <div style="padding:12px;min-width:180px;font-family:inherit;">
             <div style="font-weight:700;font-size:15px;margin-bottom:4px;">💼 ${pickI18n(pr.name_i18n, pr.name, lang)}</div>
             ${(() => { const d = pickI18n(pr.description_i18n, pr.description, lang); return d ? `<div style="font-size:12px;color:#666;margin-bottom:6px;">${d.substring(0, 120)}${d.length > 120 ? '...' : ''}</div>` : ''; })()}
-            <a href="/professions/${pr.slug || pr.id}" style="display:block;text-align:center;padding:6px 12px;background:#f97316;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">Details →</a>
+            <a href="/professions/${pr.slug || pr.id}" style="display:block;text-align:center;padding:6px 12px;background:#f97316;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">${t('map.view_details')}</a>
           </div>
         `);
         prMarkers.push({ marker, data: { ...pr, _type: 'profession' } });
@@ -215,7 +215,8 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
 
     loadMarkers();
     return () => { map.remove(); mapRef.current = null; };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
   // Reactive filtering: rebuild layers when filter/country/profession changes
   useEffect(() => {
@@ -305,25 +306,25 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
   // Stats panel component
   const StatsPanel = () => (
     <div className="absolute bottom-4 left-4 z-[1000] bg-card/90 backdrop-blur-sm border border-border rounded-xl p-3 shadow-lg text-xs space-y-1 min-w-[160px]">
-      <div className="font-semibold text-foreground text-sm mb-1.5">📊 Harita İstatistikleri</div>
+      <div className="font-semibold text-foreground text-sm mb-1.5">📊 {t('map.stats_title')}</div>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">👤 Profiller</span>
+        <span className="text-muted-foreground">👤 {t('map.stats_profiles')}</span>
         <span className="font-medium text-foreground">{stats.profiles}</span>
       </div>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">👻 Anonim</span>
+        <span className="text-muted-foreground">👻 {t('map.stats_anon')}</span>
         <span className="font-medium text-foreground">{stats.anon}</span>
       </div>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">📅 Etkinlikler</span>
+        <span className="text-muted-foreground">📅 {t('map.stats_events')}</span>
         <span className="font-medium text-foreground">{stats.events}</span>
       </div>
       <div className="flex items-center justify-between gap-4">
-        <span className="text-muted-foreground">💼 Meslekler</span>
+        <span className="text-muted-foreground">💼 {t('map.stats_professions')}</span>
         <span className="font-medium text-foreground">{stats.professions}</span>
       </div>
       <div className="border-t border-border pt-1 mt-1 flex items-center justify-between gap-4">
-        <span className="text-muted-foreground font-medium">Toplam</span>
+        <span className="text-muted-foreground font-medium">{t('map.stats_total')}</span>
         <span className="font-bold text-foreground">{stats.total}</span>
       </div>
     </div>
@@ -365,7 +366,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="🔍 Ara..."
+              placeholder={t('map.search_placeholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
@@ -378,8 +379,8 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
                 onClick={() => setFilterType(f)}
                 className={`px-2 py-1 text-xs rounded-md font-medium transition-colors ${filterType === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
               >
-                {f === 'all' ? 'Tümü' : f === 'profiles' ? '👤' : f === 'anon' ? '👻' : f === 'events' ? '📅' : '💼'}
-                <span className="hidden sm:inline ml-1">{f === 'all' ? '' : f === 'profiles' ? 'Profiller' : f === 'anon' ? 'Anonim' : f === 'events' ? 'Etkinlikler' : 'Meslekler'}</span>
+                {f === 'all' ? t('map.filter_all') : f === 'profiles' ? '👤' : f === 'anon' ? '👻' : f === 'events' ? '📅' : '💼'}
+                <span className="hidden sm:inline ml-1">{f === 'all' ? '' : f === 'profiles' ? t('map.filter_profiles') : f === 'anon' ? t('map.filter_anon') : f === 'events' ? t('map.filter_events') : t('map.filter_professions')}</span>
               </button>
             ))}
           </div>
@@ -390,7 +391,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
                 onChange={e => { setSelectedCountry(e.target.value); }}
                 className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
               >
-                <option value="">Tüm Ülkeler</option>
+                <option value="">{t('map.all_countries')}</option>
                 {countries.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             )}
@@ -400,14 +401,14 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
                 onChange={e => { setSelectedProfession(e.target.value); }}
                 className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
               >
-                <option value="">Tüm Meslekler</option>
+                <option value="">{t('map.all_professions')}</option>
                 {professionsList.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             )}
           </div>
         </div>
         <div className="flex-1 overflow-y-auto divide-y divide-border">
-          {filteredItems.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Sonuç bulunamadı</p>}
+          {filteredItems.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">{t('map.no_results')}</p>}
           {filteredItems.map((item, i) => {
             const isProfile = item._type === 'profile';
             const isEvent = item._type === 'event';
