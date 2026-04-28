@@ -144,8 +144,8 @@ const AdminDashboard = () => {
       supabase.from('profile_edit_requests').select('*').order('created_at', { ascending: false }),
       supabase.from('reports').select('*').order('created_at', { ascending: false }),
       supabase.from('professions').select('*').order('name'),
-      supabase.from('posts').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
-      supabase.from('comments').select('*').eq('status', 'pending').order('created_at', { ascending: false }),
+      supabase.from('posts').select('*').order('created_at', { ascending: false }),
+      supabase.from('comments').select('*').order('created_at', { ascending: false }),
     ]);
     if (s) setSubmissions(s);
     if (u) setUsers(u as unknown as UserMarker[]);
