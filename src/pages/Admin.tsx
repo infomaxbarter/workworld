@@ -495,18 +495,32 @@ const AdminDashboard = () => {
               <div className="space-y-3">
                 {reports.map(r => (
                   <Card key={r.id}>
-                    <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge variant="outline" className="text-xs">{r.type}</Badge>
-                          <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                    <CardContent className="p-4">
+                      {editingReport === r.id ? (
+                        <div className="space-y-2">
+                          <Input value={editReportForm.type || ''} onChange={e => setEditReportForm({ ...editReportForm, type: e.target.value })} placeholder="Type" />
+                          <Textarea value={editReportForm.reason || ''} onChange={e => setEditReportForm({ ...editReportForm, reason: e.target.value })} rows={2} placeholder="Reason" />
+                          <div className="flex gap-2 justify-end">
+                            <Button variant="outline" size="sm" onClick={() => setEditingReport(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
+                            <Button size="sm" onClick={saveReport} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
+                          </div>
                         </div>
-                        <p className="text-sm text-foreground">{r.reason}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Target: {r.target_id.substring(0, 8)}...</p>
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={() => deleteReport(r.id)}>
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
+                      ) : (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="outline" className="text-xs">{r.type}</Badge>
+                              <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                            </div>
+                            <p className="text-sm text-foreground">{r.reason}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Target: {r.target_id.substring(0, 8)}...</p>
+                          </div>
+                          <div className="flex gap-1 shrink-0">
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingReport(r.id); setEditReportForm(r); }}><Edit2 className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => deleteReport(r.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
