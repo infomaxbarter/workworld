@@ -325,6 +325,57 @@ const AdminDashboard = () => {
     toast.success('Comment rejected'); reload();
   };
 
+  // Inline edit state for submissions / reports / posts / comments
+  const [editingSubmission, setEditingSubmission] = useState<string | null>(null);
+  const [editSubForm, setEditSubForm] = useState<Partial<Submission>>({});
+  const [editingReport, setEditingReport] = useState<string | null>(null);
+  const [editReportForm, setEditReportForm] = useState<Partial<Report>>({});
+  const [editingPost, setEditingPost] = useState<string | null>(null);
+  const [editPostForm, setEditPostForm] = useState<Partial<PostRow>>({});
+  const [editingComment, setEditingComment] = useState<string | null>(null);
+  const [editCommentForm, setEditCommentForm] = useState<Partial<CommentRow>>({});
+
+  const saveSubmission = async () => {
+    if (!editingSubmission) return;
+    const { error } = await supabase.from('submissions').update({
+      name: editSubForm.name, email: editSubForm.email, message: editSubForm.message,
+    } as any).eq('id', editingSubmission);
+    if (error) return toast.error(error.message);
+    toast.success('Saved'); setEditingSubmission(null); reload();
+  };
+  const saveReport = async () => {
+    if (!editingReport) return;
+    const { error } = await supabase.from('reports').update({
+      reason: editReportForm.reason, type: editReportForm.type,
+    } as any).eq('id', editingReport);
+    if (error) return toast.error(error.message);
+    toast.success('Saved'); setEditingReport(null); reload();
+  };
+  const savePost = async () => {
+    if (!editingPost) return;
+    const { error } = await supabase.from('posts').update({
+      title: editPostForm.title, content: editPostForm.content, status: editPostForm.status,
+    } as any).eq('id', editingPost);
+    if (error) return toast.error(error.message);
+    toast.success('Saved'); setEditingPost(null); reload();
+  };
+  const deletePost = async (id: string) => {
+    await supabase.from('posts').delete().eq('id', id);
+    toast.success('Deleted'); reload();
+  };
+  const saveComment = async () => {
+    if (!editingComment) return;
+    const { error } = await supabase.from('comments').update({
+      content: editCommentForm.content, status: editCommentForm.status,
+    } as any).eq('id', editingComment);
+    if (error) return toast.error(error.message);
+    toast.success('Saved'); setEditingComment(null); reload();
+  };
+  const deleteComment = async (id: string) => {
+    await supabase.from('comments').delete().eq('id', id);
+    toast.success('Deleted'); reload();
+  };
+
   const filteredProfiles = profiles.filter(p => {
     if (profileFilter === 'pending') return !p.approved;
     if (profileFilter === 'approved') return p.approved;
@@ -332,6 +383,8 @@ const AdminDashboard = () => {
   });
   const pendingCount = profiles.filter(p => !p.approved).length;
   const pendingEdits = editRequests.filter(r => r.status === 'pending').length;
+  const pendingPostsCount = pendingPosts.filter(p => p.status === 'pending').length;
+  const pendingCommentsCount = pendingComments.filter(c => c.status === 'pending').length;
   const fieldLabels: Record<string, string> = {
     display_name: t('profile.display_name'), bio: t('profile.bio'), location: t('profile.location'),
     website: t('profile.website'), twitter: 'Twitter', linkedin: 'LinkedIn', instagram: 'Instagram', github: 'GitHub', lat: 'Lat', lng: 'Lng', city: t('admin.city'), country: t('admin.country'),
