@@ -172,7 +172,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
             <div style="font-weight:700;font-size:15px;margin-bottom:4px;">${pickI18n(e.title_i18n, e.title, lang)}</div>
             ${e.start_date ? `<div style="font-size:12px;color:#888;margin-bottom:2px;">📅 ${e.start_date}${e.end_date ? ' — ' + e.end_date : ''}</div>` : e.date ? `<div style="font-size:12px;color:#888;margin-bottom:2px;">📅 ${e.date}</div>` : ''}
             ${loc ? `<div style="font-size:12px;color:#888;margin-bottom:4px;">📍 ${loc}</div>` : ''}
-            <a href="/events/${e.slug || e.id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">Details →</a>
+            <a href="/events/${e.slug || e.id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">${t('map.view_details')}</a>
           </div>
         `);
         eMarkers.push({ marker, data: { ...e, _type: 'event' } });
