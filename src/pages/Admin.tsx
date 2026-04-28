@@ -601,11 +601,29 @@ const AdminDashboard = () => {
                 <TableBody>
                   {submissions.map(s => (
                     <TableRow key={s.id}>
-                      <TableCell className="font-medium">{s.name}</TableCell>
-                      <TableCell>{s.email}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{s.message}</TableCell>
-                      <TableCell className="text-muted-foreground text-xs">{new Date(s.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell><Button variant="ghost" size="icon" onClick={() => deleteSubmission(s.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button></TableCell>
+                      {editingSubmission === s.id ? (
+                        <>
+                          <TableCell><Input value={editSubForm.name || ''} onChange={e => setEditSubForm({ ...editSubForm, name: e.target.value })} /></TableCell>
+                          <TableCell><Input value={editSubForm.email || ''} onChange={e => setEditSubForm({ ...editSubForm, email: e.target.value })} /></TableCell>
+                          <TableCell><Textarea rows={2} value={editSubForm.message || ''} onChange={e => setEditSubForm({ ...editSubForm, message: e.target.value })} /></TableCell>
+                          <TableCell className="text-muted-foreground text-xs">{new Date(s.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="flex gap-1">
+                            <Button variant="ghost" size="icon" onClick={saveSubmission}><Save className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => setEditingSubmission(null)}><X className="w-4 h-4" /></Button>
+                          </TableCell>
+                        </>
+                      ) : (
+                        <>
+                          <TableCell className="font-medium">{s.name}</TableCell>
+                          <TableCell>{s.email}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">{s.message}</TableCell>
+                          <TableCell className="text-muted-foreground text-xs">{new Date(s.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="flex gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingSubmission(s.id); setEditSubForm(s); }}><Edit2 className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => deleteSubmission(s.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                          </TableCell>
+                        </>
+                      )}
                     </TableRow>
                   ))}
                   {!submissions.length && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No submissions yet.</TableCell></TableRow>}
