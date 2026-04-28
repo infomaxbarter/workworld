@@ -135,7 +135,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
                 <div style="font-size:11px;color:#888;">${loc}</div>
               </div>
             </div>
-            <a href="/humans/${p.slug || p.user_id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">View Profile →</a>
+            <a href="/humans/${p.slug || p.user_id}" style="display:block;text-align:center;padding:6px 12px;background:hsl(152,60%,36%);color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">${t('map.view_profile_btn')}</a>
           </div>
         `);
         pMarkers.push({ marker, data: { ...p, _type: 'profile', _professions: ppMap.get(p.id) || [] } });
