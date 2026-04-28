@@ -17,6 +17,7 @@ import { useNavigation, type NavMode, type NavSettings, type DeviceType } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataExportImport from '@/components/admin/DataExportImport';
 import DetailedReports from '@/components/admin/DetailedReports';
+import { pickI18n } from '@/i18n/i18nField';
 
 interface Submission { id: string; name: string; email: string; message: string; created_at: string; }
 interface UserMarker { id: string; name: string; lat: number; lng: number; city: string | null; country: string | null; slug: string | null; status: string; }
@@ -26,8 +27,9 @@ interface ProfileRow { id: string; user_id: string; display_name: string; bio: s
 interface EditRequest { id: string; profile_id: string; user_id: string; old_data: Record<string, any>; new_data: Record<string, any>; status: string; admin_response: string | null; created_at: string; reviewed_at: string | null; profile_name?: string; }
 interface Report { id: string; type: string; target_id: string; reason: string; created_by: string; created_at: string; }
 interface ProfessionRow { id: string; name: string; slug: string | null; description: string | null; icon: string; status: string; created_at: string; }
-interface PostRow { id: string; author_id: string; title: string; content: string; slug: string | null; status: string; target_type: string; target_id: string | null; created_at: string; author_name?: string; }
-interface CommentRow { id: string; user_id: string; target_type: string; target_id: string; content: string; status: string; created_at: string; author_name?: string; }
+interface PostRow { id: string; author_id: string; title: string; content: string; slug: string | null; status: string; target_type: string; target_id: string | null; created_at: string; author_name?: string; title_i18n?: any; content_i18n?: any; }
+interface CommentRow { id: string; user_id: string; target_type: string; target_id: string; content: string; status: string; created_at: string; author_name?: string; content_i18n?: any; }
+type ModStatus = 'all' | 'pending' | 'approved' | 'rejected';
 
 const STATUS_OPTIONS = ['active', 'coming_soon', 'inactive'] as const;
 type StatusType = typeof STATUS_OPTIONS[number];
@@ -87,7 +89,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 const AdminDashboard = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [users, setUsers] = useState<UserMarker[]>([]);
   const [events, setEvents] = useState<EventMarker[]>([]);
@@ -98,6 +100,8 @@ const AdminDashboard = () => {
   const [pendingPosts, setPendingPosts] = useState<PostRow[]>([]);
   const [pendingComments, setPendingComments] = useState<CommentRow[]>([]);
   const [profileFilter, setProfileFilter] = useState<'all' | 'pending' | 'approved'>('pending');
+  const [postFilter, setPostFilter] = useState<ModStatus>('pending');
+  const [commentFilter, setCommentFilter] = useState<ModStatus>('pending');
 
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberCity, setNewMemberCity] = useState('');
@@ -855,59 +859,134 @@ const AdminDashboard = () => {
 
           {/* Posts Moderation */}
           <TabsContent value="posts">
-            {pendingPosts.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_posts')}</p>
-            ) : (
-              <div className="space-y-3">
-                {pendingPosts.map(p => (
-                  <Card key={p.id}>
-                    <CardContent className="p-4 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="font-medium text-sm">{p.title}</span>
-                          <span className="text-xs text-muted-foreground ml-2">— {p.author_name}</span>
-                          <span className="text-xs text-muted-foreground ml-2">{p.target_type}</span>
-                        </div>
-                        <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</span>
-                      </div>
-                      <p className="text-sm text-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">{p.content}</p>
-                      <div className="flex gap-2 justify-end">
-                        <Button variant="outline" size="sm" onClick={() => rejectPost(p.id)} className="gap-1"><XCircle className="w-4 h-4" /> {t('admin.reject')}</Button>
-                        <Button size="sm" onClick={() => approvePost(p)} className="gap-1"><CheckCircle className="w-4 h-4" /> {t('admin.approve')}</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+            <div className="flex gap-2 mb-4 flex-wrap">
+              {(['pending', 'approved', 'rejected', 'all'] as ModStatus[]).map(f => {
+                const count = f === 'all' ? pendingPosts.length : pendingPosts.filter(p => p.status === f).length;
+                return (
+                  <Button key={f} variant={postFilter === f ? 'default' : 'outline'} size="sm" onClick={() => setPostFilter(f)}>
+                    {t(`admin.${f}`)} ({count})
+                  </Button>
+                );
+              })}
+            </div>
+            {(() => {
+              const list = pendingPosts.filter(p => postFilter === 'all' ? true : p.status === postFilter);
+              if (list.length === 0) return <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_posts')}</p>;
+              return (
+                <div className="space-y-3">
+                  {list.map(p => (
+                    <Card key={p.id}>
+                      <CardContent className="p-4 space-y-2">
+                        {editingPost === p.id ? (
+                          <div className="space-y-2">
+                            <Input value={editPostForm.title || ''} onChange={e => setEditPostForm({ ...editPostForm, title: e.target.value })} placeholder="Title" />
+                            <Textarea value={editPostForm.content || ''} onChange={e => setEditPostForm({ ...editPostForm, content: e.target.value })} rows={4} placeholder="Content" />
+                            <div className="space-y-1">
+                              <Label>{t('admin.status')}</Label>
+                              <Select value={editPostForm.status || 'pending'} onValueChange={v => setEditPostForm({ ...editPostForm, status: v })}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">{t('admin.pending')}</SelectItem>
+                                  <SelectItem value="approved">{t('admin.approved')}</SelectItem>
+                                  <SelectItem value="rejected">{t('admin.rejected')}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                              <Button variant="outline" size="sm" onClick={() => setEditingPost(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
+                              <Button size="sm" onClick={savePost} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-medium text-sm">{pickI18n(p.title_i18n, p.title, lang)}</span>
+                                <Badge variant={p.status === 'approved' ? 'default' : p.status === 'rejected' ? 'destructive' : 'secondary'} className="text-xs">{t(`admin.${p.status}`)}</Badge>
+                                <span className="text-xs text-muted-foreground">— {p.author_name}</span>
+                                <Badge variant="outline" className="text-xs">{p.target_type}</Badge>
+                              </div>
+                              <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</span>
+                            </div>
+                            <p className="text-sm text-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">{pickI18n(p.content_i18n, p.content, lang)}</p>
+                            <div className="flex gap-2 justify-end flex-wrap">
+                              {p.status !== 'approved' && <Button size="sm" onClick={() => approvePost(p)} className="gap-1"><CheckCircle className="w-4 h-4" /> {t('admin.approve')}</Button>}
+                              {p.status !== 'rejected' && <Button variant="outline" size="sm" onClick={() => rejectPost(p.id)} className="gap-1"><XCircle className="w-4 h-4" /> {t('admin.reject')}</Button>}
+                              <Button variant="ghost" size="icon" onClick={() => { setEditingPost(p.id); setEditPostForm(p); }}><Edit2 className="w-4 h-4" /></Button>
+                              <Button variant="ghost" size="icon" onClick={() => deletePost(p.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                            </div>
+                          </>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              );
+            })()}
           </TabsContent>
 
           {/* Comments Moderation */}
           <TabsContent value="comments">
-            {pendingComments.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_comments')}</p>
-            ) : (
-              <div className="space-y-3">
-                {pendingComments.map(c => (
-                  <Card key={c.id}>
-                    <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm">{c.author_name}</span>
-                          <Badge variant="outline" className="text-xs">{c.target_type}</Badge>
-                          <span className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</span>
-                        </div>
-                        <p className="text-sm text-foreground">{c.content}</p>
-                      </div>
-                      <div className="flex gap-2 shrink-0">
-                        <Button variant="outline" size="sm" onClick={() => rejectComment(c.id)} className="gap-1"><XCircle className="w-4 h-4" /></Button>
-                        <Button size="sm" onClick={() => approveComment(c)} className="gap-1"><CheckCircle className="w-4 h-4" /></Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+            <div className="flex gap-2 mb-4 flex-wrap">
+              {(['pending', 'approved', 'all'] as ModStatus[]).map(f => {
+                const count = f === 'all' ? pendingComments.length : pendingComments.filter(c => c.status === f).length;
+                return (
+                  <Button key={f} variant={commentFilter === f ? 'default' : 'outline'} size="sm" onClick={() => setCommentFilter(f)}>
+                    {t(`admin.${f}`)} ({count})
+                  </Button>
+                );
+              })}
+            </div>
+            {(() => {
+              const list = pendingComments.filter(c => commentFilter === 'all' ? true : c.status === commentFilter);
+              if (list.length === 0) return <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_comments')}</p>;
+              return (
+                <div className="space-y-3">
+                  {list.map(c => (
+                    <Card key={c.id}>
+                      <CardContent className="p-4">
+                        {editingComment === c.id ? (
+                          <div className="space-y-2">
+                            <Textarea value={editCommentForm.content || ''} onChange={e => setEditCommentForm({ ...editCommentForm, content: e.target.value })} rows={3} />
+                            <div className="space-y-1">
+                              <Label>{t('admin.status')}</Label>
+                              <Select value={editCommentForm.status || 'pending'} onValueChange={v => setEditCommentForm({ ...editCommentForm, status: v })}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">{t('admin.pending')}</SelectItem>
+                                  <SelectItem value="approved">{t('admin.approved')}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                              <Button variant="outline" size="sm" onClick={() => setEditingComment(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
+                              <Button size="sm" onClick={saveComment} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <span className="font-medium text-sm">{c.author_name}</span>
+                                <Badge variant={c.status === 'approved' ? 'default' : 'secondary'} className="text-xs">{t(`admin.${c.status}`)}</Badge>
+                                <Badge variant="outline" className="text-xs">{c.target_type}</Badge>
+                                <span className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</span>
+                              </div>
+                              <p className="text-sm text-foreground">{pickI18n(c.content_i18n, c.content, lang)}</p>
+                            </div>
+                            <div className="flex gap-1 shrink-0">
+                              {c.status !== 'approved' && <Button size="sm" onClick={() => approveComment(c)} className="gap-1"><CheckCircle className="w-4 h-4" /></Button>}
+                              <Button variant="ghost" size="icon" onClick={() => { setEditingComment(c.id); setEditCommentForm(c); }}><Edit2 className="w-4 h-4" /></Button>
+                              <Button variant="ghost" size="icon" onClick={() => deleteComment(c.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              );
+            })()}
           </TabsContent>
 
           {/* Data Export/Import */}
