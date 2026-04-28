@@ -365,7 +365,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="🔍 Ara..."
+              placeholder={t('map.search_placeholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
@@ -378,8 +378,8 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
                 onClick={() => setFilterType(f)}
                 className={`px-2 py-1 text-xs rounded-md font-medium transition-colors ${filterType === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
               >
-                {f === 'all' ? 'Tümü' : f === 'profiles' ? '👤' : f === 'anon' ? '👻' : f === 'events' ? '📅' : '💼'}
-                <span className="hidden sm:inline ml-1">{f === 'all' ? '' : f === 'profiles' ? 'Profiller' : f === 'anon' ? 'Anonim' : f === 'events' ? 'Etkinlikler' : 'Meslekler'}</span>
+                {f === 'all' ? t('map.filter_all') : f === 'profiles' ? '👤' : f === 'anon' ? '👻' : f === 'events' ? '📅' : '💼'}
+                <span className="hidden sm:inline ml-1">{f === 'all' ? '' : f === 'profiles' ? t('map.filter_profiles') : f === 'anon' ? t('map.filter_anon') : f === 'events' ? t('map.filter_events') : t('map.filter_professions')}</span>
               </button>
             ))}
           </div>
@@ -390,7 +390,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
                 onChange={e => { setSelectedCountry(e.target.value); }}
                 className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
               >
-                <option value="">Tüm Ülkeler</option>
+                <option value="">{t('map.all_countries')}</option>
                 {countries.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             )}
@@ -400,14 +400,14 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
                 onChange={e => { setSelectedProfession(e.target.value); }}
                 className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
               >
-                <option value="">Tüm Meslekler</option>
+                <option value="">{t('map.all_professions')}</option>
                 {professionsList.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             )}
           </div>
         </div>
         <div className="flex-1 overflow-y-auto divide-y divide-border">
-          {filteredItems.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">Sonuç bulunamadı</p>}
+          {filteredItems.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">{t('map.no_results')}</p>}
           {filteredItems.map((item, i) => {
             const isProfile = item._type === 'profile';
             const isEvent = item._type === 'event';
