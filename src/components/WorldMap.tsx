@@ -39,7 +39,7 @@ interface WorldMapProps {
 }
 
 const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layersRef = useRef<{
