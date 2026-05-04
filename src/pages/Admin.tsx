@@ -17,6 +17,9 @@ import { useNavigation, type NavMode, type NavSettings, type DeviceType } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataExportImport from '@/components/admin/DataExportImport';
 import DetailedReports from '@/components/admin/DetailedReports';
+import AdminToolbar from '@/components/admin/AdminToolbar';
+import { useAdminTable } from '@/hooks/useAdminTable';
+import { Checkbox } from '@/components/ui/checkbox';
 import { pickI18n } from '@/i18n/i18nField';
 
 interface Submission { id: string; name: string; email: string; message: string; created_at: string; }
@@ -293,7 +296,21 @@ const AdminDashboard = () => {
   const deleteReport = async (id: string) => {
     await supabase.from('reports').delete().eq('id', id);
     setReports(prev => prev.filter(r => r.id !== id));
-    toast.success('Report dismissed');
+  };
+
+  const bulkDeleteSubmissions = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} submission(s)?`)) return;
+    await supabase.from('submissions').delete().in('id', ids);
+    setSubmissions(prev => prev.filter(s => !ids.includes(s.id)));
+    toast.success(`${ids.length} deleted`);
+  };
+  const bulkDeleteReports = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Dismiss ${ids.length} report(s)?`)) return;
+    await supabase.from('reports').delete().in('id', ids);
+    setReports(prev => prev.filter(r => !ids.includes(r.id)));
+    toast.success(`${ids.length} dismissed`);
   };
 
   // Professions
@@ -394,6 +411,18 @@ const AdminDashboard = () => {
     website: t('profile.website'), twitter: 'Twitter', linkedin: 'LinkedIn', instagram: 'Instagram', github: 'GitHub', lat: 'Lat', lng: 'Lng', city: t('admin.city'), country: t('admin.country'),
   };
 
+  const submissionsTable = useAdminTable<Submission>({
+    data: submissions,
+    searchFields: ['name', 'email', 'message'],
+    initialSortKey: 'created_at',
+  });
+  const reportsTable = useAdminTable<Report>({
+    data: reports,
+    searchFields: ['type', 'reason', 'target_id'],
+    initialSortKey: 'created_at',
+  });
+
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
@@ -409,7 +438,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="edit_requests">
-          <TabsList className="mb-4 flex-wrap">
+          <TabsList className="mb-4 flex-wrap h-auto">
             <TabsTrigger value="edit_requests" className="gap-1.5">
               <GitCompare className="w-4 h-4" /> {t('admin.edit_requests')}
               {pendingEdits > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingEdits}</Badge>}
@@ -493,11 +522,25 @@ const AdminDashboard = () => {
 
           {/* Reports */}
           <TabsContent value="reports">
-            {reports.length === 0 ? (
+            <AdminToolbar
+              search={reportsTable.search} onSearch={reportsTable.setSearch}
+              placeholder="Search type, reason, target..."
+              page={reportsTable.page} totalPages={reportsTable.totalPages}
+              pageSize={reportsTable.pageSize} onPageChange={reportsTable.setPage}
+              onPageSizeChange={reportsTable.setPageSize} total={reportsTable.total}
+              selectedCount={reportsTable.selected.size}
+              onClearSelection={reportsTable.clearSelection}
+              bulkActions={
+                <Button size="sm" variant="destructive" onClick={async () => { await bulkDeleteReports(Array.from(reportsTable.selected)); reportsTable.clearSelection(); }}>
+                  <Trash2 className="w-3.5 h-3.5 mr-1" /> Dismiss
+                </Button>
+              }
+            />
+            {reportsTable.total === 0 ? (
               <p className="text-center text-muted-foreground py-8">{t('admin.no_reports')}</p>
             ) : (
               <div className="space-y-3">
-                {reports.map(r => (
+                {reportsTable.paged.map(r => (
                   <Card key={r.id}>
                     <CardContent className="p-4">
                       {editingReport === r.id ? (
@@ -511,13 +554,16 @@ const AdminDashboard = () => {
                         </div>
                       ) : (
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="outline" className="text-xs">{r.type}</Badge>
-                              <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
+                            <Checkbox checked={reportsTable.selected.has(r.id)} onCheckedChange={() => reportsTable.toggle(r.id)} className="mt-1" />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge variant="outline" className="text-xs">{r.type}</Badge>
+                                <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                              </div>
+                              <p className="text-sm text-foreground">{r.reason}</p>
+                              <p className="text-xs text-muted-foreground mt-1">Target: {r.target_id.substring(0, 8)}...</p>
                             </div>
-                            <p className="text-sm text-foreground">{r.reason}</p>
-                            <p className="text-xs text-muted-foreground mt-1">Target: {r.target_id.substring(0, 8)}...</p>
                           </div>
                           <div className="flex gap-1 shrink-0">
                             <Button variant="ghost" size="icon" onClick={() => { setEditingReport(r.id); setEditReportForm(r); }}><Edit2 className="w-4 h-4" /></Button>
@@ -595,18 +641,44 @@ const AdminDashboard = () => {
 
           {/* Submissions */}
           <TabsContent value="submissions">
-            <div className="flex justify-between items-center mb-4">
-              <p className="text-sm text-muted-foreground">{submissions.length} submission(s)</p>
-              <Button variant="outline" size="sm" onClick={exportCSV} disabled={!submissions.length}><Download className="w-4 h-4 mr-1" /> {t('admin.export_csv')}</Button>
-            </div>
+            <AdminToolbar
+              search={submissionsTable.search} onSearch={submissionsTable.setSearch}
+              placeholder="Search name, email, message..."
+              page={submissionsTable.page} totalPages={submissionsTable.totalPages}
+              pageSize={submissionsTable.pageSize} onPageChange={submissionsTable.setPage}
+              onPageSizeChange={submissionsTable.setPageSize} total={submissionsTable.total}
+              selectedCount={submissionsTable.selected.size}
+              onClearSelection={submissionsTable.clearSelection}
+              bulkActions={
+                <Button size="sm" variant="destructive" onClick={async () => { await bulkDeleteSubmissions(Array.from(submissionsTable.selected)); submissionsTable.clearSelection(); }}>
+                  <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                </Button>
+              }
+              rightSlot={
+                <Button variant="outline" size="sm" className="h-9" onClick={exportCSV} disabled={!submissions.length}>
+                  <Download className="w-4 h-4 mr-1" /> {t('admin.export_csv')}
+                </Button>
+              }
+            />
             <div className="border rounded-lg overflow-hidden">
               <Table>
-                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>Message</TableHead><TableHead>Date</TableHead><TableHead></TableHead></TableRow></TableHeader>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={submissionsTable.paged.length > 0 && submissionsTable.paged.every(r => submissionsTable.selected.has(r.id))}
+                        onCheckedChange={() => submissionsTable.toggleAllVisible()}
+                      />
+                    </TableHead>
+                    <TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>Message</TableHead><TableHead>Date</TableHead><TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
                 <TableBody>
-                  {submissions.map(s => (
-                    <TableRow key={s.id}>
+                  {submissionsTable.paged.map(s => (
+                    <TableRow key={s.id} data-state={submissionsTable.selected.has(s.id) ? 'selected' : undefined}>
                       {editingSubmission === s.id ? (
                         <>
+                          <TableCell></TableCell>
                           <TableCell><Input value={editSubForm.name || ''} onChange={e => setEditSubForm({ ...editSubForm, name: e.target.value })} /></TableCell>
                           <TableCell><Input value={editSubForm.email || ''} onChange={e => setEditSubForm({ ...editSubForm, email: e.target.value })} /></TableCell>
                           <TableCell><Textarea rows={2} value={editSubForm.message || ''} onChange={e => setEditSubForm({ ...editSubForm, message: e.target.value })} /></TableCell>
@@ -618,6 +690,9 @@ const AdminDashboard = () => {
                         </>
                       ) : (
                         <>
+                          <TableCell>
+                            <Checkbox checked={submissionsTable.selected.has(s.id)} onCheckedChange={() => submissionsTable.toggle(s.id)} />
+                          </TableCell>
                           <TableCell className="font-medium">{s.name}</TableCell>
                           <TableCell>{s.email}</TableCell>
                           <TableCell className="max-w-[200px] truncate">{s.message}</TableCell>
@@ -630,7 +705,7 @@ const AdminDashboard = () => {
                       )}
                     </TableRow>
                   ))}
-                  {!submissions.length && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No submissions yet.</TableCell></TableRow>}
+                  {submissionsTable.total === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No submissions found.</TableCell></TableRow>}
                 </TableBody>
               </Table>
             </div>
