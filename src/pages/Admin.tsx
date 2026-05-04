@@ -438,7 +438,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="edit_requests">
-          <TabsList className="mb-4 flex-wrap">
+          <TabsList className="mb-4 flex-wrap h-auto">
             <TabsTrigger value="edit_requests" className="gap-1.5">
               <GitCompare className="w-4 h-4" /> {t('admin.edit_requests')}
               {pendingEdits > 0 && <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">{pendingEdits}</Badge>}
