@@ -641,18 +641,44 @@ const AdminDashboard = () => {
 
           {/* Submissions */}
           <TabsContent value="submissions">
-            <div className="flex justify-between items-center mb-4">
-              <p className="text-sm text-muted-foreground">{submissions.length} submission(s)</p>
-              <Button variant="outline" size="sm" onClick={exportCSV} disabled={!submissions.length}><Download className="w-4 h-4 mr-1" /> {t('admin.export_csv')}</Button>
-            </div>
+            <AdminToolbar
+              search={submissionsTable.search} onSearch={submissionsTable.setSearch}
+              placeholder="Search name, email, message..."
+              page={submissionsTable.page} totalPages={submissionsTable.totalPages}
+              pageSize={submissionsTable.pageSize} onPageChange={submissionsTable.setPage}
+              onPageSizeChange={submissionsTable.setPageSize} total={submissionsTable.total}
+              selectedCount={submissionsTable.selected.size}
+              onClearSelection={submissionsTable.clearSelection}
+              bulkActions={
+                <Button size="sm" variant="destructive" onClick={async () => { await bulkDeleteSubmissions(Array.from(submissionsTable.selected)); submissionsTable.clearSelection(); }}>
+                  <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                </Button>
+              }
+              rightSlot={
+                <Button variant="outline" size="sm" className="h-9" onClick={exportCSV} disabled={!submissions.length}>
+                  <Download className="w-4 h-4 mr-1" /> {t('admin.export_csv')}
+                </Button>
+              }
+            />
             <div className="border rounded-lg overflow-hidden">
               <Table>
-                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>Message</TableHead><TableHead>Date</TableHead><TableHead></TableHead></TableRow></TableHeader>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={submissionsTable.paged.length > 0 && submissionsTable.paged.every(r => submissionsTable.selected.has(r.id))}
+                        onCheckedChange={() => submissionsTable.toggleAllVisible()}
+                      />
+                    </TableHead>
+                    <TableHead>Name</TableHead><TableHead>Email</TableHead><TableHead>Message</TableHead><TableHead>Date</TableHead><TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
                 <TableBody>
-                  {submissions.map(s => (
-                    <TableRow key={s.id}>
+                  {submissionsTable.paged.map(s => (
+                    <TableRow key={s.id} data-state={submissionsTable.selected.has(s.id) ? 'selected' : undefined}>
                       {editingSubmission === s.id ? (
                         <>
+                          <TableCell></TableCell>
                           <TableCell><Input value={editSubForm.name || ''} onChange={e => setEditSubForm({ ...editSubForm, name: e.target.value })} /></TableCell>
                           <TableCell><Input value={editSubForm.email || ''} onChange={e => setEditSubForm({ ...editSubForm, email: e.target.value })} /></TableCell>
                           <TableCell><Textarea rows={2} value={editSubForm.message || ''} onChange={e => setEditSubForm({ ...editSubForm, message: e.target.value })} /></TableCell>
@@ -664,6 +690,9 @@ const AdminDashboard = () => {
                         </>
                       ) : (
                         <>
+                          <TableCell>
+                            <Checkbox checked={submissionsTable.selected.has(s.id)} onCheckedChange={() => submissionsTable.toggle(s.id)} />
+                          </TableCell>
                           <TableCell className="font-medium">{s.name}</TableCell>
                           <TableCell>{s.email}</TableCell>
                           <TableCell className="max-w-[200px] truncate">{s.message}</TableCell>
@@ -676,7 +705,7 @@ const AdminDashboard = () => {
                       )}
                     </TableRow>
                   ))}
-                  {!submissions.length && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No submissions yet.</TableCell></TableRow>}
+                  {submissionsTable.total === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No submissions found.</TableCell></TableRow>}
                 </TableBody>
               </Table>
             </div>
