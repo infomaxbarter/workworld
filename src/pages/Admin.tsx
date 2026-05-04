@@ -17,6 +17,9 @@ import { useNavigation, type NavMode, type NavSettings, type DeviceType } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataExportImport from '@/components/admin/DataExportImport';
 import DetailedReports from '@/components/admin/DetailedReports';
+import AdminToolbar from '@/components/admin/AdminToolbar';
+import { useAdminTable } from '@/hooks/useAdminTable';
+import { Checkbox } from '@/components/ui/checkbox';
 import { pickI18n } from '@/i18n/i18nField';
 
 interface Submission { id: string; name: string; email: string; message: string; created_at: string; }
