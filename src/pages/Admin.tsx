@@ -411,6 +411,18 @@ const AdminDashboard = () => {
     website: t('profile.website'), twitter: 'Twitter', linkedin: 'LinkedIn', instagram: 'Instagram', github: 'GitHub', lat: 'Lat', lng: 'Lng', city: t('admin.city'), country: t('admin.country'),
   };
 
+  const submissionsTable = useAdminTable<Submission>({
+    data: submissions,
+    searchFields: ['name', 'email', 'message'],
+    initialSortKey: 'created_at',
+  });
+  const reportsTable = useAdminTable<Report>({
+    data: reports,
+    searchFields: ['type', 'reason', 'target_id'],
+    initialSortKey: 'created_at',
+  });
+
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
