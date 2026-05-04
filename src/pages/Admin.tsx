@@ -296,7 +296,21 @@ const AdminDashboard = () => {
   const deleteReport = async (id: string) => {
     await supabase.from('reports').delete().eq('id', id);
     setReports(prev => prev.filter(r => r.id !== id));
-    toast.success('Report dismissed');
+  };
+
+  const bulkDeleteSubmissions = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} submission(s)?`)) return;
+    await supabase.from('submissions').delete().in('id', ids);
+    setSubmissions(prev => prev.filter(s => !ids.includes(s.id)));
+    toast.success(`${ids.length} deleted`);
+  };
+  const bulkDeleteReports = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Dismiss ${ids.length} report(s)?`)) return;
+    await supabase.from('reports').delete().in('id', ids);
+    setReports(prev => prev.filter(r => !ids.includes(r.id)));
+    toast.success(`${ids.length} dismissed`);
   };
 
   // Professions
