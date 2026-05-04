@@ -522,11 +522,25 @@ const AdminDashboard = () => {
 
           {/* Reports */}
           <TabsContent value="reports">
-            {reports.length === 0 ? (
+            <AdminToolbar
+              search={reportsTable.search} onSearch={reportsTable.setSearch}
+              placeholder="Search type, reason, target..."
+              page={reportsTable.page} totalPages={reportsTable.totalPages}
+              pageSize={reportsTable.pageSize} onPageChange={reportsTable.setPage}
+              onPageSizeChange={reportsTable.setPageSize} total={reportsTable.total}
+              selectedCount={reportsTable.selected.size}
+              onClearSelection={reportsTable.clearSelection}
+              bulkActions={
+                <Button size="sm" variant="destructive" onClick={async () => { await bulkDeleteReports(Array.from(reportsTable.selected)); reportsTable.clearSelection(); }}>
+                  <Trash2 className="w-3.5 h-3.5 mr-1" /> Dismiss
+                </Button>
+              }
+            />
+            {reportsTable.total === 0 ? (
               <p className="text-center text-muted-foreground py-8">{t('admin.no_reports')}</p>
             ) : (
               <div className="space-y-3">
-                {reports.map(r => (
+                {reportsTable.paged.map(r => (
                   <Card key={r.id}>
                     <CardContent className="p-4">
                       {editingReport === r.id ? (
@@ -540,13 +554,16 @@ const AdminDashboard = () => {
                         </div>
                       ) : (
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="outline" className="text-xs">{r.type}</Badge>
-                              <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
+                            <Checkbox checked={reportsTable.selected.has(r.id)} onCheckedChange={() => reportsTable.toggle(r.id)} className="mt-1" />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge variant="outline" className="text-xs">{r.type}</Badge>
+                                <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span>
+                              </div>
+                              <p className="text-sm text-foreground">{r.reason}</p>
+                              <p className="text-xs text-muted-foreground mt-1">Target: {r.target_id.substring(0, 8)}...</p>
                             </div>
-                            <p className="text-sm text-foreground">{r.reason}</p>
-                            <p className="text-xs text-muted-foreground mt-1">Target: {r.target_id.substring(0, 8)}...</p>
                           </div>
                           <div className="flex gap-1 shrink-0">
                             <Button variant="ghost" size="icon" onClick={() => { setEditingReport(r.id); setEditReportForm(r); }}><Edit2 className="w-4 h-4" /></Button>
