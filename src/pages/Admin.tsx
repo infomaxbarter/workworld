@@ -822,9 +822,22 @@ const AdminDashboard = () => {
                 <Button size="sm" onClick={addUser}><Plus className="w-4 h-4 mr-1" /> {t('admin.add_member')}</Button>
               </CardContent>
             </Card>
-            <p className="text-sm text-muted-foreground mb-3">{users.length} {t('admin.anonymous_members')}</p>
+            <AdminToolbar
+              search={membersTable.search} onSearch={membersTable.setSearch}
+              placeholder="Search name, city, country..."
+              page={membersTable.page} totalPages={membersTable.totalPages}
+              pageSize={membersTable.pageSize} onPageChange={membersTable.setPage}
+              onPageSizeChange={membersTable.setPageSize} total={membersTable.total}
+              selectedCount={membersTable.selected.size}
+              onClearSelection={membersTable.clearSelection}
+              bulkActions={
+                <Button size="sm" variant="destructive" onClick={async () => { await bulkDeleteMembers(Array.from(membersTable.selected)); membersTable.clearSelection(); }}>
+                  <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                </Button>
+              }
+            />
             <div className="space-y-3">
-              {users.map(u => (
+              {membersTable.paged.map(u => (
                 <Card key={u.id}>
                   <CardContent className="p-4">
                     {editingMember === u.id ? (
@@ -846,13 +859,14 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="font-medium text-sm">{u.name}</span>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <Checkbox checked={membersTable.selected.has(u.id)} onCheckedChange={() => membersTable.toggle(u.id)} />
+                          <span className="font-medium text-sm truncate">{u.name}</span>
                           <StatusBadge status={u.status} />
-                          <span className="text-xs text-muted-foreground">📍 {u.city && u.country ? `${u.city}, ${u.country}` : `${u.lat.toFixed(2)}, ${u.lng.toFixed(2)}`}</span>
+                          <span className="text-xs text-muted-foreground truncate">📍 {u.city && u.country ? `${u.city}, ${u.country}` : `${u.lat.toFixed(2)}, ${u.lng.toFixed(2)}`}</span>
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 shrink-0">
                           <Button variant="ghost" size="icon" onClick={() => startEditMember(u)}><Edit2 className="w-4 h-4" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => removeUser(u.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                         </div>
@@ -861,6 +875,7 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               ))}
+              {membersTable.total === 0 && <p className="text-center text-muted-foreground py-8">No members found.</p>}
             </div>
           </TabsContent>
 
