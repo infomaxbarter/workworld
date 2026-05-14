@@ -647,15 +647,34 @@ const AdminDashboard = () => {
 
           {/* Profiles */}
           <TabsContent value="profiles">
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-2 mb-3 flex-wrap">
               {(['all', 'pending', 'approved'] as const).map(f => (
                 <Button key={f} variant={profileFilter === f ? 'default' : 'outline'} size="sm" onClick={() => setProfileFilter(f)}>
                   {t(`admin.${f}`)} {f === 'pending' && pendingCount > 0 ? `(${pendingCount})` : ''}
                 </Button>
               ))}
             </div>
+            <AdminToolbar
+              search={profilesTable.search} onSearch={profilesTable.setSearch}
+              placeholder="Search name, bio, city..."
+              page={profilesTable.page} totalPages={profilesTable.totalPages}
+              pageSize={profilesTable.pageSize} onPageChange={profilesTable.setPage}
+              onPageSizeChange={profilesTable.setPageSize} total={profilesTable.total}
+              selectedCount={profilesTable.selected.size}
+              onClearSelection={profilesTable.clearSelection}
+              bulkActions={
+                <>
+                  <Button size="sm" onClick={async () => { await bulkApproveProfiles(Array.from(profilesTable.selected)); profilesTable.clearSelection(); }}>
+                    <CheckCircle className="w-3.5 h-3.5 mr-1" /> {t('admin.approve')}
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={async () => { await bulkDeleteProfiles(Array.from(profilesTable.selected)); profilesTable.clearSelection(); }}>
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                  </Button>
+                </>
+              }
+            />
             <div className="space-y-3">
-              {filteredProfiles.map(p => (
+              {profilesTable.paged.map(p => (
                 <Card key={p.id}>
                   <CardContent className="p-4">
                     {editingProfile === p.id ? (
@@ -682,14 +701,17 @@ const AdminDashboard = () => {
                       </div>
                     ) : (
                       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-foreground truncate">{p.display_name || '(unnamed)'}</span>
-                            {p.approved ? <Badge variant="default" className="gap-1 text-xs"><CheckCircle className="w-3 h-3" />{t('admin.approved')}</Badge> : <Badge variant="secondary" className="gap-1 text-xs"><Clock className="w-3 h-3" />{t('admin.pending')}</Badge>}
-                            <StatusBadge status={p.status} />
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <Checkbox checked={profilesTable.selected.has(p.id)} onCheckedChange={() => profilesTable.toggle(p.id)} className="mt-1" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <span className="font-semibold text-foreground truncate">{p.display_name || '(unnamed)'}</span>
+                              {p.approved ? <Badge variant="default" className="gap-1 text-xs"><CheckCircle className="w-3 h-3" />{t('admin.approved')}</Badge> : <Badge variant="secondary" className="gap-1 text-xs"><Clock className="w-3 h-3" />{t('admin.pending')}</Badge>}
+                              <StatusBadge status={p.status} />
+                            </div>
+                            {(p.city || p.country) && <p className="text-xs text-muted-foreground">📍 {[p.city, p.country].filter(Boolean).join(', ')}</p>}
+                            {p.bio && <p className="text-xs text-muted-foreground truncate max-w-md">{p.bio}</p>}
                           </div>
-                          {(p.city || p.country) && <p className="text-xs text-muted-foreground">📍 {[p.city, p.country].filter(Boolean).join(', ')}</p>}
-                          {p.bio && <p className="text-xs text-muted-foreground truncate max-w-md">{p.bio}</p>}
                         </div>
                         <div className="flex gap-2 shrink-0">
                           <Button variant="ghost" size="icon" onClick={() => startEditProfile(p)}><Edit2 className="w-4 h-4" /></Button>
@@ -702,7 +724,7 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               ))}
-              {filteredProfiles.length === 0 && <p className="text-center text-muted-foreground py-8">No profiles found.</p>}
+              {profilesTable.total === 0 && <p className="text-center text-muted-foreground py-8">No profiles found.</p>}
             </div>
           </TabsContent>
 
