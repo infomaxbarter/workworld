@@ -397,6 +397,48 @@ const AdminDashboard = () => {
     toast.success('Deleted'); reload();
   };
 
+  const bulkDeletePosts = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} post(s)?`)) return;
+    await supabase.from('posts').delete().in('id', ids);
+    toast.success(`${ids.length} deleted`); reload();
+  };
+  const bulkApprovePosts = async (ids: string[]) => {
+    if (!ids.length) return;
+    await supabase.from('posts').update({ status: 'approved' } as any).in('id', ids);
+    toast.success(`${ids.length} approved`); reload();
+  };
+  const bulkDeleteComments = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} comment(s)?`)) return;
+    await supabase.from('comments').delete().in('id', ids);
+    toast.success(`${ids.length} deleted`); reload();
+  };
+  const bulkApproveComments = async (ids: string[]) => {
+    if (!ids.length) return;
+    await supabase.from('comments').update({ status: 'approved' } as any).in('id', ids);
+    toast.success(`${ids.length} approved`); reload();
+  };
+  const bulkDeleteMembers = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} member(s)?`)) return;
+    await supabase.from('user_markers').delete().in('id', ids);
+    setUsers(prev => prev.filter(u => !ids.includes(u.id)));
+    toast.success(`${ids.length} deleted`);
+  };
+  const bulkDeleteProfiles = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} profile(s)?`)) return;
+    await supabase.from('profiles').delete().in('id', ids);
+    setProfiles(prev => prev.filter(p => !ids.includes(p.id)));
+    toast.success(`${ids.length} deleted`);
+  };
+  const bulkApproveProfiles = async (ids: string[]) => {
+    if (!ids.length) return;
+    await supabase.from('profiles').update({ approved: true } as any).in('id', ids);
+    toast.success(`${ids.length} approved`); reload();
+  };
+
   const filteredProfiles = profiles.filter(p => {
     if (profileFilter === 'pending') return !p.approved;
     if (profileFilter === 'approved') return p.approved;
@@ -419,6 +461,31 @@ const AdminDashboard = () => {
   const reportsTable = useAdminTable<Report>({
     data: reports,
     searchFields: ['type', 'reason', 'target_id'],
+    initialSortKey: 'created_at',
+  });
+
+  const filteredPosts = pendingPosts.filter(p => postFilter === 'all' ? true : p.status === postFilter);
+  const filteredComments = pendingComments.filter(c => commentFilter === 'all' ? true : c.status === commentFilter);
+
+  const postsTable = useAdminTable<PostRow>({
+    data: filteredPosts,
+    searchFields: ['title', 'content', 'author_name', 'target_type', (r) => pickI18n(r.title_i18n, r.title, lang)],
+    initialSortKey: 'created_at',
+  });
+  const commentsTable = useAdminTable<CommentRow>({
+    data: filteredComments,
+    searchFields: ['content', 'author_name', 'target_type', (r) => pickI18n(r.content_i18n, r.content, lang)],
+    initialSortKey: 'created_at',
+  });
+  const membersTable = useAdminTable<UserMarker>({
+    data: users,
+    searchFields: ['name', 'city', 'country', 'status'],
+    initialSortKey: 'name',
+    initialSortDir: 'asc',
+  });
+  const profilesTable = useAdminTable<ProfileRow>({
+    data: filteredProfiles,
+    searchFields: ['display_name', 'bio', 'city', 'country', 'location'],
     initialSortKey: 'created_at',
   });
 
@@ -580,15 +647,34 @@ const AdminDashboard = () => {
 
           {/* Profiles */}
           <TabsContent value="profiles">
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-2 mb-3 flex-wrap">
               {(['all', 'pending', 'approved'] as const).map(f => (
                 <Button key={f} variant={profileFilter === f ? 'default' : 'outline'} size="sm" onClick={() => setProfileFilter(f)}>
                   {t(`admin.${f}`)} {f === 'pending' && pendingCount > 0 ? `(${pendingCount})` : ''}
                 </Button>
               ))}
             </div>
+            <AdminToolbar
+              search={profilesTable.search} onSearch={profilesTable.setSearch}
+              placeholder="Search name, bio, city..."
+              page={profilesTable.page} totalPages={profilesTable.totalPages}
+              pageSize={profilesTable.pageSize} onPageChange={profilesTable.setPage}
+              onPageSizeChange={profilesTable.setPageSize} total={profilesTable.total}
+              selectedCount={profilesTable.selected.size}
+              onClearSelection={profilesTable.clearSelection}
+              bulkActions={
+                <>
+                  <Button size="sm" onClick={async () => { await bulkApproveProfiles(Array.from(profilesTable.selected)); profilesTable.clearSelection(); }}>
+                    <CheckCircle className="w-3.5 h-3.5 mr-1" /> {t('admin.approve')}
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={async () => { await bulkDeleteProfiles(Array.from(profilesTable.selected)); profilesTable.clearSelection(); }}>
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                  </Button>
+                </>
+              }
+            />
             <div className="space-y-3">
-              {filteredProfiles.map(p => (
+              {profilesTable.paged.map(p => (
                 <Card key={p.id}>
                   <CardContent className="p-4">
                     {editingProfile === p.id ? (
@@ -615,14 +701,17 @@ const AdminDashboard = () => {
                       </div>
                     ) : (
                       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-foreground truncate">{p.display_name || '(unnamed)'}</span>
-                            {p.approved ? <Badge variant="default" className="gap-1 text-xs"><CheckCircle className="w-3 h-3" />{t('admin.approved')}</Badge> : <Badge variant="secondary" className="gap-1 text-xs"><Clock className="w-3 h-3" />{t('admin.pending')}</Badge>}
-                            <StatusBadge status={p.status} />
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <Checkbox checked={profilesTable.selected.has(p.id)} onCheckedChange={() => profilesTable.toggle(p.id)} className="mt-1" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <span className="font-semibold text-foreground truncate">{p.display_name || '(unnamed)'}</span>
+                              {p.approved ? <Badge variant="default" className="gap-1 text-xs"><CheckCircle className="w-3 h-3" />{t('admin.approved')}</Badge> : <Badge variant="secondary" className="gap-1 text-xs"><Clock className="w-3 h-3" />{t('admin.pending')}</Badge>}
+                              <StatusBadge status={p.status} />
+                            </div>
+                            {(p.city || p.country) && <p className="text-xs text-muted-foreground">📍 {[p.city, p.country].filter(Boolean).join(', ')}</p>}
+                            {p.bio && <p className="text-xs text-muted-foreground truncate max-w-md">{p.bio}</p>}
                           </div>
-                          {(p.city || p.country) && <p className="text-xs text-muted-foreground">📍 {[p.city, p.country].filter(Boolean).join(', ')}</p>}
-                          {p.bio && <p className="text-xs text-muted-foreground truncate max-w-md">{p.bio}</p>}
                         </div>
                         <div className="flex gap-2 shrink-0">
                           <Button variant="ghost" size="icon" onClick={() => startEditProfile(p)}><Edit2 className="w-4 h-4" /></Button>
@@ -635,7 +724,7 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               ))}
-              {filteredProfiles.length === 0 && <p className="text-center text-muted-foreground py-8">No profiles found.</p>}
+              {profilesTable.total === 0 && <p className="text-center text-muted-foreground py-8">No profiles found.</p>}
             </div>
           </TabsContent>
 
@@ -733,9 +822,22 @@ const AdminDashboard = () => {
                 <Button size="sm" onClick={addUser}><Plus className="w-4 h-4 mr-1" /> {t('admin.add_member')}</Button>
               </CardContent>
             </Card>
-            <p className="text-sm text-muted-foreground mb-3">{users.length} {t('admin.anonymous_members')}</p>
+            <AdminToolbar
+              search={membersTable.search} onSearch={membersTable.setSearch}
+              placeholder="Search name, city, country..."
+              page={membersTable.page} totalPages={membersTable.totalPages}
+              pageSize={membersTable.pageSize} onPageChange={membersTable.setPage}
+              onPageSizeChange={membersTable.setPageSize} total={membersTable.total}
+              selectedCount={membersTable.selected.size}
+              onClearSelection={membersTable.clearSelection}
+              bulkActions={
+                <Button size="sm" variant="destructive" onClick={async () => { await bulkDeleteMembers(Array.from(membersTable.selected)); membersTable.clearSelection(); }}>
+                  <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                </Button>
+              }
+            />
             <div className="space-y-3">
-              {users.map(u => (
+              {membersTable.paged.map(u => (
                 <Card key={u.id}>
                   <CardContent className="p-4">
                     {editingMember === u.id ? (
@@ -757,13 +859,14 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="font-medium text-sm">{u.name}</span>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <Checkbox checked={membersTable.selected.has(u.id)} onCheckedChange={() => membersTable.toggle(u.id)} />
+                          <span className="font-medium text-sm truncate">{u.name}</span>
                           <StatusBadge status={u.status} />
-                          <span className="text-xs text-muted-foreground">📍 {u.city && u.country ? `${u.city}, ${u.country}` : `${u.lat.toFixed(2)}, ${u.lng.toFixed(2)}`}</span>
+                          <span className="text-xs text-muted-foreground truncate">📍 {u.city && u.country ? `${u.city}, ${u.country}` : `${u.lat.toFixed(2)}, ${u.lng.toFixed(2)}`}</span>
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 shrink-0">
                           <Button variant="ghost" size="icon" onClick={() => startEditMember(u)}><Edit2 className="w-4 h-4" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => removeUser(u.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                         </div>
@@ -772,6 +875,7 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               ))}
+              {membersTable.total === 0 && <p className="text-center text-muted-foreground py-8">No members found.</p>}
             </div>
           </TabsContent>
 
@@ -944,60 +1048,78 @@ const AdminDashboard = () => {
                 );
               })}
             </div>
-            {(() => {
-              const list = pendingPosts.filter(p => postFilter === 'all' ? true : p.status === postFilter);
-              if (list.length === 0) return <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_posts')}</p>;
-              return (
-                <div className="space-y-3">
-                  {list.map(p => (
-                    <Card key={p.id}>
-                      <CardContent className="p-4 space-y-2">
-                        {editingPost === p.id ? (
-                          <div className="space-y-2">
-                            <Input value={editPostForm.title || ''} onChange={e => setEditPostForm({ ...editPostForm, title: e.target.value })} placeholder="Title" />
-                            <Textarea value={editPostForm.content || ''} onChange={e => setEditPostForm({ ...editPostForm, content: e.target.value })} rows={4} placeholder="Content" />
-                            <div className="space-y-1">
-                              <Label>{t('admin.status')}</Label>
-                              <Select value={editPostForm.status || 'pending'} onValueChange={v => setEditPostForm({ ...editPostForm, status: v })}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">{t('admin.pending')}</SelectItem>
-                                  <SelectItem value="approved">{t('admin.approved')}</SelectItem>
-                                  <SelectItem value="rejected">{t('admin.rejected')}</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="flex gap-2 justify-end">
-                              <Button variant="outline" size="sm" onClick={() => setEditingPost(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
-                              <Button size="sm" onClick={savePost} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
-                            </div>
+            <AdminToolbar
+              search={postsTable.search} onSearch={postsTable.setSearch}
+              placeholder="Search title, content, author..."
+              page={postsTable.page} totalPages={postsTable.totalPages}
+              pageSize={postsTable.pageSize} onPageChange={postsTable.setPage}
+              onPageSizeChange={postsTable.setPageSize} total={postsTable.total}
+              selectedCount={postsTable.selected.size}
+              onClearSelection={postsTable.clearSelection}
+              bulkActions={
+                <>
+                  <Button size="sm" onClick={async () => { await bulkApprovePosts(Array.from(postsTable.selected)); postsTable.clearSelection(); }}>
+                    <CheckCircle className="w-3.5 h-3.5 mr-1" /> {t('admin.approve')}
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={async () => { await bulkDeletePosts(Array.from(postsTable.selected)); postsTable.clearSelection(); }}>
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                  </Button>
+                </>
+              }
+            />
+            {postsTable.total === 0 ? (
+              <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_posts')}</p>
+            ) : (
+              <div className="space-y-3">
+                {postsTable.paged.map(p => (
+                  <Card key={p.id}>
+                    <CardContent className="p-4 space-y-2">
+                      {editingPost === p.id ? (
+                        <div className="space-y-2">
+                          <Input value={editPostForm.title || ''} onChange={e => setEditPostForm({ ...editPostForm, title: e.target.value })} placeholder="Title" />
+                          <Textarea value={editPostForm.content || ''} onChange={e => setEditPostForm({ ...editPostForm, content: e.target.value })} rows={4} placeholder="Content" />
+                          <div className="space-y-1">
+                            <Label>{t('admin.status')}</Label>
+                            <Select value={editPostForm.status || 'pending'} onValueChange={v => setEditPostForm({ ...editPostForm, status: v })}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">{t('admin.pending')}</SelectItem>
+                                <SelectItem value="approved">{t('admin.approved')}</SelectItem>
+                                <SelectItem value="rejected">{t('admin.rejected')}</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
-                        ) : (
-                          <>
-                            <div className="flex items-center justify-between flex-wrap gap-2">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-medium text-sm">{pickI18n(p.title_i18n, p.title, lang)}</span>
-                                <Badge variant={p.status === 'approved' ? 'default' : p.status === 'rejected' ? 'destructive' : 'secondary'} className="text-xs">{t(`admin.${p.status}`)}</Badge>
-                                <span className="text-xs text-muted-foreground">— {p.author_name}</span>
-                                <Badge variant="outline" className="text-xs">{p.target_type}</Badge>
-                              </div>
-                              <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</span>
+                          <div className="flex gap-2 justify-end">
+                            <Button variant="outline" size="sm" onClick={() => setEditingPost(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
+                            <Button size="sm" onClick={savePost} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Checkbox checked={postsTable.selected.has(p.id)} onCheckedChange={() => postsTable.toggle(p.id)} />
+                              <span className="font-medium text-sm">{pickI18n(p.title_i18n, p.title, lang)}</span>
+                              <Badge variant={p.status === 'approved' ? 'default' : p.status === 'rejected' ? 'destructive' : 'secondary'} className="text-xs">{t(`admin.${p.status}`)}</Badge>
+                              <span className="text-xs text-muted-foreground">— {p.author_name}</span>
+                              <Badge variant="outline" className="text-xs">{p.target_type}</Badge>
                             </div>
-                            <p className="text-sm text-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">{pickI18n(p.content_i18n, p.content, lang)}</p>
-                            <div className="flex gap-2 justify-end flex-wrap">
-                              {p.status !== 'approved' && <Button size="sm" onClick={() => approvePost(p)} className="gap-1"><CheckCircle className="w-4 h-4" /> {t('admin.approve')}</Button>}
-                              {p.status !== 'rejected' && <Button variant="outline" size="sm" onClick={() => rejectPost(p.id)} className="gap-1"><XCircle className="w-4 h-4" /> {t('admin.reject')}</Button>}
-                              <Button variant="ghost" size="icon" onClick={() => { setEditingPost(p.id); setEditPostForm(p); }}><Edit2 className="w-4 h-4" /></Button>
-                              <Button variant="ghost" size="icon" onClick={() => deletePost(p.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
-                            </div>
-                          </>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              );
-            })()}
+                            <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</span>
+                          </div>
+                          <p className="text-sm text-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">{pickI18n(p.content_i18n, p.content, lang)}</p>
+                          <div className="flex gap-2 justify-end flex-wrap">
+                            {p.status !== 'approved' && <Button size="sm" onClick={() => approvePost(p)} className="gap-1"><CheckCircle className="w-4 h-4" /> {t('admin.approve')}</Button>}
+                            {p.status !== 'rejected' && <Button variant="outline" size="sm" onClick={() => rejectPost(p.id)} className="gap-1"><XCircle className="w-4 h-4" /> {t('admin.reject')}</Button>}
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingPost(p.id); setEditPostForm(p); }}><Edit2 className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => deletePost(p.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                          </div>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* Comments Moderation */}
@@ -1012,34 +1134,54 @@ const AdminDashboard = () => {
                 );
               })}
             </div>
-            {(() => {
-              const list = pendingComments.filter(c => commentFilter === 'all' ? true : c.status === commentFilter);
-              if (list.length === 0) return <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_comments')}</p>;
-              return (
-                <div className="space-y-3">
-                  {list.map(c => (
-                    <Card key={c.id}>
-                      <CardContent className="p-4">
-                        {editingComment === c.id ? (
-                          <div className="space-y-2">
-                            <Textarea value={editCommentForm.content || ''} onChange={e => setEditCommentForm({ ...editCommentForm, content: e.target.value })} rows={3} />
-                            <div className="space-y-1">
-                              <Label>{t('admin.status')}</Label>
-                              <Select value={editCommentForm.status || 'pending'} onValueChange={v => setEditCommentForm({ ...editCommentForm, status: v })}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">{t('admin.pending')}</SelectItem>
-                                  <SelectItem value="approved">{t('admin.approved')}</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="flex gap-2 justify-end">
-                              <Button variant="outline" size="sm" onClick={() => setEditingComment(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
-                              <Button size="sm" onClick={saveComment} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
-                            </div>
+            <AdminToolbar
+              search={commentsTable.search} onSearch={commentsTable.setSearch}
+              placeholder="Search content, author..."
+              page={commentsTable.page} totalPages={commentsTable.totalPages}
+              pageSize={commentsTable.pageSize} onPageChange={commentsTable.setPage}
+              onPageSizeChange={commentsTable.setPageSize} total={commentsTable.total}
+              selectedCount={commentsTable.selected.size}
+              onClearSelection={commentsTable.clearSelection}
+              bulkActions={
+                <>
+                  <Button size="sm" onClick={async () => { await bulkApproveComments(Array.from(commentsTable.selected)); commentsTable.clearSelection(); }}>
+                    <CheckCircle className="w-3.5 h-3.5 mr-1" /> {t('admin.approve')}
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={async () => { await bulkDeleteComments(Array.from(commentsTable.selected)); commentsTable.clearSelection(); }}>
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                  </Button>
+                </>
+              }
+            />
+            {commentsTable.total === 0 ? (
+              <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_comments')}</p>
+            ) : (
+              <div className="space-y-3">
+                {commentsTable.paged.map(c => (
+                  <Card key={c.id}>
+                    <CardContent className="p-4">
+                      {editingComment === c.id ? (
+                        <div className="space-y-2">
+                          <Textarea value={editCommentForm.content || ''} onChange={e => setEditCommentForm({ ...editCommentForm, content: e.target.value })} rows={3} />
+                          <div className="space-y-1">
+                            <Label>{t('admin.status')}</Label>
+                            <Select value={editCommentForm.status || 'pending'} onValueChange={v => setEditCommentForm({ ...editCommentForm, status: v })}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">{t('admin.pending')}</SelectItem>
+                                <SelectItem value="approved">{t('admin.approved')}</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
-                        ) : (
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <div className="flex gap-2 justify-end">
+                            <Button variant="outline" size="sm" onClick={() => setEditingComment(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
+                            <Button size="sm" onClick={saveComment} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
+                            <Checkbox checked={commentsTable.selected.has(c.id)} onCheckedChange={() => commentsTable.toggle(c.id)} className="mt-1" />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <span className="font-medium text-sm">{c.author_name}</span>
@@ -1049,19 +1191,19 @@ const AdminDashboard = () => {
                               </div>
                               <p className="text-sm text-foreground">{pickI18n(c.content_i18n, c.content, lang)}</p>
                             </div>
-                            <div className="flex gap-1 shrink-0">
-                              {c.status !== 'approved' && <Button size="sm" onClick={() => approveComment(c)} className="gap-1"><CheckCircle className="w-4 h-4" /></Button>}
-                              <Button variant="ghost" size="icon" onClick={() => { setEditingComment(c.id); setEditCommentForm(c); }}><Edit2 className="w-4 h-4" /></Button>
-                              <Button variant="ghost" size="icon" onClick={() => deleteComment(c.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
-                            </div>
                           </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              );
-            })()}
+                          <div className="flex gap-1 shrink-0">
+                            {c.status !== 'approved' && <Button size="sm" onClick={() => approveComment(c)} className="gap-1"><CheckCircle className="w-4 h-4" /></Button>}
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingComment(c.id); setEditCommentForm(c); }}><Edit2 className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => deleteComment(c.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* Data Export/Import */}
