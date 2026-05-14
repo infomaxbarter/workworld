@@ -1048,60 +1048,78 @@ const AdminDashboard = () => {
                 );
               })}
             </div>
-            {(() => {
-              const list = pendingPosts.filter(p => postFilter === 'all' ? true : p.status === postFilter);
-              if (list.length === 0) return <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_posts')}</p>;
-              return (
-                <div className="space-y-3">
-                  {list.map(p => (
-                    <Card key={p.id}>
-                      <CardContent className="p-4 space-y-2">
-                        {editingPost === p.id ? (
-                          <div className="space-y-2">
-                            <Input value={editPostForm.title || ''} onChange={e => setEditPostForm({ ...editPostForm, title: e.target.value })} placeholder="Title" />
-                            <Textarea value={editPostForm.content || ''} onChange={e => setEditPostForm({ ...editPostForm, content: e.target.value })} rows={4} placeholder="Content" />
-                            <div className="space-y-1">
-                              <Label>{t('admin.status')}</Label>
-                              <Select value={editPostForm.status || 'pending'} onValueChange={v => setEditPostForm({ ...editPostForm, status: v })}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">{t('admin.pending')}</SelectItem>
-                                  <SelectItem value="approved">{t('admin.approved')}</SelectItem>
-                                  <SelectItem value="rejected">{t('admin.rejected')}</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="flex gap-2 justify-end">
-                              <Button variant="outline" size="sm" onClick={() => setEditingPost(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
-                              <Button size="sm" onClick={savePost} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
-                            </div>
+            <AdminToolbar
+              search={postsTable.search} onSearch={postsTable.setSearch}
+              placeholder="Search title, content, author..."
+              page={postsTable.page} totalPages={postsTable.totalPages}
+              pageSize={postsTable.pageSize} onPageChange={postsTable.setPage}
+              onPageSizeChange={postsTable.setPageSize} total={postsTable.total}
+              selectedCount={postsTable.selected.size}
+              onClearSelection={postsTable.clearSelection}
+              bulkActions={
+                <>
+                  <Button size="sm" onClick={async () => { await bulkApprovePosts(Array.from(postsTable.selected)); postsTable.clearSelection(); }}>
+                    <CheckCircle className="w-3.5 h-3.5 mr-1" /> {t('admin.approve')}
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={async () => { await bulkDeletePosts(Array.from(postsTable.selected)); postsTable.clearSelection(); }}>
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                  </Button>
+                </>
+              }
+            />
+            {postsTable.total === 0 ? (
+              <p className="text-center text-muted-foreground py-8">{t('admin.no_pending_posts')}</p>
+            ) : (
+              <div className="space-y-3">
+                {postsTable.paged.map(p => (
+                  <Card key={p.id}>
+                    <CardContent className="p-4 space-y-2">
+                      {editingPost === p.id ? (
+                        <div className="space-y-2">
+                          <Input value={editPostForm.title || ''} onChange={e => setEditPostForm({ ...editPostForm, title: e.target.value })} placeholder="Title" />
+                          <Textarea value={editPostForm.content || ''} onChange={e => setEditPostForm({ ...editPostForm, content: e.target.value })} rows={4} placeholder="Content" />
+                          <div className="space-y-1">
+                            <Label>{t('admin.status')}</Label>
+                            <Select value={editPostForm.status || 'pending'} onValueChange={v => setEditPostForm({ ...editPostForm, status: v })}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">{t('admin.pending')}</SelectItem>
+                                <SelectItem value="approved">{t('admin.approved')}</SelectItem>
+                                <SelectItem value="rejected">{t('admin.rejected')}</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
-                        ) : (
-                          <>
-                            <div className="flex items-center justify-between flex-wrap gap-2">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-medium text-sm">{pickI18n(p.title_i18n, p.title, lang)}</span>
-                                <Badge variant={p.status === 'approved' ? 'default' : p.status === 'rejected' ? 'destructive' : 'secondary'} className="text-xs">{t(`admin.${p.status}`)}</Badge>
-                                <span className="text-xs text-muted-foreground">— {p.author_name}</span>
-                                <Badge variant="outline" className="text-xs">{p.target_type}</Badge>
-                              </div>
-                              <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</span>
+                          <div className="flex gap-2 justify-end">
+                            <Button variant="outline" size="sm" onClick={() => setEditingPost(null)} className="gap-1"><X className="w-4 h-4" />{t('profile.cancel')}</Button>
+                            <Button size="sm" onClick={savePost} className="gap-1"><Save className="w-4 h-4" />{t('profile.save')}</Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Checkbox checked={postsTable.selected.has(p.id)} onCheckedChange={() => postsTable.toggle(p.id)} />
+                              <span className="font-medium text-sm">{pickI18n(p.title_i18n, p.title, lang)}</span>
+                              <Badge variant={p.status === 'approved' ? 'default' : p.status === 'rejected' ? 'destructive' : 'secondary'} className="text-xs">{t(`admin.${p.status}`)}</Badge>
+                              <span className="text-xs text-muted-foreground">— {p.author_name}</span>
+                              <Badge variant="outline" className="text-xs">{p.target_type}</Badge>
                             </div>
-                            <p className="text-sm text-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">{pickI18n(p.content_i18n, p.content, lang)}</p>
-                            <div className="flex gap-2 justify-end flex-wrap">
-                              {p.status !== 'approved' && <Button size="sm" onClick={() => approvePost(p)} className="gap-1"><CheckCircle className="w-4 h-4" /> {t('admin.approve')}</Button>}
-                              {p.status !== 'rejected' && <Button variant="outline" size="sm" onClick={() => rejectPost(p.id)} className="gap-1"><XCircle className="w-4 h-4" /> {t('admin.reject')}</Button>}
-                              <Button variant="ghost" size="icon" onClick={() => { setEditingPost(p.id); setEditPostForm(p); }}><Edit2 className="w-4 h-4" /></Button>
-                              <Button variant="ghost" size="icon" onClick={() => deletePost(p.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
-                            </div>
-                          </>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              );
-            })()}
+                            <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</span>
+                          </div>
+                          <p className="text-sm text-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">{pickI18n(p.content_i18n, p.content, lang)}</p>
+                          <div className="flex gap-2 justify-end flex-wrap">
+                            {p.status !== 'approved' && <Button size="sm" onClick={() => approvePost(p)} className="gap-1"><CheckCircle className="w-4 h-4" /> {t('admin.approve')}</Button>}
+                            {p.status !== 'rejected' && <Button variant="outline" size="sm" onClick={() => rejectPost(p.id)} className="gap-1"><XCircle className="w-4 h-4" /> {t('admin.reject')}</Button>}
+                            <Button variant="ghost" size="icon" onClick={() => { setEditingPost(p.id); setEditPostForm(p); }}><Edit2 className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => deletePost(p.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                          </div>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* Comments Moderation */}
