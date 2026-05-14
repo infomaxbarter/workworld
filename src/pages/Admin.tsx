@@ -464,6 +464,31 @@ const AdminDashboard = () => {
     initialSortKey: 'created_at',
   });
 
+  const filteredPosts = pendingPosts.filter(p => postFilter === 'all' ? true : p.status === postFilter);
+  const filteredComments = pendingComments.filter(c => commentFilter === 'all' ? true : c.status === commentFilter);
+
+  const postsTable = useAdminTable<PostRow>({
+    data: filteredPosts,
+    searchFields: ['title', 'content', 'author_name', 'target_type', (r) => pickI18n(r.title_i18n, r.title, lang)],
+    initialSortKey: 'created_at',
+  });
+  const commentsTable = useAdminTable<CommentRow>({
+    data: filteredComments,
+    searchFields: ['content', 'author_name', 'target_type', (r) => pickI18n(r.content_i18n, r.content, lang)],
+    initialSortKey: 'created_at',
+  });
+  const membersTable = useAdminTable<UserMarker>({
+    data: users,
+    searchFields: ['name', 'city', 'country', 'status'],
+    initialSortKey: 'name',
+    initialSortDir: 'asc',
+  });
+  const profilesTable = useAdminTable<ProfileRow>({
+    data: filteredProfiles,
+    searchFields: ['display_name', 'bio', 'city', 'country', 'location'],
+    initialSortKey: 'created_at',
+  });
+
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
