@@ -397,6 +397,48 @@ const AdminDashboard = () => {
     toast.success('Deleted'); reload();
   };
 
+  const bulkDeletePosts = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} post(s)?`)) return;
+    await supabase.from('posts').delete().in('id', ids);
+    toast.success(`${ids.length} deleted`); reload();
+  };
+  const bulkApprovePosts = async (ids: string[]) => {
+    if (!ids.length) return;
+    await supabase.from('posts').update({ status: 'approved' } as any).in('id', ids);
+    toast.success(`${ids.length} approved`); reload();
+  };
+  const bulkDeleteComments = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} comment(s)?`)) return;
+    await supabase.from('comments').delete().in('id', ids);
+    toast.success(`${ids.length} deleted`); reload();
+  };
+  const bulkApproveComments = async (ids: string[]) => {
+    if (!ids.length) return;
+    await supabase.from('comments').update({ status: 'approved' } as any).in('id', ids);
+    toast.success(`${ids.length} approved`); reload();
+  };
+  const bulkDeleteMembers = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} member(s)?`)) return;
+    await supabase.from('user_markers').delete().in('id', ids);
+    setUsers(prev => prev.filter(u => !ids.includes(u.id)));
+    toast.success(`${ids.length} deleted`);
+  };
+  const bulkDeleteProfiles = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} profile(s)?`)) return;
+    await supabase.from('profiles').delete().in('id', ids);
+    setProfiles(prev => prev.filter(p => !ids.includes(p.id)));
+    toast.success(`${ids.length} deleted`);
+  };
+  const bulkApproveProfiles = async (ids: string[]) => {
+    if (!ids.length) return;
+    await supabase.from('profiles').update({ approved: true } as any).in('id', ids);
+    toast.success(`${ids.length} approved`); reload();
+  };
+
   const filteredProfiles = profiles.filter(p => {
     if (profileFilter === 'pending') return !p.approved;
     if (profileFilter === 'approved') return p.approved;
