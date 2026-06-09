@@ -13,7 +13,7 @@ const LanguageURLSync = () => {
   const { pathname, search, hash } = useLocation();
   const navigate = useNavigate();
   const lastLang = useRef(lang);
-  const lastPath = useRef(pathname);
+  const lastPath = useRef<string>('');
 
   // Sync language → URL
   useEffect(() => {
