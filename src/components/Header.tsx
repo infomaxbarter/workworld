@@ -61,39 +61,39 @@ const Header = () => {
       label: t('nav.humans'),
       icon: Users,
       children: [
-        { to: '/humans', label: t('humans.title'), desc: t('humans.subtitle') },
-        { to: '/map', label: t('nav.map'), desc: t('map.subtitle') },
+        { to: lp('humans'), label: t('humans.title'), desc: t('humans.subtitle') },
+        { to: lp('map'), label: t('nav.map'), desc: t('map.subtitle') },
       ],
     },
     {
       label: t('nav.events'),
       icon: CalendarDays,
       children: [
-        { to: '/events', label: t('events.title'), desc: t('events.subtitle') },
+        { to: lp('events'), label: t('events.title'), desc: t('events.subtitle') },
       ],
     },
     {
       label: t('nav.professions'),
       icon: Briefcase,
       children: [
-        { to: '/professions', label: t('professions.title'), desc: t('professions.subtitle')?.substring(0, 60) + '...' },
+        { to: lp('professions'), label: t('professions.title'), desc: t('professions.subtitle')?.substring(0, 60) + '...' },
       ],
     },
     {
       label: t('nav.about'),
       icon: Info,
       children: [
-        { to: '/about', label: t('about.title'), desc: t('about.intro')?.substring(0, 60) + '...' },
+        { to: lp('about'), label: t('about.title'), desc: t('about.intro')?.substring(0, 60) + '...' },
       ],
     },
   ];
 
   const navItems = [
-    { to: '/humans', icon: Users, label: t('nav.humans') },
-    { to: '/events', icon: CalendarDays, label: t('nav.events') },
-    { to: '/professions', icon: Briefcase, label: t('nav.professions') },
-    { to: '/map', icon: Map, label: t('nav.map') },
-    { to: '/about', icon: Info, label: t('nav.about') },
+    { to: lp('humans'), icon: Users, label: t('nav.humans') },
+    { to: lp('events'), icon: CalendarDays, label: t('nav.events') },
+    { to: lp('professions'), icon: Briefcase, label: t('nav.professions') },
+    { to: lp('map'), icon: Map, label: t('nav.map') },
+    { to: lp('about'), icon: Info, label: t('nav.about') },
   ];
 
   const isMega = currentMode === 'mega';
