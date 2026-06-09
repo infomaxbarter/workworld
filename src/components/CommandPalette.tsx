@@ -25,6 +25,8 @@ const CommandPalette = () => {
   const [recents, setRecents] = useState<RecentItem[]>([]);
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
+  const lp = useLocalizedPath();
+
 
   useEffect(() => {
     try {
