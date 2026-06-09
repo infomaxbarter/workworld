@@ -13,6 +13,7 @@ import type { Lang } from '@/i18n/translations';
 import type { User as SupaUser } from '@supabase/supabase-js';
 import NotificationBell from './NotificationBell';
 import { NavLink } from './NavLink';
+import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 
 const AppSidebar = () => {
   const { lang, setLang, t } = useLanguage();
