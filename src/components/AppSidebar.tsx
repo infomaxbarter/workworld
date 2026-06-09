@@ -102,19 +102,19 @@ const AppSidebar = () => {
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip={t('nav.dashboard')}>
-                      <Link to="/dashboard"><LayoutDashboard className="w-4 h-4" />{!collapsed && <span>{t('nav.dashboard') || 'Dashboard'}</span>}</Link>
+                    <SidebarMenuButton asChild isActive={isActive(lp('dashboard'))} tooltip={t('nav.dashboard')}>
+                      <Link to={lp('dashboard')}><LayoutDashboard className="w-4 h-4" />{!collapsed && <span>{t('nav.dashboard') || 'Dashboard'}</span>}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location.pathname.startsWith('/humans/')} tooltip={t('nav.profile')}>
-                      <Link to={`/humans/${profileSlug || user.id}`}><User className="w-4 h-4" />{!collapsed && <span>{t('nav.profile') || 'Profile'}</span>}</Link>
+                    <SidebarMenuButton asChild isActive={location.pathname.startsWith(lp('humans') + '/')} tooltip={t('nav.profile')}>
+                      <Link to={lp('humanDetail', { slug: profileSlug || user.id })}><User className="w-4 h-4" />{!collapsed && <span>{t('nav.profile') || 'Profile'}</span>}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   {isAdmin && (
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild isActive={isActive('/admin')} tooltip="Admin">
-                        <Link to="/admin"><Shield className="w-4 h-4" />{!collapsed && <span>Admin</span>}</Link>
+                      <SidebarMenuButton asChild isActive={isActive(lp('admin'))} tooltip="Admin">
+                        <Link to={lp('admin')}><Shield className="w-4 h-4" />{!collapsed && <span>Admin</span>}</Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )}
