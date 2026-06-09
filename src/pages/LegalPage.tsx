@@ -1,6 +1,8 @@
 import { useLocation, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Footer from '@/components/Footer';
+import HrefLangTags from '@/components/HrefLangTags';
+import { matchRoute, type RouteKey } from '@/i18n/routes';
 
 const content: Record<string, { title: string; body: string }> = {
   kvkk: {
@@ -19,10 +21,11 @@ const content: Record<string, { title: string; body: string }> = {
 
 const LegalPage = () => {
   const location = useLocation();
-  const slug = location.pathname.replace('/', '');
-  const page = content[slug || ''];
+  const matched = matchRoute(location.pathname);
+  const key = matched?.key as RouteKey | undefined;
+  const page = key && content[key as string] ? content[key as string] : null;
 
-  if (!page) {
+  if (!page || !key) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">Page not found.</p>
@@ -32,6 +35,7 @@ const LegalPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <HrefLangTags routeKey={key} />
       <main className="max-w-2xl mx-auto px-4 py-16 flex-1">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
           <ArrowLeft className="w-4 h-4" />

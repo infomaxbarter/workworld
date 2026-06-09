@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { pickI18n } from '@/i18n/i18nField';
+import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, CalendarDays, Map, Info, LayoutDashboard, Shield, User, Home, MapPin, Clock } from 'lucide-react';
 
@@ -24,6 +25,8 @@ const CommandPalette = () => {
   const [recents, setRecents] = useState<RecentItem[]>([]);
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
+  const lp = useLocalizedPath();
+
 
   useEffect(() => {
     try {
@@ -63,14 +66,15 @@ const CommandPalette = () => {
   const go = (path: string, label?: string) => { if (label) addRecent(path, label); navigate(path); setOpen(false); setQuery(''); };
 
   const pages = [
-    { path: '/', label: t('nav.home'), icon: Home },
-    { path: '/humans', label: t('nav.humans'), icon: Users },
-    { path: '/events', label: t('nav.events'), icon: CalendarDays },
-    { path: '/map', label: t('nav.map'), icon: Map },
-    { path: '/about', label: t('nav.about'), icon: Info },
-    { path: '/dashboard', label: t('nav.dashboard') || 'Dashboard', icon: LayoutDashboard },
-    { path: '/admin', label: t('nav.admin') || 'Admin', icon: Shield },
-    { path: '/auth', label: t('nav.login'), icon: User },
+    { path: lp('home'), label: t('nav.home'), icon: Home },
+    { path: lp('humans'), label: t('nav.humans'), icon: Users },
+    { path: lp('events'), label: t('nav.events'), icon: CalendarDays },
+    { path: lp('professions'), label: t('nav.professions'), icon: Users },
+    { path: lp('map'), label: t('nav.map'), icon: Map },
+    { path: lp('about'), label: t('nav.about'), icon: Info },
+    { path: lp('dashboard'), label: t('nav.dashboard') || 'Dashboard', icon: LayoutDashboard },
+    { path: lp('admin'), label: t('nav.admin') || 'Admin', icon: Shield },
+    { path: lp('auth'), label: t('nav.login'), icon: User },
   ];
 
   const q = query.toLowerCase();
@@ -139,7 +143,7 @@ const CommandPalette = () => {
         {filteredProfiles.length > 0 && (
           <CommandGroup heading={t('nav.humans') || 'Members'}>
             {filteredProfiles.map(p => (
-              <CommandItem key={p.id} onSelect={() => go(`/humans/${p.slug || p.user_id}`, p.display_name)} className="gap-2 cursor-pointer">
+              <CommandItem key={p.id} onSelect={() => go(lp('humanDetail', { slug: p.slug || p.user_id }), p.display_name)} className="gap-2 cursor-pointer">
                 <Users className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="truncate">{p.display_name}</span>
                 {loc(p.city, p.country) && (
@@ -156,7 +160,7 @@ const CommandPalette = () => {
         {filteredEvents.length > 0 && (
           <CommandGroup heading={t('nav.events') || 'Events'}>
             {filteredEvents.map(e => (
-              <CommandItem key={e.id} onSelect={() => go(`/events/${e.slug || e.id}`, e.title)} className="gap-2 cursor-pointer">
+              <CommandItem key={e.id} onSelect={() => go(lp('eventDetail', { slug: e.slug || e.id }), e.title)} className="gap-2 cursor-pointer">
                 <CalendarDays className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="truncate">{e.title}</span>
                 <span className="ml-auto text-xs text-muted-foreground shrink-0">
@@ -171,7 +175,7 @@ const CommandPalette = () => {
         {filteredAnons.length > 0 && (
           <CommandGroup heading={t('humans.anonymous_title') || 'Anonymous'}>
             {filteredAnons.map(a => (
-              <CommandItem key={a.id} onSelect={() => go(`/members/${a.slug || a.id}`, pickI18n(a.name_i18n, a.name, lang))} className="gap-2 cursor-pointer">
+              <CommandItem key={a.id} onSelect={() => go(lp('memberDetail', { slug: a.slug || a.id }), pickI18n(a.name_i18n, a.name, lang))} className="gap-2 cursor-pointer">
                 <User className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="truncate">{pickI18n(a.name_i18n, a.name, lang)}</span>
                 {loc(a.city, a.country) && (

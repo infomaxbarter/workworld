@@ -9,6 +9,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import Header from "@/components/Header";
 import AppSidebar from "@/components/AppSidebar";
 import CommandPalette from "@/components/CommandPalette";
+import LanguageURLSync from "@/components/LanguageURLSync";
+import { routeMap, allLangs, type RouteKey } from "@/i18n/routes";
 import Index from "./pages/Index";
 import LegalPage from "./pages/LegalPage";
 import Admin from "./pages/Admin";
@@ -27,24 +29,40 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const pageFor: Record<RouteKey, JSX.Element> = {
+  home: <Index />,
+  about: <AboutPage />,
+  humans: <HumansPage />,
+  events: <EventsPage />,
+  professions: <ProfessionsPage />,
+  map: <MapPage />,
+  dashboard: <Dashboard />,
+  admin: <Admin />,
+  auth: <Auth />,
+  humanDetail: <ProfileDetail />,
+  eventDetail: <EventDetail />,
+  memberDetail: <MemberDetail />,
+  professionDetail: <ProfessionDetail />,
+  kvkk: <LegalPage />,
+  cookies: <LegalPage />,
+  consent: <LegalPage />,
+};
+
+const localizedRoutes = (Object.keys(routeMap) as RouteKey[]).flatMap((key) => {
+  const seen = new Set<string>();
+  return allLangs
+    .map((l) => routeMap[key][l])
+    .filter((path) => {
+      if (seen.has(path)) return false;
+      seen.add(path);
+      return true;
+    })
+    .map((path) => <Route key={`${key}:${path}`} path={path} element={pageFor[key]} />);
+});
+
 const AppRoutes = () => (
   <Routes>
-    <Route path="/" element={<Index />} />
-    <Route path="/auth" element={<Auth />} />
-    <Route path="/dashboard" element={<Dashboard />} />
-    <Route path="/admin" element={<Admin />} />
-    <Route path="/about" element={<AboutPage />} />
-    <Route path="/humans" element={<HumansPage />} />
-    <Route path="/events" element={<EventsPage />} />
-    <Route path="/map" element={<MapPage />} />
-    <Route path="/humans/:slug" element={<ProfileDetail />} />
-    <Route path="/events/:slug" element={<EventDetail />} />
-    <Route path="/members/:slug" element={<MemberDetail />} />
-    <Route path="/professions" element={<ProfessionsPage />} />
-    <Route path="/professions/:slug" element={<ProfessionDetail />} />
-    <Route path="/kvkk" element={<LegalPage />} />
-    <Route path="/cookies" element={<LegalPage />} />
-    <Route path="/consent" element={<LegalPage />} />
+    {localizedRoutes}
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
@@ -86,6 +104,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <LanguageURLSync />
             <CommandPalette />
             <AppLayout />
           </BrowserRouter>

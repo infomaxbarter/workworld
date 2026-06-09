@@ -10,12 +10,14 @@ import type { Lang } from '@/i18n/translations';
 import type { User as SupaUser } from '@supabase/supabase-js';
 import NotificationBell from './NotificationBell';
 import { useNavigation } from '@/contexts/NavigationContext';
+import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 
 const langLabels: Record<Lang, string> = { tr: 'TR', en: 'EN', de: 'DE' };
 
 const Header = () => {
   const { lang, setLang, t } = useLanguage();
   const { currentMode } = useNavigation();
+  const lp = useLocalizedPath();
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
   const [user, setUser] = useState<SupaUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -59,39 +61,39 @@ const Header = () => {
       label: t('nav.humans'),
       icon: Users,
       children: [
-        { to: '/humans', label: t('humans.title'), desc: t('humans.subtitle') },
-        { to: '/map', label: t('nav.map'), desc: t('map.subtitle') },
+        { to: lp('humans'), label: t('humans.title'), desc: t('humans.subtitle') },
+        { to: lp('map'), label: t('nav.map'), desc: t('map.subtitle') },
       ],
     },
     {
       label: t('nav.events'),
       icon: CalendarDays,
       children: [
-        { to: '/events', label: t('events.title'), desc: t('events.subtitle') },
+        { to: lp('events'), label: t('events.title'), desc: t('events.subtitle') },
       ],
     },
     {
       label: t('nav.professions'),
       icon: Briefcase,
       children: [
-        { to: '/professions', label: t('professions.title'), desc: t('professions.subtitle')?.substring(0, 60) + '...' },
+        { to: lp('professions'), label: t('professions.title'), desc: t('professions.subtitle')?.substring(0, 60) + '...' },
       ],
     },
     {
       label: t('nav.about'),
       icon: Info,
       children: [
-        { to: '/about', label: t('about.title'), desc: t('about.intro')?.substring(0, 60) + '...' },
+        { to: lp('about'), label: t('about.title'), desc: t('about.intro')?.substring(0, 60) + '...' },
       ],
     },
   ];
 
   const navItems = [
-    { to: '/humans', icon: Users, label: t('nav.humans') },
-    { to: '/events', icon: CalendarDays, label: t('nav.events') },
-    { to: '/professions', icon: Briefcase, label: t('nav.professions') },
-    { to: '/map', icon: Map, label: t('nav.map') },
-    { to: '/about', icon: Info, label: t('nav.about') },
+    { to: lp('humans'), icon: Users, label: t('nav.humans') },
+    { to: lp('events'), icon: CalendarDays, label: t('nav.events') },
+    { to: lp('professions'), icon: Briefcase, label: t('nav.professions') },
+    { to: lp('map'), icon: Map, label: t('nav.map') },
+    { to: lp('about'), icon: Info, label: t('nav.about') },
   ];
 
   const isMega = currentMode === 'mega';
@@ -179,14 +181,14 @@ const Header = () => {
                 <NotificationBell userId={user.id} />
                 {isAdmin && (
                   <Button variant="ghost" size="icon" asChild>
-                    <Link to="/admin"><Shield className="w-4 h-4" /></Link>
+                    <Link to={lp('admin')}><Shield className="w-4 h-4" /></Link>
                   </Button>
                 )}
                 <Button variant="ghost" size="icon" asChild>
-                  <Link to="/dashboard"><LayoutDashboard className="w-4 h-4" /></Link>
+                  <Link to={lp('dashboard')}><LayoutDashboard className="w-4 h-4" /></Link>
                 </Button>
                 <Button variant="ghost" size="icon" asChild>
-                  <Link to={`/humans/${profileSlug || user.id}`}><User className="w-4 h-4" /></Link>
+                  <Link to={lp('humanDetail', { slug: profileSlug || user.id })}><User className="w-4 h-4" /></Link>
                 </Button>
                 <Button variant="ghost" size="icon" onClick={handleLogout}>
                   <LogOut className="w-4 h-4" />
@@ -194,7 +196,7 @@ const Header = () => {
               </>
             ) : (
               <Button variant="default" size="sm" asChild>
-                <Link to="/auth" className="gap-1.5">
+                <Link to={lp('auth')} className="gap-1.5">
                   <LogIn className="w-4 h-4" />
                   {t('nav.login')}
                 </Link>
@@ -231,14 +233,14 @@ const Header = () => {
                   {user ? (
                     <>
                       <Button variant="ghost" className="justify-start gap-3 h-11" asChild onClick={() => setMobileOpen(false)}>
-                        <Link to="/dashboard"><LayoutDashboard className="w-4 h-4" />{t('dashboard.title')}</Link>
+                        <Link to={lp('dashboard')}><LayoutDashboard className="w-4 h-4" />{t('dashboard.title')}</Link>
                       </Button>
                       <Button variant="ghost" className="justify-start gap-3 h-11" asChild onClick={() => setMobileOpen(false)}>
-                        <Link to={`/humans/${profileSlug || user.id}`}><User className="w-4 h-4" />{t('nav.profile') || 'Profile'}</Link>
+                        <Link to={lp('humanDetail', { slug: profileSlug || user.id })}><User className="w-4 h-4" />{t('nav.profile') || 'Profile'}</Link>
                       </Button>
                       {isAdmin && (
                         <Button variant="ghost" className="justify-start gap-3 h-11" asChild onClick={() => setMobileOpen(false)}>
-                          <Link to="/admin"><Shield className="w-4 h-4" />Admin</Link>
+                          <Link to={lp('admin')}><Shield className="w-4 h-4" />Admin</Link>
                         </Button>
                       )}
                       <div className="my-2 border-t border-border" />
@@ -248,7 +250,7 @@ const Header = () => {
                     </>
                   ) : (
                     <Button className="justify-start gap-3 h-11 mt-1" asChild onClick={() => setMobileOpen(false)}>
-                      <Link to="/auth"><LogIn className="w-4 h-4" />{t('nav.login')}</Link>
+                      <Link to={lp('auth')}><LogIn className="w-4 h-4" />{t('nav.login')}</Link>
                     </Button>
                   )}
                 </nav>

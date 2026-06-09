@@ -13,9 +13,11 @@ import type { Lang } from '@/i18n/translations';
 import type { User as SupaUser } from '@supabase/supabase-js';
 import NotificationBell from './NotificationBell';
 import { NavLink } from './NavLink';
+import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 
 const AppSidebar = () => {
   const { lang, setLang, t } = useLanguage();
+  const lp = useLocalizedPath();
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
   const [user, setUser] = useState<SupaUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -55,12 +57,12 @@ const AppSidebar = () => {
   };
 
   const navItems = [
-    { to: '/', icon: Home, label: t('nav.home') },
-    { to: '/humans', icon: Users, label: t('nav.humans') },
-    { to: '/events', icon: CalendarDays, label: t('nav.events') },
-    { to: '/professions', icon: Briefcase, label: t('nav.professions') },
-    { to: '/map', icon: Map, label: t('nav.map') },
-    { to: '/about', icon: Info, label: t('nav.about') },
+    { to: lp('home'), icon: Home, label: t('nav.home') },
+    { to: lp('humans'), icon: Users, label: t('nav.humans') },
+    { to: lp('events'), icon: CalendarDays, label: t('nav.events') },
+    { to: lp('professions'), icon: Briefcase, label: t('nav.professions') },
+    { to: lp('map'), icon: Map, label: t('nav.map') },
+    { to: lp('about'), icon: Info, label: t('nav.about') },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -100,19 +102,19 @@ const AppSidebar = () => {
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/dashboard')} tooltip={t('nav.dashboard')}>
-                      <Link to="/dashboard"><LayoutDashboard className="w-4 h-4" />{!collapsed && <span>{t('nav.dashboard') || 'Dashboard'}</span>}</Link>
+                    <SidebarMenuButton asChild isActive={isActive(lp('dashboard'))} tooltip={t('nav.dashboard')}>
+                      <Link to={lp('dashboard')}><LayoutDashboard className="w-4 h-4" />{!collapsed && <span>{t('nav.dashboard') || 'Dashboard'}</span>}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={location.pathname.startsWith('/humans/')} tooltip={t('nav.profile')}>
-                      <Link to={`/humans/${profileSlug || user.id}`}><User className="w-4 h-4" />{!collapsed && <span>{t('nav.profile') || 'Profile'}</span>}</Link>
+                    <SidebarMenuButton asChild isActive={location.pathname.startsWith(lp('humans') + '/')} tooltip={t('nav.profile')}>
+                      <Link to={lp('humanDetail', { slug: profileSlug || user.id })}><User className="w-4 h-4" />{!collapsed && <span>{t('nav.profile') || 'Profile'}</span>}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   {isAdmin && (
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild isActive={isActive('/admin')} tooltip="Admin">
-                        <Link to="/admin"><Shield className="w-4 h-4" />{!collapsed && <span>Admin</span>}</Link>
+                      <SidebarMenuButton asChild isActive={isActive(lp('admin'))} tooltip="Admin">
+                        <Link to={lp('admin')}><Shield className="w-4 h-4" />{!collapsed && <span>Admin</span>}</Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )}
@@ -141,7 +143,7 @@ const AppSidebar = () => {
           </Button>
         ) : (
           <Button variant="default" size="sm" className="w-full justify-start gap-2 h-8" asChild>
-            <Link to="/auth"><LogIn className="w-4 h-4" />{!collapsed && t('nav.login')}</Link>
+            <Link to={lp('auth')}><LogIn className="w-4 h-4" />{!collapsed && t('nav.login')}</Link>
           </Button>
         )}
       </SidebarFooter>
