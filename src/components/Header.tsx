@@ -17,6 +17,7 @@ const langLabels: Record<Lang, string> = { tr: 'TR', en: 'EN', de: 'DE' };
 const Header = () => {
   const { lang, setLang, t } = useLanguage();
   const { currentMode } = useNavigation();
+  const lp = useLocalizedPath();
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
   const [user, setUser] = useState<SupaUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
