@@ -57,12 +57,12 @@ const AppSidebar = () => {
   };
 
   const navItems = [
-    { to: '/', icon: Home, label: t('nav.home') },
-    { to: '/humans', icon: Users, label: t('nav.humans') },
-    { to: '/events', icon: CalendarDays, label: t('nav.events') },
-    { to: '/professions', icon: Briefcase, label: t('nav.professions') },
-    { to: '/map', icon: Map, label: t('nav.map') },
-    { to: '/about', icon: Info, label: t('nav.about') },
+    { to: lp('home'), icon: Home, label: t('nav.home') },
+    { to: lp('humans'), icon: Users, label: t('nav.humans') },
+    { to: lp('events'), icon: CalendarDays, label: t('nav.events') },
+    { to: lp('professions'), icon: Briefcase, label: t('nav.professions') },
+    { to: lp('map'), icon: Map, label: t('nav.map') },
+    { to: lp('about'), icon: Info, label: t('nav.about') },
   ];
 
   const isActive = (path: string) => location.pathname === path;
