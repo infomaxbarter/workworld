@@ -143,7 +143,7 @@ const CommandPalette = () => {
         {filteredProfiles.length > 0 && (
           <CommandGroup heading={t('nav.humans') || 'Members'}>
             {filteredProfiles.map(p => (
-              <CommandItem key={p.id} onSelect={() => go(`/humans/${p.slug || p.user_id}`, p.display_name)} className="gap-2 cursor-pointer">
+              <CommandItem key={p.id} onSelect={() => go(lp('humanDetail', { slug: p.slug || p.user_id }), p.display_name)} className="gap-2 cursor-pointer">
                 <Users className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="truncate">{p.display_name}</span>
                 {loc(p.city, p.country) && (
