@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 import { Heart } from 'lucide-react';
 
 const Footer = () => {
   const { t } = useLanguage();
+  const lp = useLocalizedPath();
 
   return (
     <footer className="border-t border-border bg-card py-8 mt-16">
@@ -13,9 +15,9 @@ const Footer = () => {
           <span>{t('footer.open_source')}</span>
         </div>
         <nav className="flex items-center gap-6">
-          <Link to="/kvkk" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.kvkk')}</Link>
-          <Link to="/cookies" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.cookies')}</Link>
-          <Link to="/consent" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.consent')}</Link>
+          <Link to={lp('kvkk')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.kvkk')}</Link>
+          <Link to={lp('cookies')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.cookies')}</Link>
+          <Link to={lp('consent')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.consent')}</Link>
         </nav>
         <p className="text-xs text-muted-foreground">© 2026 WorkWorld — {t('footer.nonprofit')}</p>
       </div>
