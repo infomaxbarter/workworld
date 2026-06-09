@@ -66,14 +66,15 @@ const CommandPalette = () => {
   const go = (path: string, label?: string) => { if (label) addRecent(path, label); navigate(path); setOpen(false); setQuery(''); };
 
   const pages = [
-    { path: '/', label: t('nav.home'), icon: Home },
-    { path: '/humans', label: t('nav.humans'), icon: Users },
-    { path: '/events', label: t('nav.events'), icon: CalendarDays },
-    { path: '/map', label: t('nav.map'), icon: Map },
-    { path: '/about', label: t('nav.about'), icon: Info },
-    { path: '/dashboard', label: t('nav.dashboard') || 'Dashboard', icon: LayoutDashboard },
-    { path: '/admin', label: t('nav.admin') || 'Admin', icon: Shield },
-    { path: '/auth', label: t('nav.login'), icon: User },
+    { path: lp('home'), label: t('nav.home'), icon: Home },
+    { path: lp('humans'), label: t('nav.humans'), icon: Users },
+    { path: lp('events'), label: t('nav.events'), icon: CalendarDays },
+    { path: lp('professions'), label: t('nav.professions'), icon: Users },
+    { path: lp('map'), label: t('nav.map'), icon: Map },
+    { path: lp('about'), label: t('nav.about'), icon: Info },
+    { path: lp('dashboard'), label: t('nav.dashboard') || 'Dashboard', icon: LayoutDashboard },
+    { path: lp('admin'), label: t('nav.admin') || 'Admin', icon: Shield },
+    { path: lp('auth'), label: t('nav.login'), icon: User },
   ];
 
   const q = query.toLowerCase();
