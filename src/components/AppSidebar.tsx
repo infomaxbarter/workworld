@@ -143,7 +143,7 @@ const AppSidebar = () => {
           </Button>
         ) : (
           <Button variant="default" size="sm" className="w-full justify-start gap-2 h-8" asChild>
-            <Link to="/auth"><LogIn className="w-4 h-4" />{!collapsed && t('nav.login')}</Link>
+            <Link to={lp('auth')}><LogIn className="w-4 h-4" />{!collapsed && t('nav.login')}</Link>
           </Button>
         )}
       </SidebarFooter>
