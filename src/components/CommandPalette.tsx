@@ -175,7 +175,7 @@ const CommandPalette = () => {
         {filteredAnons.length > 0 && (
           <CommandGroup heading={t('humans.anonymous_title') || 'Anonymous'}>
             {filteredAnons.map(a => (
-              <CommandItem key={a.id} onSelect={() => go(`/members/${a.slug || a.id}`, pickI18n(a.name_i18n, a.name, lang))} className="gap-2 cursor-pointer">
+              <CommandItem key={a.id} onSelect={() => go(lp('memberDetail', { slug: a.slug || a.id }), pickI18n(a.name_i18n, a.name, lang))} className="gap-2 cursor-pointer">
                 <User className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="truncate">{pickI18n(a.name_i18n, a.name, lang)}</span>
                 {loc(a.city, a.country) && (
