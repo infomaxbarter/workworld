@@ -17,6 +17,7 @@ import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 
 const AppSidebar = () => {
   const { lang, setLang, t } = useLanguage();
+  const lp = useLocalizedPath();
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
   const [user, setUser] = useState<SupaUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
