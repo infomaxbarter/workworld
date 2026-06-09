@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { pickI18n } from '@/i18n/i18nField';
+import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, CalendarDays, Map, Info, LayoutDashboard, Shield, User, Home, MapPin, Clock } from 'lucide-react';
 
