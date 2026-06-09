@@ -160,7 +160,7 @@ const CommandPalette = () => {
         {filteredEvents.length > 0 && (
           <CommandGroup heading={t('nav.events') || 'Events'}>
             {filteredEvents.map(e => (
-              <CommandItem key={e.id} onSelect={() => go(`/events/${e.slug || e.id}`, e.title)} className="gap-2 cursor-pointer">
+              <CommandItem key={e.id} onSelect={() => go(lp('eventDetail', { slug: e.slug || e.id }), e.title)} className="gap-2 cursor-pointer">
                 <CalendarDays className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="truncate">{e.title}</span>
                 <span className="ml-auto text-xs text-muted-foreground shrink-0">
