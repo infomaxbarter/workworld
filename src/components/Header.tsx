@@ -181,14 +181,14 @@ const Header = () => {
                 <NotificationBell userId={user.id} />
                 {isAdmin && (
                   <Button variant="ghost" size="icon" asChild>
-                    <Link to="/admin"><Shield className="w-4 h-4" /></Link>
+                    <Link to={lp('admin')}><Shield className="w-4 h-4" /></Link>
                   </Button>
                 )}
                 <Button variant="ghost" size="icon" asChild>
-                  <Link to="/dashboard"><LayoutDashboard className="w-4 h-4" /></Link>
+                  <Link to={lp('dashboard')}><LayoutDashboard className="w-4 h-4" /></Link>
                 </Button>
                 <Button variant="ghost" size="icon" asChild>
-                  <Link to={`/humans/${profileSlug || user.id}`}><User className="w-4 h-4" /></Link>
+                  <Link to={lp('humanDetail', { slug: profileSlug || user.id })}><User className="w-4 h-4" /></Link>
                 </Button>
                 <Button variant="ghost" size="icon" onClick={handleLogout}>
                   <LogOut className="w-4 h-4" />
@@ -196,7 +196,7 @@ const Header = () => {
               </>
             ) : (
               <Button variant="default" size="sm" asChild>
-                <Link to="/auth" className="gap-1.5">
+                <Link to={lp('auth')} className="gap-1.5">
                   <LogIn className="w-4 h-4" />
                   {t('nav.login')}
                 </Link>
