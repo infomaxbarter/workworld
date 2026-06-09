@@ -233,14 +233,14 @@ const Header = () => {
                   {user ? (
                     <>
                       <Button variant="ghost" className="justify-start gap-3 h-11" asChild onClick={() => setMobileOpen(false)}>
-                        <Link to="/dashboard"><LayoutDashboard className="w-4 h-4" />{t('dashboard.title')}</Link>
+                        <Link to={lp('dashboard')}><LayoutDashboard className="w-4 h-4" />{t('dashboard.title')}</Link>
                       </Button>
                       <Button variant="ghost" className="justify-start gap-3 h-11" asChild onClick={() => setMobileOpen(false)}>
-                        <Link to={`/humans/${profileSlug || user.id}`}><User className="w-4 h-4" />{t('nav.profile') || 'Profile'}</Link>
+                        <Link to={lp('humanDetail', { slug: profileSlug || user.id })}><User className="w-4 h-4" />{t('nav.profile') || 'Profile'}</Link>
                       </Button>
                       {isAdmin && (
                         <Button variant="ghost" className="justify-start gap-3 h-11" asChild onClick={() => setMobileOpen(false)}>
-                          <Link to="/admin"><Shield className="w-4 h-4" />Admin</Link>
+                          <Link to={lp('admin')}><Shield className="w-4 h-4" />Admin</Link>
                         </Button>
                       )}
                       <div className="my-2 border-t border-border" />
@@ -250,7 +250,7 @@ const Header = () => {
                     </>
                   ) : (
                     <Button className="justify-start gap-3 h-11 mt-1" asChild onClick={() => setMobileOpen(false)}>
-                      <Link to="/auth"><LogIn className="w-4 h-4" />{t('nav.login')}</Link>
+                      <Link to={lp('auth')}><LogIn className="w-4 h-4" />{t('nav.login')}</Link>
                     </Button>
                   )}
                 </nav>
