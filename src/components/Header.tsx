@@ -10,6 +10,7 @@ import type { Lang } from '@/i18n/translations';
 import type { User as SupaUser } from '@supabase/supabase-js';
 import NotificationBell from './NotificationBell';
 import { useNavigation } from '@/contexts/NavigationContext';
+import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 
 const langLabels: Record<Lang, string> = { tr: 'TR', en: 'EN', de: 'DE' };
 
