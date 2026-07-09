@@ -93,8 +93,10 @@ const Header = () => {
     { to: lp('events'), icon: CalendarDays, label: t('nav.events') },
     { to: lp('professions'), icon: Briefcase, label: t('nav.professions') },
     { to: lp('map'), icon: Map, label: t('nav.map') },
+    { to: lp('mci'), icon: Shield, label: 'MCI' },
     { to: lp('about'), icon: Info, label: t('nav.about') },
   ];
+
 
   const isMega = currentMode === 'mega';
 
