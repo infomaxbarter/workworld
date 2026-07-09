@@ -14,11 +14,13 @@ const Footer = () => {
           <Heart className="w-3.5 h-3.5 text-primary" />
           <span>{t('footer.open_source')}</span>
         </div>
-        <nav className="flex items-center gap-6">
+        <nav className="flex items-center gap-6 flex-wrap justify-center">
+          <Link to={lp('mci')} className="text-sm text-primary hover:underline transition-colors font-medium">MCI v7.0 · Formül</Link>
           <Link to={lp('kvkk')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.kvkk')}</Link>
           <Link to={lp('cookies')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.cookies')}</Link>
           <Link to={lp('consent')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.consent')}</Link>
         </nav>
+
         <p className="text-xs text-muted-foreground">© 2026 WorkWorld — {t('footer.nonprofit')}</p>
       </div>
     </footer>
