@@ -8,6 +8,7 @@ export type RouteKey =
   | 'events'
   | 'professions'
   | 'map'
+  | 'mci'
   | 'dashboard'
   | 'admin'
   | 'auth'
@@ -18,6 +19,7 @@ export type RouteKey =
   | 'kvkk'
   | 'cookies'
   | 'consent';
+
 
 export const routeMap: Record<RouteKey, Record<Lang, string>> = {
   home:             { en: '/',           tr: '/',            de: '/' },
