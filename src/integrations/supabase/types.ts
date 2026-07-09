@@ -90,6 +90,7 @@ export type Database = {
           capacity: number | null
           city: string | null
           country: string | null
+          country_code: string | null
           created_at: string
           date: string | null
           description: string | null
@@ -109,6 +110,7 @@ export type Database = {
           capacity?: number | null
           city?: string | null
           country?: string | null
+          country_code?: string | null
           created_at?: string
           date?: string | null
           description?: string | null
@@ -128,6 +130,7 @@ export type Database = {
           capacity?: number | null
           city?: string | null
           country?: string | null
+          country_code?: string | null
           created_at?: string
           date?: string | null
           description?: string | null
@@ -174,6 +177,166 @@ export type Database = {
           },
         ]
       }
+      mci_cities: {
+        Row: {
+          ai_index: number
+          approved: boolean
+          b_rate: number
+          city: string
+          country_code: string
+          cp_final: number | null
+          created_at: string
+          created_by: string | null
+          delta_pulse: number
+          e_ratio: number
+          esg_score: number
+          exp_billion_usd: number
+          f_firms: number
+          g_gdp_per_capita: number
+          h_vc_access: number
+          id: string
+          imp_billion_usd: number
+          m_loc: number
+          n_population: number
+          net_syn: number
+          notes: string | null
+          p_search: number
+          s_industrial_zones: number
+          seat_quota: number | null
+          sigma: number
+          slug: string | null
+          t_flow: number
+          t_tech_parks: number
+          u_universities: number
+          updated_at: string
+          y_ratio: number
+        }
+        Insert: {
+          ai_index?: number
+          approved?: boolean
+          b_rate?: number
+          city: string
+          country_code: string
+          cp_final?: number | null
+          created_at?: string
+          created_by?: string | null
+          delta_pulse?: number
+          e_ratio?: number
+          esg_score?: number
+          exp_billion_usd?: number
+          f_firms?: number
+          g_gdp_per_capita?: number
+          h_vc_access?: number
+          id?: string
+          imp_billion_usd?: number
+          m_loc?: number
+          n_population?: number
+          net_syn?: number
+          notes?: string | null
+          p_search?: number
+          s_industrial_zones?: number
+          seat_quota?: number | null
+          sigma?: number
+          slug?: string | null
+          t_flow?: number
+          t_tech_parks?: number
+          u_universities?: number
+          updated_at?: string
+          y_ratio?: number
+        }
+        Update: {
+          ai_index?: number
+          approved?: boolean
+          b_rate?: number
+          city?: string
+          country_code?: string
+          cp_final?: number | null
+          created_at?: string
+          created_by?: string | null
+          delta_pulse?: number
+          e_ratio?: number
+          esg_score?: number
+          exp_billion_usd?: number
+          f_firms?: number
+          g_gdp_per_capita?: number
+          h_vc_access?: number
+          id?: string
+          imp_billion_usd?: number
+          m_loc?: number
+          n_population?: number
+          net_syn?: number
+          notes?: string | null
+          p_search?: number
+          s_industrial_zones?: number
+          seat_quota?: number | null
+          sigma?: number
+          slug?: string | null
+          t_flow?: number
+          t_tech_parks?: number
+          u_universities?: number
+          updated_at?: string
+          y_ratio?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mci_cities_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "pilot_countries"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      mci_submissions: {
+        Row: {
+          action: string
+          city_id: string | null
+          created_at: string
+          id: string
+          payload: Json
+          review_note: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action?: string
+          city_id?: string | null
+          created_at?: string
+          id?: string
+          payload: Json
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          city_id?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mci_submissions_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "mci_cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -204,6 +367,39 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      pilot_countries: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          flag_emoji: string | null
+          id: string
+          name: string
+          name_i18n: Json | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          flag_emoji?: string | null
+          id?: string
+          name: string
+          name_i18n?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          flag_emoji?: string | null
+          id?: string
+          name?: string
+          name_i18n?: Json | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -254,6 +450,7 @@ export type Database = {
       }
       professions: {
         Row: {
+          country_code: string | null
           created_at: string
           description: string | null
           description_i18n: Json | null
@@ -267,6 +464,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          country_code?: string | null
           created_at?: string
           description?: string | null
           description_i18n?: Json | null
@@ -280,6 +478,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          country_code?: string | null
           created_at?: string
           description?: string | null
           description_i18n?: Json | null
