@@ -28,6 +28,8 @@ export const routeMap: Record<RouteKey, Record<Lang, string>> = {
   events:           { en: '/events',     tr: '/etkinlikler', de: '/veranstaltungen' },
   professions:      { en: '/professions',tr: '/meslekler',   de: '/berufe' },
   map:              { en: '/map',        tr: '/harita',      de: '/karte' },
+  mci:              { en: '/mci',        tr: '/matris-sehir-endeksi', de: '/matrix-staedte-index' },
+
   dashboard:        { en: '/dashboard',  tr: '/panel',       de: '/uebersicht' },
   admin:            { en: '/admin',      tr: '/yonetim',     de: '/verwaltung' },
   auth:             { en: '/auth',       tr: '/giris',       de: '/anmelden' },

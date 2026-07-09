@@ -21,6 +21,8 @@ import EventDetail from "./pages/EventDetail";
 import HumansPage from "./pages/HumansPage";
 import EventsPage from "./pages/EventsPage";
 import MapPage from "./pages/MapPage";
+import MciPage from "./pages/MciPage";
+
 import MemberDetail from "./pages/MemberDetail";
 import AboutPage from "./pages/AboutPage";
 import ProfessionsPage from "./pages/ProfessionsPage";
@@ -36,6 +38,8 @@ const pageFor: Record<RouteKey, JSX.Element> = {
   events: <EventsPage />,
   professions: <ProfessionsPage />,
   map: <MapPage />,
+  mci: <MciPage />,
+
   dashboard: <Dashboard />,
   admin: <Admin />,
   auth: <Auth />,
