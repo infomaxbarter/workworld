@@ -256,6 +256,14 @@ const MciPage = () => {
           </TabsContent>
 
           <TabsContent value="submit" className="mt-6">
+            <p className="text-sm text-muted-foreground mb-4">
+              Aşağıdaki 20 metrikten en az temel olanları doldur; sistem MCI puanını ve koltuk kontenjanını canlı hesaplar.
+              Öneriniz admin onayına düşer. Kaynak / referans belirtmeniz onay şansını artırır.
+            </p>
+            <MciSubmissionForm countries={countries} />
+          </TabsContent>
+
+          {isAdmin && (
             <TabsContent value="admin" className="mt-6">
               <MciAdmin />
             </TabsContent>
