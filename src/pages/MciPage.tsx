@@ -89,9 +89,10 @@ const MciPage = () => {
         </header>
 
         <Tabs defaultValue="cities">
-          <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4">
+          <TabsList className="w-full grid grid-cols-2 sm:grid-cols-5">
             <TabsTrigger value="cities">Şehirler</TabsTrigger>
             <TabsTrigger value="formula">Formül</TabsTrigger>
+            <TabsTrigger value="sources">Veri Kaynakları</TabsTrigger>
             <TabsTrigger value="submit">Öneri Gönder</TabsTrigger>
             {isAdmin && <TabsTrigger value="admin"><ShieldCheck className="w-3.5 h-3.5 mr-1" />Admin</TabsTrigger>}
           </TabsList>
