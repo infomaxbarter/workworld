@@ -359,97 +359,180 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
 
   const filteredItems = getFilteredItems();
 
+  const sidebarShown = sidebarOpen || desktopOpen;
+
+  const Section = ({
+    id, icon: Icon, title, children, count,
+  }: { id: string; icon: any; title: string; children: React.ReactNode; count?: number | string }) => {
+    const open = openSection[id];
+    return (
+      <Collapsible open={open} onOpenChange={(o) => setOpenSection((s) => ({ ...s, [id]: o }))}>
+        <CollapsibleTrigger className="w-full flex items-center justify-between px-3 py-2 hover:bg-muted/50 transition-colors border-b border-border">
+          <div className="flex items-center gap-2">
+            <Icon className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">{title}</span>
+            {count !== undefined && <span className="text-xs text-muted-foreground">({count})</span>}
+          </div>
+          {open ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+        </CollapsibleTrigger>
+        <CollapsibleContent className="border-b border-border">{children}</CollapsibleContent>
+      </Collapsible>
+    );
+  };
+
+  const layerRow = (key: keyof typeof layerVisibility, emoji: string, label: string, count: number) => (
+    <button
+      key={key}
+      onClick={() => setLayerVisibility((v) => ({ ...v, [key]: !v[key] }))}
+      className="w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-muted/40 transition-colors"
+    >
+      <span className="flex items-center gap-2 text-foreground">
+        <span>{emoji}</span><span>{label}</span>
+        <span className="text-xs text-muted-foreground">({count})</span>
+      </span>
+      {layerVisibility[key] ? <Eye className="w-4 h-4 text-primary" /> : <EyeOff className="w-4 h-4 text-muted-foreground" />}
+    </button>
+  );
+
   return (
     <div className="flex flex-col md:flex-row gap-0 md:gap-4 h-[calc(100vh-10rem)] md:h-[75vh] relative">
-      {/* Mobile toggle */}
+      {/* Always-visible toggle: mobile top-right, desktop floating over map when closed */}
       <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="md:hidden absolute top-3 right-3 z-[1000] bg-card border border-border rounded-lg p-2 shadow-lg"
+        onClick={() => { setSidebarOpen((v) => !v); setDesktopOpen((v) => !v); }}
+        className="absolute top-3 right-3 md:right-auto md:left-3 z-[1000] bg-card border border-border rounded-lg p-2 shadow-lg hover:bg-muted transition-colors"
+        aria-label="Toggle sidebar"
       >
-        {sidebarOpen ? <X className="w-5 h-5 text-foreground" /> : <Filter className="w-5 h-5 text-foreground" />}
+        {sidebarShown ? (
+          <>
+            <PanelLeftClose className="w-5 h-5 text-foreground hidden md:block" />
+            <X className="w-5 h-5 text-foreground md:hidden" />
+          </>
+        ) : (
+          <>
+            <PanelLeftOpen className="w-5 h-5 text-foreground hidden md:block" />
+            <Filter className="w-5 h-5 text-foreground md:hidden" />
+          </>
+        )}
       </button>
 
       {/* Sidebar */}
       <div className={`
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        ${desktopOpen ? 'md:w-72 lg:w-80' : 'md:w-0 md:border-0'}
         absolute md:relative z-[999] md:z-auto
-        w-[85vw] sm:w-80 md:w-72 lg:w-80 shrink-0
+        w-[85vw] sm:w-80 shrink-0
         h-full flex flex-col
         border border-border rounded-xl bg-card overflow-hidden
-        transition-transform duration-200 ease-in-out
+        transition-all duration-200 ease-in-out
         shadow-xl md:shadow-none
       `}>
-        <div className="p-3 border-b border-border space-y-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder={t('map.search_placeholder')}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
-          <div className="flex gap-1 flex-wrap">
-            {(['all', 'profiles', 'anon', 'events', 'professions'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilterType(f)}
-                className={`px-2 py-1 text-xs rounded-md font-medium transition-colors ${filterType === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
-              >
-                {f === 'all' ? t('map.filter_all') : f === 'profiles' ? '👤' : f === 'anon' ? '👻' : f === 'events' ? '📅' : '💼'}
-                <span className="hidden sm:inline ml-1">{f === 'all' ? '' : f === 'profiles' ? t('map.filter_profiles') : f === 'anon' ? t('map.filter_anon') : f === 'events' ? t('map.filter_events') : t('map.filter_professions')}</span>
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            {countries.length > 0 && (
-              <select
-                value={selectedCountry}
-                onChange={e => { setSelectedCountry(e.target.value); }}
-                className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
-              >
-                <option value="">{t('map.all_countries')}</option>
-                {countries.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            )}
-            {professionsList.length > 0 && (
-              <select
-                value={selectedProfession}
-                onChange={e => { setSelectedProfession(e.target.value); }}
-                className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground"
-              >
-                <option value="">{t('map.all_professions')}</option>
-                {professionsList.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-            )}
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto divide-y divide-border">
-          {filteredItems.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">{t('map.no_results')}</p>}
-          {filteredItems.map((item, i) => {
-            const isProfile = item._type === 'profile';
-            const isEvent = item._type === 'event';
-            const isProfession = item._type === 'profession';
-            const name = item.display_name || pickI18n(item.name_i18n, item.name, lang) || pickI18n(item.title_i18n, item.title, lang) || '';
-            const loc = item.city && item.country ? `${item.city}, ${item.country}` : item.location || '';
-            return (
-              <button
-                key={`${item._type}-${item.id}-${i}`}
-                onClick={() => { flyTo(item.lat, item.lng); setSidebarOpen(false); }}
-                className="w-full text-left px-3 py-2.5 hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">{isProfession ? '💼' : isEvent ? '📅' : isProfile ? '👤' : '👻'}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground truncate">{name}</p>
-                    {loc && <p className="text-xs text-muted-foreground truncate">{loc}</p>}
-                  </div>
+        {sidebarShown && (
+          <div className="flex-1 overflow-y-auto flex flex-col">
+            <Section id="filters" icon={Filter} title={t('map.filter_all') || 'Filters'}>
+              <div className="p-3 space-y-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder={t('map.search_placeholder')}
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
                 </div>
-              </button>
-            );
-          })}
-        </div>
+                <div className="flex gap-1 flex-wrap">
+                  {(['all', 'profiles', 'anon', 'events', 'professions'] as const).map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setFilterType(f)}
+                      className={`px-2 py-1 text-xs rounded-md font-medium transition-colors ${filterType === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                    >
+                      {f === 'all' ? t('map.filter_all') : f === 'profiles' ? '👤' : f === 'anon' ? '👻' : f === 'events' ? '📅' : '💼'}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  {countries.length > 0 && (
+                    <select value={selectedCountry} onChange={e => setSelectedCountry(e.target.value)}
+                      className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground">
+                      <option value="">{t('map.all_countries')}</option>
+                      {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  )}
+                  {professionsList.length > 0 && (
+                    <select value={selectedProfession} onChange={e => setSelectedProfession(e.target.value)}
+                      className="flex-1 px-2 py-1.5 text-xs border border-border rounded-lg bg-background text-foreground">
+                      <option value="">{t('map.all_professions')}</option>
+                      {professionsList.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                  )}
+                </div>
+              </div>
+            </Section>
+
+            <Section id="layers" icon={Layers} title="Layers">
+              <div className="py-1">
+                {layerRow('profiles', '👤', t('map.filter_profiles') || 'Profiles', stats.profiles)}
+                {layerRow('anon', '👻', t('map.filter_anon') || 'Members', stats.anon)}
+                {layerRow('events', '📅', t('map.filter_events') || 'Events', stats.events)}
+                {layerRow('professions', '💼', t('map.filter_professions') || 'Professions', stats.professions)}
+              </div>
+            </Section>
+
+            <Section id="stats" icon={BarChart3} title={t('map.stats_title') || 'Stats'} count={stats.total}>
+              <div className="p-3 space-y-1 text-xs">
+                <div className="flex justify-between"><span className="text-muted-foreground">👤 {t('map.stats_profiles')}</span><span className="font-medium">{stats.profiles}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">👻 {t('map.stats_anon')}</span><span className="font-medium">{stats.anon}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">📅 {t('map.stats_events')}</span><span className="font-medium">{stats.events}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">💼 {t('map.stats_professions')}</span><span className="font-medium">{stats.professions}</span></div>
+                <div className="flex justify-between border-t border-border pt-1 mt-1"><span className="font-medium">{t('map.stats_total')}</span><span className="font-bold">{stats.total}</span></div>
+              </div>
+            </Section>
+
+            <Section id="network" icon={Network} title="Network">
+              <div className="p-2">
+                {openSection.network && (
+                  <NetworkGraph
+                    profiles={allData.profiles.filter((p: any) => p.lat && p.lng)}
+                    anon={allData.anon}
+                    events={allData.events}
+                    professions={allData.professions}
+                    profileProfessions={profileProfessions}
+                    anonProfessions={anonProfessions}
+                    onSelect={(_type, _id, lat, lng) => { if (lat && lng) flyTo(lat, lng); }}
+                    height={320}
+                  />
+                )}
+              </div>
+            </Section>
+
+            <Section id="list" icon={Filter} title="List" count={filteredItems.length}>
+              <div className="divide-y divide-border max-h-[40vh] overflow-y-auto">
+                {filteredItems.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">{t('map.no_results')}</p>}
+                {filteredItems.map((item, i) => {
+                  const isProfile = item._type === 'profile';
+                  const isEvent = item._type === 'event';
+                  const isProfession = item._type === 'profession';
+                  const name = item.display_name || pickI18n(item.name_i18n, item.name, lang) || pickI18n(item.title_i18n, item.title, lang) || '';
+                  const loc = item.city && item.country ? `${item.city}, ${item.country}` : item.location || '';
+                  return (
+                    <button key={`${item._type}-${item.id}-${i}`}
+                      onClick={() => { flyTo(item.lat, item.lng); setSidebarOpen(false); }}
+                      className="w-full text-left px-3 py-2.5 hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{isProfession ? '💼' : isEvent ? '📅' : isProfile ? '👤' : '👻'}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-foreground truncate">{name}</p>
+                          {loc && <p className="text-xs text-muted-foreground truncate">{loc}</p>}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </Section>
+          </div>
+        )}
       </div>
 
       {/* Overlay for mobile */}
@@ -460,7 +543,6 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
       {/* Map */}
       <div className="flex-1 rounded-xl overflow-hidden shadow-lg border border-border min-h-[50vh] relative">
         <div ref={containerRef} className="w-full h-full" />
-        <StatsPanel />
       </div>
     </div>
   );
