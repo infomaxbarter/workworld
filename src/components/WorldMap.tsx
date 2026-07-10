@@ -277,6 +277,19 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
     }
   }, [filterType, selectedCountry, selectedProfession]);
 
+  // Toggle layer visibility on the map
+  useEffect(() => {
+    const map = mapRef.current;
+    const layers = layersRef.current;
+    if (!map || !layers) return;
+    (['profiles', 'anon', 'events', 'professions'] as const).forEach((key) => {
+      const layer = layers[key];
+      const visible = layerVisibility[key];
+      if (visible && !map.hasLayer(layer)) map.addLayer(layer);
+      else if (!visible && map.hasLayer(layer)) map.removeLayer(layer);
+    });
+  }, [layerVisibility]);
+
   const getFilteredItems = () => {
     let items: any[] = [];
     if (filterType === 'all' || filterType === 'profiles') items.push(...allData.profiles.filter(p => p.lat && p.lng).map(p => ({ ...p, _type: 'profile', _professions: profileProfessions.get(p.id) || [] })));
