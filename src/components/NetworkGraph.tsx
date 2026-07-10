@@ -84,9 +84,9 @@ const NetworkGraph = ({
       style: [
         { selector: 'node', style: {
           label: 'data(label)', 'font-size': 9, color: 'hsl(215.4 16.3% 46.9%)',
-          'text-valign': 'bottom', 'text-margin-y': 4, 'text-wrap': 'ellipsis', 'text-max-width': 90,
+          'text-valign': 'bottom', 'text-margin-y': 4, 'text-wrap': 'ellipsis', 'text-max-width': '90px',
           width: 18, height: 18, 'background-color': '#94a3b8', 'border-width': 1, 'border-color': '#fff',
-        }},
+        } as any},
         { selector: 'node[kind="country"]', style: { 'background-color': 'hsl(152 60% 36%)', width: 30, height: 30, 'font-weight': 700, 'font-size': 11 }},
         { selector: 'node[kind="profession"]', style: { 'background-color': '#f97316', shape: 'diamond' }},
         { selector: 'node[kind="event"]', style: { 'background-color': '#22c55e', shape: 'triangle' }},
