@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { pickI18n } from '@/i18n/i18nField';
 import { MCI_FIELD_DEFS, MCI_FORMULA_CODE } from '@/lib/mci';
+import { MCI_SOURCES } from '@/lib/mciSources';
 import MciSubmissionForm from '@/components/MciSubmissionForm';
 import MciAdmin from '@/components/admin/MciAdmin';
 
@@ -88,9 +89,10 @@ const MciPage = () => {
         </header>
 
         <Tabs defaultValue="cities">
-          <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4">
+          <TabsList className="w-full grid grid-cols-2 sm:grid-cols-5">
             <TabsTrigger value="cities">Şehirler</TabsTrigger>
             <TabsTrigger value="formula">Formül</TabsTrigger>
+            <TabsTrigger value="sources">Veri Kaynakları</TabsTrigger>
             <TabsTrigger value="submit">Öneri Gönder</TabsTrigger>
             {isAdmin && <TabsTrigger value="admin"><ShieldCheck className="w-3.5 h-3.5 mr-1" />Admin</TabsTrigger>}
           </TabsList>
@@ -206,6 +208,48 @@ const MciPage = () => {
                 <p className="text-xs text-muted-foreground mt-3">
                   Bu kod WorkWorld altyapısında birebir bu şekilde çalışır. Lovable, PWA veya Supabase Edge Function ortamlarına doğrudan kopyalanabilir.
                   Sürüm geçmişi: MCI v2 (Legacy) → v3 (Legacy) → v5 (Stable) → v7 (Production).
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="sources" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Açık Kaynak Veri Akışı</CardTitle>
+                <p className="text-sm text-muted-foreground pt-1">
+                  Her değişkenin arkasındaki referans veri kaynakları. Rozet, önerilen yenileme sıklığını gösterir
+                  (realtime · daily · weekly · monthly · quarterly · yearly). Tüm kaynaklar açık lisanslıdır;
+                  scraper / cron-job'lar bu adresleri kullanır.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {MCI_SOURCES.map((v) => (
+                  <div key={v.key} className="border-b border-border/50 last:border-0 pb-3">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <code className="font-mono text-primary font-semibold">{v.key}</code>
+                      <span className="text-sm font-medium">{v.label}</span>
+                      <Badge variant="secondary" className="text-[10px] uppercase">{v.cadence}</Badge>
+                    </div>
+                    <ul className="space-y-1 text-xs pl-1">
+                      {v.sources.map((s) => (
+                        <li key={s.url} className="flex flex-wrap gap-2 items-center">
+                          <a href={s.url} target="_blank" rel="noopener noreferrer"
+                            className="text-primary hover:underline inline-flex items-center gap-1">
+                            {s.name} <ExternalLink className="w-3 h-3" />
+                          </a>
+                          <Badge variant="outline" className="text-[10px]">{s.cadence}</Badge>
+                          {s.license && <span className="text-muted-foreground">· {s.license}</span>}
+                          {s.note && <span className="text-muted-foreground italic">— {s.note}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground pt-2">
+                  Not: Realtime kaynaklar (Overpass, GDELT, Google Trends daily) doğrudan istemciden çekilebilir;
+                  ağır API'lar (Crunchbase, LinkedIn Economic Graph) haftalık cron ile Lovable Cloud edge function
+                  üzerinden mci_cities tablosuna yazılır. Kaynak formül CC-BY-4.0 / AGPL-3.0'dır.
                 </p>
               </CardContent>
             </Card>
