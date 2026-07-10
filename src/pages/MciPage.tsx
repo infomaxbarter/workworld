@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { pickI18n } from '@/i18n/i18nField';
 import { MCI_FIELD_DEFS, MCI_FORMULA_CODE } from '@/lib/mci';
+import { MCI_SOURCES } from '@/lib/mciSources';
 import MciSubmissionForm from '@/components/MciSubmissionForm';
 import MciAdmin from '@/components/admin/MciAdmin';
 
