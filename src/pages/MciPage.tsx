@@ -213,15 +213,49 @@ const MciPage = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="submit" className="mt-6">
-            <p className="text-sm text-muted-foreground mb-4">
-              Aşağıdaki 20 metrikten en az temel olanları doldur; sistem MCI puanını ve koltuk kontenjanını canlı hesaplar.
-              Öneriniz admin onayına düşer. Kaynak / referans belirtmeniz onay şansını artırır.
-            </p>
-            <MciSubmissionForm countries={countries} />
+          <TabsContent value="sources" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Açık Kaynak Veri Akışı</CardTitle>
+                <p className="text-sm text-muted-foreground pt-1">
+                  Her değişkenin arkasındaki referans veri kaynakları. Rozet, önerilen yenileme sıklığını gösterir
+                  (realtime · daily · weekly · monthly · quarterly · yearly). Tüm kaynaklar açık lisanslıdır;
+                  scraper / cron-job'lar bu adresleri kullanır.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {MCI_SOURCES.map((v) => (
+                  <div key={v.key} className="border-b border-border/50 last:border-0 pb-3">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <code className="font-mono text-primary font-semibold">{v.key}</code>
+                      <span className="text-sm font-medium">{v.label}</span>
+                      <Badge variant="secondary" className="text-[10px] uppercase">{v.cadence}</Badge>
+                    </div>
+                    <ul className="space-y-1 text-xs pl-1">
+                      {v.sources.map((s) => (
+                        <li key={s.url} className="flex flex-wrap gap-2 items-center">
+                          <a href={s.url} target="_blank" rel="noopener noreferrer"
+                            className="text-primary hover:underline inline-flex items-center gap-1">
+                            {s.name} <ExternalLink className="w-3 h-3" />
+                          </a>
+                          <Badge variant="outline" className="text-[10px]">{s.cadence}</Badge>
+                          {s.license && <span className="text-muted-foreground">· {s.license}</span>}
+                          {s.note && <span className="text-muted-foreground italic">— {s.note}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground pt-2">
+                  Not: Realtime kaynaklar (Overpass, GDELT, Google Trends daily) doğrudan istemciden çekilebilir;
+                  ağır API'lar (Crunchbase, LinkedIn Economic Graph) haftalık cron ile Lovable Cloud edge function
+                  üzerinden mci_cities tablosuna yazılır. Kaynak formül CC-BY-4.0 / AGPL-3.0'dır.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {isAdmin && (
+          <TabsContent value="submit" className="mt-6">
             <TabsContent value="admin" className="mt-6">
               <MciAdmin />
             </TabsContent>
