@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Search, X, Filter } from 'lucide-react';
+import { Search, X, Filter, ChevronDown, ChevronRight, Layers, BarChart3, Network, PanelLeftClose, PanelLeftOpen, Eye, EyeOff } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -8,6 +8,8 @@ import 'leaflet.markercluster';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { pickI18n } from '@/i18n/i18nField';
+import NetworkGraph from '@/components/NetworkGraph';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
