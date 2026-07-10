@@ -68,6 +68,9 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
   const [profileProfessions, setProfileProfessions] = useState<Map<string, string[]>>(new Map());
   const [anonProfessions, setAnonProfessions] = useState<Map<string, string[]>>(new Map());
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopOpen, setDesktopOpen] = useState(true);
+  const [layerVisibility, setLayerVisibility] = useState({ profiles: true, anon: true, events: true, professions: true });
+  const [openSection, setOpenSection] = useState<Record<string, boolean>>({ filters: true, layers: true, stats: false, network: false, list: true });
   const [stats, setStats] = useState({ profiles: 0, anon: 0, events: 0, professions: 0, total: 0 });
 
   // Build markers
