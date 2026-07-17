@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays, Map, Info, LayoutDashboard, Menu, Search, ChevronDown, Briefcase } from 'lucide-react';
+import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays, Map, Info, LayoutDashboard, Menu, Search, ChevronDown, Briefcase, FileText, Play, Headphones, Activity, BarChart3, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -58,32 +58,43 @@ const Header = () => {
   // Mega menu items with sub-items
   const megaItems = [
     {
-      label: t('nav.humans'),
+      label: t('nav.community'),
       icon: Users,
       children: [
-        { to: lp('humans'), label: t('humans.title'), desc: t('humans.subtitle') },
-        { to: lp('map'), label: t('nav.map'), desc: t('map.subtitle') },
+        { to: lp('humans'), label: t('humans.title'), desc: t('humans.subtitle'), icon: Users },
+        { to: lp('professions'), label: t('professions.title'), desc: t('professions.subtitle'), icon: Briefcase },
       ],
     },
     {
       label: t('nav.events'),
       icon: CalendarDays,
       children: [
-        { to: lp('events'), label: t('events.title'), desc: t('events.subtitle') },
+        { to: lp('events'), label: t('events.title'), desc: t('events.subtitle'), icon: CalendarDays },
+        { to: lp('map'), label: t('map.title'), desc: t('map.subtitle'), icon: Map },
       ],
     },
     {
-      label: t('nav.professions'),
-      icon: Briefcase,
+      label: t('nav.media'),
+      icon: FileText,
       children: [
-        { to: lp('professions'), label: t('professions.title'), desc: t('professions.subtitle')?.substring(0, 60) + '...' },
+        { to: lp('blog'), label: t('blog.title'), desc: t('blog.subtitle'), icon: FileText },
+        { to: lp('videos'), label: t('videos.title'), desc: t('videos.subtitle'), icon: Play },
+        { to: lp('podcast'), label: t('podcast.title'), desc: t('podcast.subtitle'), icon: Headphones },
+      ],
+    },
+    {
+      label: t('nav.data'),
+      icon: Database,
+      children: [
+        { to: lp('mci'), label: 'MCI v7.0', desc: 'Matrix City Index', icon: BarChart3 },
+        { to: lp('analytics'), label: t('analytics.title'), desc: t('analytics.subtitle'), icon: Activity },
       ],
     },
     {
       label: t('nav.about'),
       icon: Info,
       children: [
-        { to: lp('about'), label: t('about.title'), desc: t('about.intro')?.substring(0, 60) + '...' },
+        { to: lp('about'), label: t('about.title'), desc: t('about.intro')?.substring(0, 60) + '...', icon: Info },
       ],
     },
   ];
@@ -92,7 +103,11 @@ const Header = () => {
     { to: lp('humans'), icon: Users, label: t('nav.humans') },
     { to: lp('events'), icon: CalendarDays, label: t('nav.events') },
     { to: lp('professions'), icon: Briefcase, label: t('nav.professions') },
+    { to: lp('blog'), icon: FileText, label: t('nav.blog') },
+    { to: lp('videos'), icon: Play, label: t('nav.videos') },
+    { to: lp('podcast'), icon: Headphones, label: t('nav.podcast') },
     { to: lp('map'), icon: Map, label: t('nav.map') },
+    { to: lp('analytics'), icon: Activity, label: t('nav.analytics') },
     { to: lp('mci'), icon: Shield, label: 'MCI' },
     { to: lp('about'), icon: Info, label: t('nav.about') },
   ];
@@ -105,7 +120,7 @@ const Header = () => {
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link to="/" className="text-xl font-bold tracking-tight text-foreground">
-            Work<span className="text-primary">World</span>
+            Work<span className="text-primary">World</span>Map
           </Link>
 
           {/* Standard nav */}
@@ -218,7 +233,7 @@ const Header = () => {
               <SheetContent side="right" className="w-72 p-0">
                 <SheetHeader className="p-4 border-b border-border">
                   <SheetTitle className="text-left">
-                    Work<span className="text-primary">World</span>
+                    Work<span className="text-primary">World</span>Map
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col p-2">

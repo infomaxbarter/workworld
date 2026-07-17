@@ -337,6 +337,72 @@ export type Database = {
           },
         ]
       }
+      media_content: {
+        Row: {
+          author_id: string | null
+          body: string | null
+          body_i18n: Json | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          description_i18n: Json | null
+          duration_seconds: number | null
+          id: string
+          media_url: string | null
+          published_at: string | null
+          reject_reason: string | null
+          slug: string | null
+          status: string
+          tags: string[] | null
+          title: string
+          title_i18n: Json | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          body?: string | null
+          body_i18n?: Json | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          description_i18n?: Json | null
+          duration_seconds?: number | null
+          id?: string
+          media_url?: string | null
+          published_at?: string | null
+          reject_reason?: string | null
+          slug?: string | null
+          status?: string
+          tags?: string[] | null
+          title: string
+          title_i18n?: Json | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string | null
+          body_i18n?: Json | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          description_i18n?: Json | null
+          duration_seconds?: number | null
+          id?: string
+          media_url?: string | null
+          published_at?: string | null
+          reject_reason?: string | null
+          slug?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          title_i18n?: Json | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string

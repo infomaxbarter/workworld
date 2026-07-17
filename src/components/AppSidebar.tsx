@@ -71,7 +71,7 @@ const AppSidebar = () => {
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-3">
         <Link to="/" className="text-lg font-bold tracking-tight text-foreground flex items-center gap-1">
-          {!collapsed && <>Work<span className="text-primary">World</span></>}
+          {!collapsed && <>Work<span className="text-primary">World</span>Map</>}
           {collapsed && <span className="text-primary text-xl font-black">W</span>}
         </Link>
       </SidebarHeader>

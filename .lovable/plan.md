@@ -1,37 +1,72 @@
-## MCI v7.0 Entegrasyonu Planı
 
-Yüklenen "WorkWorld MCI v7.0" spesifikasyonunu sisteme entegre edeceğim. Amaç: şehirlerin MCI puanına göre koltuk kontenjanı (3–65) belirlemek, pilot ülkelerle sınırlamak, formülü şeffaf olarak paylaşmak ve üye→admin onay akışı kurmak.
+# Plan: WorkWorldMap Upgrade
 
-### 1. Veritabanı (yeni tablolar)
-- **`pilot_countries`**: kod (TR, DE, NL vb.), isim_i18n, aktif.
-- **`mci_cities`**: şehir, ülke_kodu, tüm 16 MCI değişkeni (N, G, F, U, S, T, P_search, M_loc, H, T_flow, AI_index, ESG_score, Exp, Imp, Y_ratio, E_ratio, B_rate, sigma, delta_pulse, net_syn), hesaplanmış `cp_final`, `seat_quota`, `approved`, `slug`.
-- **`mci_submissions`**: üye tarafından önerilen şehir/güncelleme; `status` (pending/approved/rejected), `payload jsonb`, `reviewer_id`, `review_note`. Admin onayı sonrası `mci_cities`'e uygulanır.
-- Mevcut `professions` ve `event_markers` tablolarına `country_code` alanı ekleyip pilot ülke filtresi uygulanır.
-- RLS: herkes onaylı `mci_cities` okur; auth kullanıcı `mci_submissions` insert; sadece admin update/delete + `mci_cities` yazımı.
+Bu çok kapsamlı bir istek — 5 ayrı iş paketi. Küçük parçalara ayırıp sırayla uyguluyorum. Onay verirsen her paket ~1-2 turda tamamlanır.
 
-### 2. Hesaplama motoru
-- `src/lib/mci.ts`: PDF'teki JS bloğunu birebir uygulayan `calculateMCI(metrics)` fonksiyonu (Faz A/B/C, D_dyn clamp 0.7–1.3, K clamp 3–65).
-- Submission approve edildiğinde otomatik `cp_final` + `seat_quota` yeniden hesaplanır.
+## 1) Marka: WorkWorld → WorkWorldMap
+- `index.html` title + meta description + og:title
+- Header logosu: `Work` + `WorldMap` (renkli span)
+- Footer, About, Auth, boş durum metinleri
+- i18n anahtarlarında geçen "WorkWorld" ibareleri (TR/EN/DE)
 
-### 3. Sayfalar
-- **`/mci` (Matris Şehir Endeksi)**: 
-  - Formülü açık şekilde LaTeX benzeri render (KaTeX yerine sade Tailwind + `<code>`) + değişken sözlüğü tablosu + JS kod bloğu (copy button). "Açık kaynak formül" bölümü.
-  - Pilot ülke sekmeleri → şehir kartları (CP_final, Koltuk K, dinamik renk).
-  - "Şehir öner / veri güncelle" butonu → submission formu (16 alan, Zod validasyon, anlık MCI önizleme).
-- **`/admin` MCI sekmesi**: 
-  - Submissions kuyruğu: değişiklik diff'i, hesaplanan CP/K önizlemesi, Onayla/Reddet + not.
-  - Şehir CRUD tablosu (arama+pagination, `useAdminTable`).
-  - Pilot ülke CRUD.
-- Etkinlik oluşturma / meslek ekleme formlarına pilot ülke seçici; olmayan ülke seçilemez.
+## 2) İçerik türleri: Blog / Video / Podcast
+Yeni tablo `media_content`:
+```
+id, type ('blog'|'video'|'podcast'), status,
+title_i18n jsonb, description_i18n jsonb, body_i18n jsonb,
+cover_url, media_url (video/audio için), duration_seconds,
+author_id, tags text[], published_at, slug,
+created_at, updated_at
+```
+RLS: herkes onaylıları okur; admin CRUD; auth kullanıcılar taslak oluşturabilir → admin onayı.
+Yeni sayfalar: `/blog`, `/videos`, `/podcast` + detay `/{type}/:slug` (i18n route'ları ile TR/DE).
+Detayda mevcut `PostsSection` + `CommentsSection` yeniden kullanılır.
 
-### 4. i18n & Navigasyon
-- Route registry'e `mci` eklenir: `/mci` (en) · `/matris-sehir-endeksi` (tr) · `/matrix-staedte-index` (de).
-- Header/Footer/Sidebar/CommandPalette'e MCI linki.
-- TR/EN/DE çeviri anahtarları.
+## 3) Header: Mega menü (varsayılan)
+`NavigationContext.defaultSettings.desktop = 'mega'`.
+Mega menü grupları:
+- **Community**: Humans, Members, Professions
+- **Events**: Events, Map
+- **Media**: Blog, Videos, Podcast
+- **Data**: MCI, Analytics (yeni), Reports
+- **About**: About, Volunteer
 
-### 5. Dosyalar
-- **Yeni**: `src/lib/mci.ts`, `src/pages/MciPage.tsx`, `src/components/MciSubmissionForm.tsx`, `src/components/admin/MciAdmin.tsx`.
-- **Güncelleme**: `src/App.tsx`, `src/i18n/routes.ts`, `src/i18n/translations.ts`, `src/pages/Admin.tsx`, `src/components/Header.tsx`, `src/components/Footer.tsx`, `src/components/AppSidebar.tsx`, `src/components/CommandPalette.tsx`, event/profession formları.
-- Migration: yukarıdaki tablolar + GRANT + RLS + updated_at trigger.
+Mevcut mega yapıyı (`Header.tsx` `megaItems`) genişletiyorum; mobile Sheet aynı gruplarla.
 
-Onaylarsan migration ile başlıyorum.
+## 4) Analitik sayfası (şeffaflık)
+Yeni `/analytics` sayfası — herkese açık, hiç hesap gerekmez.
+- **Chart.js** (`react-chartjs-2`): 
+  - Ülke başına üye dağılımı (bar)
+  - Aylık büyüme (line)
+  - Meslek popülerliği (doughnut)
+  - MCI şehir skorları karşılaştırması (radar)
+  - Etkinlik durum dağılımı (pie)
+- **MapLibre GL JS**: Choropleth benzeri — ülke başına yoğunluk heatmap katmanı (mevcut Leaflet haritasını korurken, analytics'te MapLibre kullanıyorum).
+- Tüm veriler public read RLS ile canlı Supabase'den.
+- "Kaynakça" bölümü: her grafiğin altında `mciSources.ts` benzeri referans.
+
+## 5) Admin paneli genişletme
+Yeni sekmeler:
+- **Media** — blog/video/podcast CRUD (mevcut `useAdminTable` + `AdminToolbar` desenini kullanır; bulk approve/delete, i18n çeviri butonu ile).
+- **Analytics Config** — hangi grafiklerin public gösterileceğinin toggle'ları (opsiyonel, isterse).
+
+## 6) i18n temizliği
+- Tüm eksik anahtarları tarayıp (`rg "t\\('[^']+'\\)"`) TR/EN/DE üçünde de olmasını sağla.
+- Yeni eklenen media/analytics anahtarları üç dilde.
+- Marka değişiminden etkilenen metinler.
+
+## Teknik notlar
+- Migration: `media_content` tablosu + GRANT + RLS + slug trigger.
+- Depend.: `chart.js`, `react-chartjs-2`, `maplibre-gl`.
+- SPA route'ları `routes.ts` altında `blog`/`videos`/`podcast`/`analytics` anahtarları ile — TR: `/blog`,`/videolar`,`/podcast`,`/analitik`; DE: `/blog`,`/videos`,`/podcast`,`/analysen`.
+
+## Sıra
+1. Marka değişimi + i18n taraması (hızlı, düşük risk)
+2. `media_content` migration + Blog/Video/Podcast sayfaları + Admin sekmesi
+3. Mega menü default + Header grupları güncelleme
+4. Analytics sayfası (Chart.js + MapLibre)
+
+## Sana soru
+- Media içeriklerinde **video/podcast** için: kullanıcılar YouTube/Spotify **URL** mi girecek yoksa dosya **upload** mu (Supabase Storage bucket)? Önerim: MVP için URL — hızlı ve ücretsiz. Onaylar mısın?
+- Analytics'te MapLibre için ücretsiz tile source (**OpenFreeMap** veya **MapTiler free tier, API key gerekli**) — OpenFreeMap key'siz gidebiliriz. Onay?
+- 4 paketin **hepsini tek seferde** mi uygulayayım, yoksa **paket paket onay** mı vereceksin?

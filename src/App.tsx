@@ -22,11 +22,13 @@ import HumansPage from "./pages/HumansPage";
 import EventsPage from "./pages/EventsPage";
 import MapPage from "./pages/MapPage";
 import MciPage from "./pages/MciPage";
-
 import MemberDetail from "./pages/MemberDetail";
 import AboutPage from "./pages/AboutPage";
 import ProfessionsPage from "./pages/ProfessionsPage";
 import ProfessionDetail from "./pages/ProfessionDetail";
+import MediaListPage from "./pages/MediaListPage";
+import MediaDetail from "./pages/MediaDetail";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +41,10 @@ const pageFor: Record<RouteKey, JSX.Element> = {
   professions: <ProfessionsPage />,
   map: <MapPage />,
   mci: <MciPage />,
+  blog: <MediaListPage type="blog" />,
+  videos: <MediaListPage type="video" />,
+  podcast: <MediaListPage type="podcast" />,
+  analytics: <AnalyticsPage />,
 
   dashboard: <Dashboard />,
   admin: <Admin />,
@@ -47,6 +53,9 @@ const pageFor: Record<RouteKey, JSX.Element> = {
   eventDetail: <EventDetail />,
   memberDetail: <MemberDetail />,
   professionDetail: <ProfessionDetail />,
+  blogDetail: <MediaDetail type="blog" />,
+  videoDetail: <MediaDetail type="video" />,
+  podcastDetail: <MediaDetail type="podcast" />,
   kvkk: <LegalPage />,
   cookies: <LegalPage />,
   consent: <LegalPage />,

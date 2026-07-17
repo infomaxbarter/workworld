@@ -8,8 +8,8 @@ export type NavSettings = Record<DeviceType, NavMode>;
 const STORAGE_KEY = 'ww_nav_settings';
 
 const defaultSettings: NavSettings = {
-  desktop: 'header',
-  tablet: 'header',
+  desktop: 'mega',
+  tablet: 'mega',
   mobile: 'header',
 };
 
