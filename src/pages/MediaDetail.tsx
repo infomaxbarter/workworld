@@ -69,9 +69,9 @@ const MediaDetail = ({ type }: { type: MediaType }) => {
     );
   }
 
-  const title = pickI18n(item.title_i18n, lang, item.title);
-  const desc = pickI18n(item.description_i18n, lang, item.description || '');
-  const body = pickI18n(item.body_i18n, lang, item.body || '');
+  const title = pickI18n(item.title_i18n, item.title, lang);
+  const desc = pickI18n(item.description_i18n, item.description || '', lang);
+  const body = pickI18n(item.body_i18n, item.body || '', lang);
   const embed = item.media_url ? toEmbed(item.media_url) : null;
 
   return (

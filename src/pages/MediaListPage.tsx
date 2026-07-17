@@ -73,8 +73,8 @@ const MediaListPage = ({ type }: { type: MediaType }) => {
         ) : (
           <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => {
-              const title = pickI18n(item.title_i18n, lang, item.title);
-              const desc = pickI18n(item.description_i18n, lang, item.description || '');
+              const title = pickI18n(item.title_i18n, item.title, lang);
+              const desc = pickI18n(item.description_i18n, item.description || '', lang);
               return (
                 <Link
                   key={item.id}
