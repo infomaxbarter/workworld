@@ -1208,6 +1208,11 @@ const AdminDashboard = () => {
             )}
           </TabsContent>
 
+          {/* Media */}
+          <TabsContent value="media">
+            <MediaAdmin />
+          </TabsContent>
+
           {/* Data Export/Import */}
           <TabsContent value="data">
             <DataExportImport onReload={reload} />
