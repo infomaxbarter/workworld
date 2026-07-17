@@ -7,7 +7,7 @@ import { matchRoute, type RouteKey } from '@/i18n/routes';
 const content: Record<string, { title: string; body: string }> = {
   kvkk: {
     title: 'KVKK Aydınlatma Metni',
-    body: `6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, WorkWorld olarak kişisel verilerinizin güvenliğine önem veriyoruz.\n\nToplanan kişisel veriler yalnızca başvuru süreçlerinin yürütülmesi amacıyla kullanılmakta olup, üçüncü kişilerle paylaşılmamaktadır. Verileriniz, yasal saklama süreleri boyunca güvenli ortamlarda muhafaza edilir.\n\nKişisel verilerinize ilişkin haklarınız hakkında detaylı bilgi almak için bizimle iletişime geçebilirsiniz.`,
+    body: `6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, WorkWorldMap olarak kişisel verilerinizin güvenliğine önem veriyoruz.\n\nToplanan kişisel veriler yalnızca başvuru süreçlerinin yürütülmesi amacıyla kullanılmakta olup, üçüncü kişilerle paylaşılmamaktadır. Verileriniz, yasal saklama süreleri boyunca güvenli ortamlarda muhafaza edilir.\n\nKişisel verilerinize ilişkin haklarınız hakkında detaylı bilgi almak için bizimle iletişime geçebilirsiniz.`,
   },
   cookies: {
     title: 'Çerez Politikası',
@@ -15,7 +15,7 @@ const content: Record<string, { title: string; body: string }> = {
   },
   consent: {
     title: 'Açık Rıza Formu',
-    body: `WorkWorld platformuna başvuru yaparak, aşağıdaki hususlara açık rızanızı vermiş olmaktasınız:\n\n• Ad, e-posta adresi ve başvuru mesajınızın toplanması ve işlenmesi\n• Başvurunuzun değerlendirilmesi amacıyla verilerinizin kullanılması\n• Verilerinizin yasal saklama süreleri boyunca muhafaza edilmesi\n\nAçık rızanızı istediğiniz zaman geri çekme hakkına sahipsiniz.`,
+    body: `WorkWorldMap platformuna başvuru yaparak, aşağıdaki hususlara açık rızanızı vermiş olmaktasınız:\n\n• Ad, e-posta adresi ve başvuru mesajınızın toplanması ve işlenmesi\n• Başvurunuzun değerlendirilmesi amacıyla verilerinizin kullanılması\n• Verilerinizin yasal saklama süreleri boyunca muhafaza edilmesi\n\nAçık rızanızı istediğiniz zaman geri çekme hakkına sahipsiniz.`,
   },
 };
 

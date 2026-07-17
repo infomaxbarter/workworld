@@ -9,6 +9,10 @@ export type RouteKey =
   | 'professions'
   | 'map'
   | 'mci'
+  | 'blog'
+  | 'videos'
+  | 'podcast'
+  | 'analytics'
   | 'dashboard'
   | 'admin'
   | 'auth'
@@ -16,6 +20,9 @@ export type RouteKey =
   | 'eventDetail'
   | 'memberDetail'
   | 'professionDetail'
+  | 'blogDetail'
+  | 'videoDetail'
+  | 'podcastDetail'
   | 'kvkk'
   | 'cookies'
   | 'consent';
@@ -29,6 +36,10 @@ export const routeMap: Record<RouteKey, Record<Lang, string>> = {
   professions:      { en: '/professions',tr: '/meslekler',   de: '/berufe' },
   map:              { en: '/map',        tr: '/harita',      de: '/karte' },
   mci:              { en: '/mci',        tr: '/matris-sehir-endeksi', de: '/matrix-staedte-index' },
+  blog:             { en: '/blog',       tr: '/blog',        de: '/blog' },
+  videos:           { en: '/videos',     tr: '/videolar',    de: '/videos' },
+  podcast:          { en: '/podcast',    tr: '/podcast',     de: '/podcast' },
+  analytics:        { en: '/analytics',  tr: '/analitik',    de: '/analysen' },
 
   dashboard:        { en: '/dashboard',  tr: '/panel',       de: '/uebersicht' },
   admin:            { en: '/admin',      tr: '/yonetim',     de: '/verwaltung' },
@@ -37,6 +48,9 @@ export const routeMap: Record<RouteKey, Record<Lang, string>> = {
   eventDetail:      { en: '/events/:slug',     tr: '/etkinlikler/:slug', de: '/veranstaltungen/:slug' },
   memberDetail:     { en: '/members/:slug',    tr: '/uyeler/:slug',      de: '/mitglieder/:slug' },
   professionDetail: { en: '/professions/:slug',tr: '/meslekler/:slug',   de: '/berufe/:slug' },
+  blogDetail:       { en: '/blog/:slug',       tr: '/blog/:slug',        de: '/blog/:slug' },
+  videoDetail:      { en: '/videos/:slug',     tr: '/videolar/:slug',    de: '/videos/:slug' },
+  podcastDetail:    { en: '/podcast/:slug',    tr: '/podcast/:slug',     de: '/podcast/:slug' },
   kvkk:             { en: '/kvkk',       tr: '/kvkk',        de: '/kvkk' },
   cookies:          { en: '/cookies',    tr: '/cerezler',    de: '/cookies' },
   consent:          { en: '/consent',    tr: '/riza',        de: '/einwilligung' },

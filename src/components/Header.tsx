@@ -105,7 +105,7 @@ const Header = () => {
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link to="/" className="text-xl font-bold tracking-tight text-foreground">
-            Work<span className="text-primary">World</span>
+            Work<span className="text-primary">World</span>Map
           </Link>
 
           {/* Standard nav */}
@@ -218,7 +218,7 @@ const Header = () => {
               <SheetContent side="right" className="w-72 p-0">
                 <SheetHeader className="p-4 border-b border-border">
                   <SheetTitle className="text-left">
-                    Work<span className="text-primary">World</span>
+                    Work<span className="text-primary">World</span>Map
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col p-2">

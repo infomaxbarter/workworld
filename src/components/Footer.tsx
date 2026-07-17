@@ -21,7 +21,7 @@ const Footer = () => {
           <Link to={lp('consent')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.consent')}</Link>
         </nav>
 
-        <p className="text-xs text-muted-foreground">© 2026 WorkWorld — {t('footer.nonprofit')}</p>
+        <p className="text-xs text-muted-foreground">© 2026 Work<span className="text-primary">World</span>Map — {t('footer.nonprofit')}</p>
       </div>
     </footer>
   );
