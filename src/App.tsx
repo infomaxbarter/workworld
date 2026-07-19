@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { NavigationProvider, useNavigation } from "@/contexts/NavigationContext";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -10,30 +11,40 @@ import Header from "@/components/Header";
 import AppSidebar from "@/components/AppSidebar";
 import CommandPalette from "@/components/CommandPalette";
 import LanguageURLSync from "@/components/LanguageURLSync";
+import PageSkeleton from "@/components/PageSkeleton";
 import { routeMap, allLangs, type RouteKey } from "@/i18n/routes";
 import Index from "./pages/Index";
-import LegalPage from "./pages/LegalPage";
-import Admin from "./pages/Admin";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import ProfileDetail from "./pages/ProfileDetail";
-import EventDetail from "./pages/EventDetail";
-import HumansPage from "./pages/HumansPage";
-import EventsPage from "./pages/EventsPage";
-import MapPage from "./pages/MapPage";
-import MciPage from "./pages/MciPage";
-import MciCityDetail from "./pages/MciCityDetail";
-import MciComparePage from "./pages/MciComparePage";
-import MemberDetail from "./pages/MemberDetail";
-import AboutPage from "./pages/AboutPage";
-import ProfessionsPage from "./pages/ProfessionsPage";
-import ProfessionDetail from "./pages/ProfessionDetail";
-import MediaListPage from "./pages/MediaListPage";
-import MediaDetail from "./pages/MediaDetail";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const LegalPage = lazy(() => import("./pages/LegalPage"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ProfileDetail = lazy(() => import("./pages/ProfileDetail"));
+const EventDetail = lazy(() => import("./pages/EventDetail"));
+const HumansPage = lazy(() => import("./pages/HumansPage"));
+const EventsPage = lazy(() => import("./pages/EventsPage"));
+const MapPage = lazy(() => import("./pages/MapPage"));
+const MciPage = lazy(() => import("./pages/MciPage"));
+const MciCityDetail = lazy(() => import("./pages/MciCityDetail"));
+const MciComparePage = lazy(() => import("./pages/MciComparePage"));
+const MemberDetail = lazy(() => import("./pages/MemberDetail"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const ProfessionsPage = lazy(() => import("./pages/ProfessionsPage"));
+const ProfessionDetail = lazy(() => import("./pages/ProfessionDetail"));
+const MediaListPage = lazy(() => import("./pages/MediaListPage"));
+const MediaDetail = lazy(() => import("./pages/MediaDetail"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const pageFor: Record<RouteKey, JSX.Element> = {
   home: <Index />,
@@ -78,10 +89,12 @@ const localizedRoutes = (Object.keys(routeMap) as RouteKey[]).flatMap((key) => {
 });
 
 const AppRoutes = () => (
-  <Routes>
-    {localizedRoutes}
-    <Route path="*" element={<NotFound />} />
-  </Routes>
+  <Suspense fallback={<PageSkeleton />}>
+    <Routes>
+      {localizedRoutes}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </Suspense>
 );
 
 const AppLayout = () => {
@@ -94,9 +107,9 @@ const AppLayout = () => {
           <AppSidebar />
           <div className="flex-1 flex flex-col min-w-0">
             <header className="h-12 flex items-center border-b border-border bg-background/80 backdrop-blur-md px-3 sticky top-0 z-50">
-              <SidebarTrigger />
+              <SidebarTrigger aria-label="Toggle sidebar" />
             </header>
-            <main className="flex-1">
+            <main id="main" className="flex-1">
               <AppRoutes />
             </main>
           </div>
@@ -107,8 +120,16 @@ const AppLayout = () => {
 
   return (
     <>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-3 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md"
+      >
+        Skip to content
+      </a>
       <Header />
-      <AppRoutes />
+      <main id="main">
+        <AppRoutes />
+      </main>
     </>
   );
 };
