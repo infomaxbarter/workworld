@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
 import Footer from '@/components/Footer';
+import PageSeo from '@/components/PageSeo';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, TrendingUp, PieChart as PieIcon, Radar as RadarIcon, Activity, Globe2 } from 'lucide-react';
@@ -200,6 +201,7 @@ const AnalyticsPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PageSeo title={`${t('analytics.title')} — WorkWorldMap`} description={t('analytics.subtitle')} />
       <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12 flex-1 w-full">
         <div className="text-center mb-8 sm:mb-12">
           <div className="inline-flex items-center gap-2 text-primary mb-3">
