@@ -98,18 +98,23 @@ const MciPage = () => {
           </TabsList>
 
           <TabsContent value="cities" className="space-y-4 mt-6">
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant={selectedCountry === 'all' ? 'default' : 'outline'} onClick={() => setSelectedCountry('all')}>
-                Tüm Pilot Ülkeler
-              </Button>
-              {countries.map(c => (
-                <Button key={c.code} size="sm"
-                  variant={selectedCountry === c.code ? 'default' : 'outline'}
-                  onClick={() => setSelectedCountry(c.code)}>
-                  <span className="mr-1.5">{c.flag_emoji}</span>
-                  {pickI18n(c.name_i18n, c.name, lang)}
+            <div className="flex flex-wrap gap-2 items-center justify-between">
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant={selectedCountry === 'all' ? 'default' : 'outline'} onClick={() => setSelectedCountry('all')}>
+                  Tüm Pilot Ülkeler
                 </Button>
-              ))}
+                {countries.map(c => (
+                  <Button key={c.code} size="sm"
+                    variant={selectedCountry === c.code ? 'default' : 'outline'}
+                    onClick={() => setSelectedCountry(c.code)}>
+                    <span className="mr-1.5">{c.flag_emoji}</span>
+                    {pickI18n(c.name_i18n, c.name, lang)}
+                  </Button>
+                ))}
+              </div>
+              <Button asChild size="sm" variant="secondary">
+                <a href="/mci/compare">Compare →</a>
+              </Button>
             </div>
 
             {visibleCities.length === 0 ? (
@@ -124,26 +129,28 @@ const MciPage = () => {
                   const country = countries.find(k => k.code === c.country_code);
                   const pct = Math.min(100, ((c.cp_final || 0) / 600) * 100);
                   return (
-                    <Card key={c.id} className="overflow-hidden">
-                      <CardContent className="p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-semibold">{c.city}</div>
-                            <div className="text-xs text-muted-foreground">{country?.flag_emoji} {country?.name}</div>
+                    <a key={c.id} href={`/mci/${c.slug || c.id}`} className="block">
+                      <Card className="overflow-hidden hover:border-primary/50 hover:shadow-md transition-all">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-semibold">{c.city}</div>
+                              <div className="text-xs text-muted-foreground">{country?.flag_emoji} {country?.name}</div>
+                            </div>
+                            <Badge className="text-base px-3">K {c.seat_quota ?? '—'}</Badge>
                           </div>
-                          <Badge className="text-base px-3">K {c.seat_quota ?? '—'}</Badge>
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">CP_final</span>
-                            <span className="font-mono">{c.cp_final?.toFixed(1) ?? '—'} / 600</span>
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-muted-foreground">CP_final</span>
+                              <span className="font-mono">{c.cp_final?.toFixed(1) ?? '—'} / 600</span>
+                            </div>
+                            <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
+                            </div>
                           </div>
-                          <div className="h-2 bg-muted rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      </Card>
+                    </a>
                   );
                 })}
               </div>

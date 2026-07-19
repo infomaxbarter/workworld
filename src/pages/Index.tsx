@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import WorldMap from '@/components/WorldMap';
 import ApplicationForm from '@/components/ApplicationForm';
 import Footer from '@/components/Footer';
+import HeroSearch from '@/components/HeroSearch';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const Index = () => {
@@ -25,6 +26,7 @@ const Index = () => {
           </p>
         </motion.div>
 
+        <HeroSearch />
         <WorldMap />
       </section>
 

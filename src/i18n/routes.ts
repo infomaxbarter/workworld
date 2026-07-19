@@ -9,6 +9,8 @@ export type RouteKey =
   | 'professions'
   | 'map'
   | 'mci'
+  | 'mciCompare'
+  | 'mciCityDetail'
   | 'blog'
   | 'videos'
   | 'podcast'
@@ -36,6 +38,8 @@ export const routeMap: Record<RouteKey, Record<Lang, string>> = {
   professions:      { en: '/professions',tr: '/meslekler',   de: '/berufe' },
   map:              { en: '/map',        tr: '/harita',      de: '/karte' },
   mci:              { en: '/mci',        tr: '/matris-sehir-endeksi', de: '/matrix-staedte-index' },
+  mciCompare:       { en: '/mci/compare', tr: '/matris-sehir-endeksi/karsilastir', de: '/matrix-staedte-index/vergleich' },
+  mciCityDetail:    { en: '/mci/:slug',  tr: '/matris-sehir-endeksi/:slug', de: '/matrix-staedte-index/:slug' },
   blog:             { en: '/blog',       tr: '/blog',        de: '/blog' },
   videos:           { en: '/videos',     tr: '/videolar',    de: '/videos' },
   podcast:          { en: '/podcast',    tr: '/podcast',     de: '/podcast' },

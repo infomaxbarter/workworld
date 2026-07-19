@@ -872,6 +872,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      mci_compute_row: { Args: { row_id: string }; Returns: undefined }
       notify_admins: {
         Args: {
           _link?: string
