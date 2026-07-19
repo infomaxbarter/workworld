@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Search, CalendarDays, Clock } from 'lucide-react';
 import Footer from '@/components/Footer';
+import PageSeo from '@/components/PageSeo';
 
 interface EventData {
   id: string; title: string; date: string | null; start_date: string | null; end_date: string | null;
@@ -78,6 +79,7 @@ const EventsPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PageSeo title={`${t('events.title') || 'Events'} — WorkWorldMap`} description={t('events.subtitle') || 'Discover community events worldwide.'} />
       <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12 flex-1 w-full">
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('events.title')}</h1>

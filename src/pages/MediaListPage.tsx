@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Play, Headphones, FileText, ArrowRight, Search, X } from 'lucide-react';
+import PageSeo from '@/components/PageSeo';
 
 export type MediaType = 'blog' | 'video' | 'podcast';
 
@@ -84,6 +85,7 @@ const MediaListPage = ({ type }: { type: MediaType }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PageSeo title={`${type === 'blog' ? 'Blog' : type === 'video' ? 'Videos' : 'Podcast'} — WorkWorldMap`} description={`Latest ${type} content from the WorkWorldMap community.`} />
       <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12 flex-1 w-full">
         <div className="text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center gap-2 text-primary mb-3">

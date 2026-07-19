@@ -13,6 +13,7 @@ import { MCI_FIELD_DEFS, MCI_FORMULA_CODE } from '@/lib/mci';
 import { MCI_SOURCES } from '@/lib/mciSources';
 import MciSubmissionForm from '@/components/MciSubmissionForm';
 import MciAdmin from '@/components/admin/MciAdmin';
+import PageSeo from '@/components/PageSeo';
 
 interface Country {
   code: string; name: string; name_i18n: any; flag_emoji: string | null; active: boolean;
@@ -78,6 +79,7 @@ const MciPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PageSeo title="Matrix City Index — WorkWorldMap" description="Open-source Matrix City Index (MCI) — transparent formula and data sources for pilot cities worldwide." />
       <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12 flex-1 w-full space-y-8">
         <header className="text-center space-y-2">
           <Badge variant="outline" className="mb-2">MCI v7.0 · Production</Badge>
