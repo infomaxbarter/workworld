@@ -22,6 +22,8 @@ import HumansPage from "./pages/HumansPage";
 import EventsPage from "./pages/EventsPage";
 import MapPage from "./pages/MapPage";
 import MciPage from "./pages/MciPage";
+import MciCityDetail from "./pages/MciCityDetail";
+import MciComparePage from "./pages/MciComparePage";
 import MemberDetail from "./pages/MemberDetail";
 import AboutPage from "./pages/AboutPage";
 import ProfessionsPage from "./pages/ProfessionsPage";
@@ -41,6 +43,8 @@ const pageFor: Record<RouteKey, JSX.Element> = {
   professions: <ProfessionsPage />,
   map: <MapPage />,
   mci: <MciPage />,
+  mciCompare: <MciComparePage />,
+  mciCityDetail: <MciCityDetail />,
   blog: <MediaListPage type="blog" />,
   videos: <MediaListPage type="video" />,
   podcast: <MediaListPage type="podcast" />,
