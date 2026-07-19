@@ -3,6 +3,7 @@ import WorldMap from '@/components/WorldMap';
 import ApplicationForm from '@/components/ApplicationForm';
 import Footer from '@/components/Footer';
 import HeroSearch from '@/components/HeroSearch';
+import PageSeo from '@/components/PageSeo';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const Index = () => {
@@ -10,6 +11,21 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PageSeo
+        title="WorkWorldMap — Open Global Community on the Map"
+        description="Open-source nonprofit platform mapping people, events, professions and cities worldwide with transparent data and analytics."
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'WorkWorldMap',
+          url: 'https://workworld.lovable.app/',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: 'https://workworld.lovable.app/?q={search_term_string}',
+            'query-input': 'required name=search_term_string',
+          },
+        }}
+      />
       {/* Hero */}
       <section className="px-4 pt-12 pb-6 max-w-6xl mx-auto w-full">
         <motion.div

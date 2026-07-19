@@ -1,5 +1,6 @@
 import WorldMap from '@/components/WorldMap';
 import Footer from '@/components/Footer';
+import PageSeo from '@/components/PageSeo';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const MapPage = () => {
@@ -7,6 +8,7 @@ const MapPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PageSeo title={`${t('map.title')} — WorkWorldMap`} description={t('map.subtitle')} />
       <section className="px-2 sm:px-4 pt-4 sm:pt-8 pb-4 sm:pb-6 max-w-7xl mx-auto w-full flex-1">
         <div className="text-center mb-4 sm:mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('map.title')}</h1>

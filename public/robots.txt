@@ -12,3 +12,14 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /yonetim
+Disallow: /verwaltung
+Disallow: /dashboard
+Disallow: /panel
+Disallow: /uebersicht
+Disallow: /auth
+Disallow: /giris
+Disallow: /anmelden
+
+Sitemap: https://workworld.lovable.app/sitemap.xml

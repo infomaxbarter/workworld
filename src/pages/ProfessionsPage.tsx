@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Briefcase, Search, Users } from 'lucide-react';
+import PageSeo from '@/components/PageSeo';
 
 interface Profession {
   id: string; name: string; slug: string | null; description: string | null;
@@ -44,6 +45,7 @@ const ProfessionsPage = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
+      <PageSeo title={`${t('professions.title')} — WorkWorldMap`} description={t('professions.subtitle')} />
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{t('professions.title')}</h1>
         <p className="text-muted-foreground">{t('professions.subtitle')}</p>

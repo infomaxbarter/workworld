@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Globe, Twitter, Linkedin, Instagram, AlertTriangle, Search, Github, Users, Clock } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Footer from '@/components/Footer';
+import PageSeo from '@/components/PageSeo';
 
 interface Profile {
   id: string; user_id: string; display_name: string; avatar_url: string | null;
@@ -101,6 +102,7 @@ const HumansPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PageSeo title={`${t('humans.title') || 'Community'} — WorkWorldMap`} description={t('humans.subtitle') || 'Meet members of the WorkWorldMap community.'} />
       <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12 flex-1 w-full">
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{t('humans.title')}</h1>

@@ -2,6 +2,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { Link } from 'react-router-dom';
 import { Heart, Globe, Users, Code, Shield, ArrowLeft } from 'lucide-react';
 import Footer from '@/components/Footer';
+import PageSeo from '@/components/PageSeo';
 
 const AboutPage = () => {
   const { t } = useLanguage();
@@ -15,6 +16,7 @@ const AboutPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PageSeo title={`${t('nav.about')} — WorkWorldMap`} description={t('about.hero_desc') || 'About WorkWorldMap — open source nonprofit global community platform.'} />
       <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12 flex-1">
         <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 sm:mb-8">
           <ArrowLeft className="w-4 h-4" /> {t('event.back')}
