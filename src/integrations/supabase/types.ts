@@ -179,6 +179,7 @@ export type Database = {
       }
       mci_cities: {
         Row: {
+          admin_notes: string | null
           ai_index: number
           approved: boolean
           b_rate: number
@@ -187,6 +188,8 @@ export type Database = {
           cp_final: number | null
           created_at: string
           created_by: string | null
+          data_quality_score: number | null
+          data_version: number | null
           delta_pulse: number
           e_ratio: number
           esg_score: number
@@ -196,6 +199,7 @@ export type Database = {
           h_vc_access: number
           id: string
           imp_billion_usd: number
+          last_computed_at: string | null
           m_loc: number
           n_population: number
           net_syn: number
@@ -209,9 +213,11 @@ export type Database = {
           t_tech_parks: number
           u_universities: number
           updated_at: string
+          verification_status: string | null
           y_ratio: number
         }
         Insert: {
+          admin_notes?: string | null
           ai_index?: number
           approved?: boolean
           b_rate?: number
@@ -220,6 +226,8 @@ export type Database = {
           cp_final?: number | null
           created_at?: string
           created_by?: string | null
+          data_quality_score?: number | null
+          data_version?: number | null
           delta_pulse?: number
           e_ratio?: number
           esg_score?: number
@@ -229,6 +237,7 @@ export type Database = {
           h_vc_access?: number
           id?: string
           imp_billion_usd?: number
+          last_computed_at?: string | null
           m_loc?: number
           n_population?: number
           net_syn?: number
@@ -242,9 +251,11 @@ export type Database = {
           t_tech_parks?: number
           u_universities?: number
           updated_at?: string
+          verification_status?: string | null
           y_ratio?: number
         }
         Update: {
+          admin_notes?: string | null
           ai_index?: number
           approved?: boolean
           b_rate?: number
@@ -253,6 +264,8 @@ export type Database = {
           cp_final?: number | null
           created_at?: string
           created_by?: string | null
+          data_quality_score?: number | null
+          data_version?: number | null
           delta_pulse?: number
           e_ratio?: number
           esg_score?: number
@@ -262,6 +275,7 @@ export type Database = {
           h_vc_access?: number
           id?: string
           imp_billion_usd?: number
+          last_computed_at?: string | null
           m_loc?: number
           n_population?: number
           net_syn?: number
@@ -275,6 +289,7 @@ export type Database = {
           t_tech_parks?: number
           u_universities?: number
           updated_at?: string
+          verification_status?: string | null
           y_ratio?: number
         }
         Relationships: [
@@ -284,6 +299,100 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pilot_countries"
             referencedColumns: ["code"]
+          },
+        ]
+      }
+      mci_city_history: {
+        Row: {
+          change_type: string
+          changed_at: string
+          changed_by: string | null
+          city_id: string
+          diff: Json | null
+          id: string
+          reason: string | null
+          snapshot: Json
+        }
+        Insert: {
+          change_type?: string
+          changed_at?: string
+          changed_by?: string | null
+          city_id: string
+          diff?: Json | null
+          id?: string
+          reason?: string | null
+          snapshot: Json
+        }
+        Update: {
+          change_type?: string
+          changed_at?: string
+          changed_by?: string | null
+          city_id?: string
+          diff?: Json | null
+          id?: string
+          reason?: string | null
+          snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mci_city_history_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "mci_cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mci_metric_sources: {
+        Row: {
+          city_id: string
+          confidence: number | null
+          created_at: string
+          data_date: string | null
+          id: string
+          metric_key: string
+          notes: string | null
+          source_name: string
+          source_url: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          city_id: string
+          confidence?: number | null
+          created_at?: string
+          data_date?: string | null
+          id?: string
+          metric_key: string
+          notes?: string | null
+          source_name: string
+          source_url?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          city_id?: string
+          confidence?: number | null
+          created_at?: string
+          data_date?: string | null
+          id?: string
+          metric_key?: string
+          notes?: string | null
+          source_name?: string
+          source_url?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mci_metric_sources_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "mci_cities"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -872,6 +981,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      mci_compute_quality: { Args: { _city_id: string }; Returns: undefined }
       mci_compute_row: { Args: { row_id: string }; Returns: undefined }
       notify_admins: {
         Args: {

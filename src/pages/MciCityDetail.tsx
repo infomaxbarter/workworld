@@ -6,9 +6,11 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, GitCompare, ExternalLink } from 'lucide-react';
+import { ArrowLeft, GitCompare, ShieldCheck } from 'lucide-react';
 import { MCI_FIELD_DEFS, calculateMCI, rowToMetrics } from '@/lib/mci';
-import { MCI_SOURCES } from '@/lib/mciSources';
+import MciCitySources from '@/components/MciCitySources';
+import MciCityHistory from '@/components/MciCityHistory';
+
 
 interface CityRow { [k: string]: any }
 
@@ -18,6 +20,7 @@ const MciCityDetail = () => {
   const [city, setCity] = useState<CityRow | null>(null);
   const [country, setCountry] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -28,9 +31,15 @@ const MciCityDetail = () => {
         const { data: c } = await supabase.from('pilot_countries').select('*').eq('code', (data as any).country_code).maybeSingle();
         setCountry(c);
       }
+      const { data: sess } = await supabase.auth.getSession();
+      if (sess.session?.user) {
+        const { data: role } = await supabase.rpc('has_role', { _user_id: sess.session.user.id, _role: 'admin' } as any);
+        setIsAdmin(!!role);
+      }
       setLoading(false);
     })();
   }, [slug]);
+
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading…</div>;
   if (!city) return (
@@ -64,11 +73,21 @@ const MciCityDetail = () => {
             <Badge className="text-lg px-3 py-1">K {result.seat_quota}</Badge>
             <span className="font-mono text-sm text-muted-foreground">CP_final: {result.cp_final} / 600</span>
             <span className="font-mono text-sm text-muted-foreground">CP_base: {result.cp_base}</span>
+            {typeof city.data_quality_score === 'number' && (
+              <Badge variant={city.data_quality_score >= 70 ? 'default' : 'secondary'} className="gap-1">
+                <ShieldCheck className="w-3 h-3" /> Kalite {Math.round(city.data_quality_score)}%
+              </Badge>
+            )}
+            {city.verification_status && city.verification_status !== 'unverified' && (
+              <Badge variant="outline">{city.verification_status}</Badge>
+            )}
+            {city.data_version && <Badge variant="outline">v{city.data_version}</Badge>}
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden mt-2">
             <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
           </div>
         </header>
+
 
         <div className="grid sm:grid-cols-3 gap-3">
           <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">I_trade</div><div className="text-2xl font-mono font-semibold">{result.I_trade}</div></CardContent></Card>
@@ -97,22 +116,9 @@ const MciCityDetail = () => {
           <Card><CardContent className="p-4 text-sm text-muted-foreground"><b className="text-foreground">Notes: </b>{city.notes}</CardContent></Card>
         )}
 
-        <Card>
-          <CardHeader><CardTitle>Open Data Sources</CardTitle></CardHeader>
-          <CardContent className="space-y-2 text-xs">
-            {MCI_SOURCES.slice(0, 8).map(v => (
-              <div key={v.key} className="flex flex-wrap gap-2 items-center">
-                <code className="font-mono text-primary">{v.key}</code>
-                {v.sources.slice(0, 2).map(s => (
-                  <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer"
-                     className="text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1">
-                    {s.name} <ExternalLink className="w-3 h-3" />
-                  </a>
-                ))}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <MciCitySources cityId={city.id} isAdmin={isAdmin} />
+        <MciCityHistory cityId={city.id} />
+
       </div>
       <Footer />
     </div>
