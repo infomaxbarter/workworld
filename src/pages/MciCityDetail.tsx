@@ -20,6 +20,7 @@ const MciCityDetail = () => {
   const [city, setCity] = useState<CityRow | null>(null);
   const [country, setCountry] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -30,9 +31,15 @@ const MciCityDetail = () => {
         const { data: c } = await supabase.from('pilot_countries').select('*').eq('code', (data as any).country_code).maybeSingle();
         setCountry(c);
       }
+      const { data: sess } = await supabase.auth.getSession();
+      if (sess.session?.user) {
+        const { data: role } = await supabase.rpc('has_role', { _user_id: sess.session.user.id, _role: 'admin' } as any);
+        setIsAdmin(!!role);
+      }
       setLoading(false);
     })();
   }, [slug]);
+
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center text-muted-foreground">Loading…</div>;
   if (!city) return (
