@@ -6,9 +6,11 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, GitCompare, ExternalLink } from 'lucide-react';
+import { ArrowLeft, GitCompare, ShieldCheck } from 'lucide-react';
 import { MCI_FIELD_DEFS, calculateMCI, rowToMetrics } from '@/lib/mci';
-import { MCI_SOURCES } from '@/lib/mciSources';
+import MciCitySources from '@/components/MciCitySources';
+import MciCityHistory from '@/components/MciCityHistory';
+
 
 interface CityRow { [k: string]: any }
 
