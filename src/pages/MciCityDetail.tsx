@@ -109,22 +109,9 @@ const MciCityDetail = () => {
           <Card><CardContent className="p-4 text-sm text-muted-foreground"><b className="text-foreground">Notes: </b>{city.notes}</CardContent></Card>
         )}
 
-        <Card>
-          <CardHeader><CardTitle>Open Data Sources</CardTitle></CardHeader>
-          <CardContent className="space-y-2 text-xs">
-            {MCI_SOURCES.slice(0, 8).map(v => (
-              <div key={v.key} className="flex flex-wrap gap-2 items-center">
-                <code className="font-mono text-primary">{v.key}</code>
-                {v.sources.slice(0, 2).map(s => (
-                  <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer"
-                     className="text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1">
-                    {s.name} <ExternalLink className="w-3 h-3" />
-                  </a>
-                ))}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <MciCitySources cityId={city.id} isAdmin={isAdmin} />
+        <MciCityHistory cityId={city.id} />
+
       </div>
       <Footer />
     </div>
