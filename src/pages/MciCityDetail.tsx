@@ -66,11 +66,21 @@ const MciCityDetail = () => {
             <Badge className="text-lg px-3 py-1">K {result.seat_quota}</Badge>
             <span className="font-mono text-sm text-muted-foreground">CP_final: {result.cp_final} / 600</span>
             <span className="font-mono text-sm text-muted-foreground">CP_base: {result.cp_base}</span>
+            {typeof city.data_quality_score === 'number' && (
+              <Badge variant={city.data_quality_score >= 70 ? 'default' : 'secondary'} className="gap-1">
+                <ShieldCheck className="w-3 h-3" /> Kalite {Math.round(city.data_quality_score)}%
+              </Badge>
+            )}
+            {city.verification_status && city.verification_status !== 'unverified' && (
+              <Badge variant="outline">{city.verification_status}</Badge>
+            )}
+            {city.data_version && <Badge variant="outline">v{city.data_version}</Badge>}
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden mt-2">
             <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
           </div>
         </header>
+
 
         <div className="grid sm:grid-cols-3 gap-3">
           <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">I_trade</div><div className="text-2xl font-mono font-semibold">{result.I_trade}</div></CardContent></Card>
