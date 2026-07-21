@@ -130,12 +130,14 @@ const MciAdmin = () => {
 
   return (
     <Tabs defaultValue="submissions">
-      <TabsList>
+      <TabsList className="flex-wrap h-auto">
         <TabsTrigger value="submissions">Öneriler ({pending.length})</TabsTrigger>
         <TabsTrigger value="cities">Şehirler ({cities.length})</TabsTrigger>
+        <TabsTrigger value="representatives">Temsilciler</TabsTrigger>
         <TabsTrigger value="countries">Pilot Ülkeler</TabsTrigger>
         <TabsTrigger value="new">Yeni Şehir Ekle</TabsTrigger>
       </TabsList>
+
 
       <TabsContent value="submissions" className="space-y-3 mt-4">
         {subs.length === 0 && <p className="text-sm text-muted-foreground">Henüz öneri yok.</p>}
