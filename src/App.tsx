@@ -74,7 +74,9 @@ const pageFor: Record<RouteKey, JSX.Element> = {
   kvkk: <LegalPage />,
   cookies: <LegalPage />,
   consent: <LegalPage />,
+  terms: <LegalPage />,
 };
+
 
 const localizedRoutes = (Object.keys(routeMap) as RouteKey[]).flatMap((key) => {
   const seen = new Set<string>();
