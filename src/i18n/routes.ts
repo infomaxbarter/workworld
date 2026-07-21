@@ -60,7 +60,9 @@ export const routeMap: Record<RouteKey, Record<Lang, string>> = {
   kvkk:             { en: '/kvkk',       tr: '/kvkk',        de: '/kvkk' },
   cookies:          { en: '/cookies',    tr: '/cerezler',    de: '/cookies' },
   consent:          { en: '/consent',    tr: '/riza',        de: '/einwilligung' },
+  terms:            { en: '/terms',      tr: '/kullanici-sozlesmesi', de: '/nutzungsbedingungen' },
 };
+
 
 export const allRouteKeys = Object.keys(routeMap) as RouteKey[];
 export const allLangs: Lang[] = ['en', 'tr', 'de'];
