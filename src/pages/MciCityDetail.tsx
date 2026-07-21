@@ -10,6 +10,8 @@ import { ArrowLeft, GitCompare, ShieldCheck } from 'lucide-react';
 import { MCI_FIELD_DEFS, calculateMCI, rowToMetrics } from '@/lib/mci';
 import MciCitySources from '@/components/MciCitySources';
 import MciCityHistory from '@/components/MciCityHistory';
+import MciCityRepresentatives from '@/components/MciCityRepresentatives';
+
 
 
 interface CityRow { [k: string]: any }
