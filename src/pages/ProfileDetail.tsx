@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MapPin, Globe, Twitter, Linkedin, Instagram, ArrowLeft, Edit2, Save, Clock, CheckCircle, Camera, Github, Calendar, Flag } from 'lucide-react';
+import { MapPin, Globe, Twitter, Linkedin, Instagram, ArrowLeft, Edit2, Save, Clock, CheckCircle, Camera, Github, Calendar, Flag, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
 import Footer from '@/components/Footer';
@@ -22,7 +22,8 @@ interface Profile {
   id: string; user_id: string; display_name: string; avatar_url: string | null;
   bio: string | null; location: string | null; website: string | null;
   twitter: string | null; linkedin: string | null; instagram: string | null;
-  github: string | null; lat: number | null; lng: number | null;
+  github: string | null; telegram: string | null; lat: number | null; lng: number | null;
+
   approved: boolean; slug: string | null; created_at: string;
   city: string | null; country: string | null;
   bio_i18n?: any;
@@ -97,7 +98,7 @@ const ProfileDetail = () => {
 
   const handleSave = async () => {
     if (!profile) return;
-    const fields = ['display_name', 'bio', 'bio_i18n', 'location', 'website', 'twitter', 'linkedin', 'instagram', 'github', 'lat', 'lng'] as const;
+    const fields = ['display_name', 'bio', 'bio_i18n', 'location', 'website', 'twitter', 'linkedin', 'instagram', 'github', 'telegram', 'lat', 'lng'] as const;
     const oldData: Record<string, any> = {};
     const newData: Record<string, any> = {};
     let hasChanges = false;
@@ -202,7 +203,9 @@ const ProfileDetail = () => {
                   <div className="space-y-1"><Label>GitHub</Label><Input value={form.github || ''} onChange={(e) => setForm({ ...form, github: e.target.value })} placeholder="username" /></div>
                   <div className="space-y-1"><Label>Twitter</Label><Input value={form.twitter || ''} onChange={(e) => setForm({ ...form, twitter: e.target.value })} placeholder="@username" /></div>
                   <div className="space-y-1"><Label>LinkedIn</Label><Input value={form.linkedin || ''} onChange={(e) => setForm({ ...form, linkedin: e.target.value })} placeholder="username" /></div>
-                  <div className="space-y-1"><Label>Instagram</Label><Input value={form.instagram || ''} onChange={(e) => setForm({ ...form, instagram: e.target.value })} placeholder="@username" /></div>
+                 <div className="space-y-1"><Label>Instagram</Label><Input value={form.instagram || ''} onChange={(e) => setForm({ ...form, instagram: e.target.value })} placeholder="@username" /></div>
+                 <div className="space-y-1"><Label>Telegram</Label><Input value={form.telegram || ''} onChange={(e) => setForm({ ...form, telegram: e.target.value })} placeholder="username" /></div>
+
                 </div>
                 <div className="space-y-2">
                   <Label>{t('map.pick_location')}</Label>
@@ -222,7 +225,9 @@ const ProfileDetail = () => {
                   {profile.github && <a href={`https://github.com/${profile.github}`} target="_blank" rel="noopener" className="inline-flex items-center gap-1 hover:text-foreground"><Github className="w-3.5 h-3.5" />{profile.github}</a>}
                   {profile.twitter && <a href={`https://twitter.com/${profile.twitter}`} target="_blank" rel="noopener" className="inline-flex items-center gap-1 hover:text-foreground"><Twitter className="w-3.5 h-3.5" />@{profile.twitter}</a>}
                   {profile.linkedin && <a href={`https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener" className="inline-flex items-center gap-1 hover:text-foreground"><Linkedin className="w-3.5 h-3.5" />{profile.linkedin}</a>}
-                  {profile.instagram && <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noopener" className="inline-flex items-center gap-1 hover:text-foreground"><Instagram className="w-3.5 h-3.5" />@{profile.instagram}</a>}
+                 {profile.instagram && <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noopener" className="inline-flex items-center gap-1 hover:text-foreground"><Instagram className="w-3.5 h-3.5" />@{profile.instagram}</a>}
+                 {profile.telegram && <a href={`https://t.me/${profile.telegram.replace(/^@/, '')}`} target="_blank" rel="noopener" className="inline-flex items-center gap-1 hover:text-foreground"><Send className="w-3.5 h-3.5" />{profile.telegram}</a>}
+
                 </div>
 
                 {/* Events joined */}
