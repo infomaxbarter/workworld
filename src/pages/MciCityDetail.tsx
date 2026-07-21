@@ -122,8 +122,11 @@ const MciCityDetail = () => {
           <Card><CardContent className="p-4 text-sm text-muted-foreground"><b className="text-foreground">Notes: </b>{city.notes}</CardContent></Card>
         )}
 
+        <MciCityRepresentatives cityId={city.id} seatQuota={result.seat_quota} city={city.city} />
         <MciCitySources cityId={city.id} isAdmin={isAdmin} />
         <MciCityHistory cityId={city.id} />
+
+
 
       </div>
       <Footer />
