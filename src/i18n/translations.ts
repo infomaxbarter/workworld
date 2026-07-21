@@ -143,7 +143,9 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     'footer.kvkk': 'KVKK',
     'footer.cookies': 'Çerez Politikası',
-    'footer.consent': 'Açık Rıza Formu',
+   'footer.consent': 'Açık Rıza Formu',
+   'footer.terms': 'Kullanıcı Sözleşmesi',
+
     'footer.open_source': 'Açık kaynak, kâr amacı gütmeyen bir topluluk projesi',
     'footer.nonprofit': 'Kâr amacı gütmeyen açık kaynak proje',
 
@@ -453,7 +455,9 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     'footer.kvkk': 'KVKK',
     'footer.cookies': 'Cookie Policy',
-    'footer.consent': 'Consent Form',
+   'footer.consent': 'Consent Form',
+   'footer.terms': 'Terms of Service',
+
     'footer.open_source': 'An open-source, nonprofit community project',
     'footer.nonprofit': 'Open-source nonprofit project',
 
@@ -763,7 +767,9 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     'footer.kvkk': 'KVKK',
     'footer.cookies': 'Cookie-Richtlinie',
-    'footer.consent': 'Einwilligungsformular',
+   'footer.consent': 'Einwilligungsformular',
+   'footer.terms': 'Nutzungsbedingungen',
+
     'footer.open_source': 'Ein Open-Source, gemeinnütziges Gemeinschaftsprojekt',
     'footer.nonprofit': 'Open-Source, gemeinnütziges Projekt',
 

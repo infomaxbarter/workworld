@@ -10,6 +10,8 @@ import { ArrowLeft, GitCompare, ShieldCheck } from 'lucide-react';
 import { MCI_FIELD_DEFS, calculateMCI, rowToMetrics } from '@/lib/mci';
 import MciCitySources from '@/components/MciCitySources';
 import MciCityHistory from '@/components/MciCityHistory';
+import MciCityRepresentatives from '@/components/MciCityRepresentatives';
+
 
 
 interface CityRow { [k: string]: any }
@@ -120,8 +122,11 @@ const MciCityDetail = () => {
           <Card><CardContent className="p-4 text-sm text-muted-foreground"><b className="text-foreground">Notes: </b>{city.notes}</CardContent></Card>
         )}
 
+        <MciCityRepresentatives cityId={city.id} seatQuota={result.seat_quota} city={city.city} />
         <MciCitySources cityId={city.id} isAdmin={isAdmin} />
         <MciCityHistory cityId={city.id} />
+
+
 
       </div>
       <Footer />

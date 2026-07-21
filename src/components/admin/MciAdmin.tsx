@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import { Check, X, Trash2, RefreshCw } from 'lucide-react';
 import { calculateMCI, rowToMetrics, MCI_FIELD_DEFS } from '@/lib/mci';
 import MciSubmissionForm from '@/components/MciSubmissionForm';
+import MciRepresentativesAdmin from './MciRepresentativesAdmin';
+
 
 interface Country { code: string; name: string; flag_emoji: string | null; active: boolean }
 interface City { id: string; city: string; country_code: string; slug: string; approved: boolean; cp_final: number | null; seat_quota: number | null; [k: string]: any }
@@ -130,12 +132,14 @@ const MciAdmin = () => {
 
   return (
     <Tabs defaultValue="submissions">
-      <TabsList>
+      <TabsList className="flex-wrap h-auto">
         <TabsTrigger value="submissions">Öneriler ({pending.length})</TabsTrigger>
         <TabsTrigger value="cities">Şehirler ({cities.length})</TabsTrigger>
+        <TabsTrigger value="representatives">Temsilciler</TabsTrigger>
         <TabsTrigger value="countries">Pilot Ülkeler</TabsTrigger>
         <TabsTrigger value="new">Yeni Şehir Ekle</TabsTrigger>
       </TabsList>
+
 
       <TabsContent value="submissions" className="space-y-3 mt-4">
         {subs.length === 0 && <p className="text-sm text-muted-foreground">Henüz öneri yok.</p>}
@@ -217,7 +221,12 @@ const MciAdmin = () => {
         ))}
       </TabsContent>
 
+      <TabsContent value="representatives" className="mt-4">
+        <MciRepresentativesAdmin />
+      </TabsContent>
+
       <TabsContent value="countries" className="space-y-2 mt-4">
+
         {countries.map(c => (
           <div key={c.code} className="flex items-center justify-between p-3 rounded-lg border border-border">
             <div className="flex items-center gap-2">

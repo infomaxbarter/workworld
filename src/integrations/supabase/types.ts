@@ -343,6 +343,67 @@ export type Database = {
           },
         ]
       }
+      mci_city_representatives: {
+        Row: {
+          appointed_at: string | null
+          appointed_by: string | null
+          city_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          profession_id: string
+          profile_id: string | null
+          slot_index: number
+          updated_at: string
+        }
+        Insert: {
+          appointed_at?: string | null
+          appointed_by?: string | null
+          city_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          profession_id: string
+          profile_id?: string | null
+          slot_index?: number
+          updated_at?: string
+        }
+        Update: {
+          appointed_at?: string | null
+          appointed_by?: string | null
+          city_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          profession_id?: string
+          profile_id?: string | null
+          slot_index?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mci_city_representatives_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "mci_cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mci_city_representatives_profession_id_fkey"
+            columns: ["profession_id"]
+            isOneToOne: false
+            referencedRelation: "professions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mci_city_representatives_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mci_metric_sources: {
         Row: {
           city_id: string
@@ -392,6 +453,63 @@ export type Database = {
             columns: ["city_id"]
             isOneToOne: false
             referencedRelation: "mci_cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mci_seat_applications: {
+        Row: {
+          city_id: string
+          created_at: string
+          id: string
+          message: string | null
+          profession_id: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          profession_id?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          profession_id?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mci_seat_applications_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "mci_cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mci_seat_applications_profession_id_fkey"
+            columns: ["profession_id"]
+            isOneToOne: false
+            referencedRelation: "professions"
             referencedColumns: ["id"]
           },
         ]
@@ -764,6 +882,7 @@ export type Database = {
           location: string | null
           slug: string | null
           status: string
+          telegram: string | null
           twitter: string | null
           updated_at: string
           user_id: string
@@ -787,6 +906,7 @@ export type Database = {
           location?: string | null
           slug?: string | null
           status?: string
+          telegram?: string | null
           twitter?: string | null
           updated_at?: string
           user_id: string
@@ -810,6 +930,7 @@ export type Database = {
           location?: string | null
           slug?: string | null
           status?: string
+          telegram?: string | null
           twitter?: string | null
           updated_at?: string
           user_id?: string
