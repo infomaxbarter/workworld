@@ -27,7 +27,9 @@ export type RouteKey =
   | 'podcastDetail'
   | 'kvkk'
   | 'cookies'
-  | 'consent';
+  | 'consent'
+  | 'terms';
+
 
 
 export const routeMap: Record<RouteKey, Record<Lang, string>> = {
