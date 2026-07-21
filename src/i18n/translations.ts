@@ -143,7 +143,9 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     'footer.kvkk': 'KVKK',
     'footer.cookies': 'Çerez Politikası',
-    'footer.consent': 'Açık Rıza Formu',
+   'footer.consent': 'Açık Rıza Formu',
+   'footer.terms': 'Kullanıcı Sözleşmesi',
+
     'footer.open_source': 'Açık kaynak, kâr amacı gütmeyen bir topluluk projesi',
     'footer.nonprofit': 'Kâr amacı gütmeyen açık kaynak proje',
 
