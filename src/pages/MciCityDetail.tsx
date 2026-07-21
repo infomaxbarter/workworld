@@ -25,12 +25,16 @@ const MciCityDetail = () => {
   useEffect(() => {
     (async () => {
       if (!slug) return;
-      const { data } = await supabase.from('mci_cities').select('*').or(`slug.eq.${slug},id.eq.${slug}`).maybeSingle();
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+      let q = supabase.from('mci_cities').select('*');
+      q = isUuid ? q.eq('id', slug) : q.eq('slug', slug);
+      const { data } = await q.maybeSingle();
       if (data) {
         setCity(data);
         const { data: c } = await supabase.from('pilot_countries').select('*').eq('code', (data as any).country_code).maybeSingle();
         setCountry(c);
       }
+
       const { data: sess } = await supabase.auth.getSession();
       if (sess.session?.user) {
         const { data: role } = await supabase.rpc('has_role', { _user_id: sess.session.user.id, _role: 'admin' } as any);
