@@ -174,21 +174,34 @@ const DataExportImport = ({ onReload }: { onReload: () => void }) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2 mb-4">
-            <Button variant="outline" size="sm" onClick={() => exportAll('csv')} className="gap-1.5">
-              <FileText className="w-4 h-4" /> Tümünü CSV
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Button variant="outline" size="sm" disabled={bulkBusy} onClick={() => exportMany(TABLES.map(t => t.key), 'csv')} className="gap-1.5">
+              {bulkBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} Tümünü CSV
             </Button>
-            <Button variant="outline" size="sm" onClick={() => exportAll('xlsx')} className="gap-1.5">
-              <FileSpreadsheet className="w-4 h-4" /> Tümünü XLS
+            <Button variant="outline" size="sm" disabled={bulkBusy} onClick={() => exportMany(TABLES.map(t => t.key), 'xlsx')} className="gap-1.5">
+              {bulkBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />} Tümünü XLS
+            </Button>
+            <Button variant="default" size="sm" disabled={bulkBusy || selected.length === 0} onClick={() => exportMany(selected, 'csv')} className="gap-1.5">
+              <FileText className="w-4 h-4" /> Seçili CSV ({selected.length})
+            </Button>
+            <Button variant="default" size="sm" disabled={bulkBusy || selected.length === 0} onClick={() => exportMany(selected, 'xlsx')} className="gap-1.5">
+              <FileSpreadsheet className="w-4 h-4" /> Seçili XLS ({selected.length})
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setSelected(selected.length === TABLES.length ? [] : TABLES.map(t => t.key))}>
+              {selected.length === TABLES.length ? 'Seçimi temizle' : 'Tümünü seç'}
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {TABLES.map(table => (
               <div key={table.key} className="flex items-center justify-between p-3 border border-border rounded-lg bg-muted/20">
-                <div>
-                  <p className="text-sm font-medium text-foreground">{table.label}</p>
-                  <p className="text-xs text-muted-foreground">{table.columns.length} sütun</p>
-                </div>
+                <label className="flex items-center gap-2 cursor-pointer min-w-0">
+                  <Checkbox checked={selected.includes(table.key)} onCheckedChange={() => toggle(table.key)} />
+                  <span className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{table.label}</p>
+                    <p className="text-xs text-muted-foreground">{table.columns.length} sütun</p>
+                  </span>
+                </label>
+
                 <div className="flex gap-1">
                   <Button
                     variant="ghost" size="icon"
