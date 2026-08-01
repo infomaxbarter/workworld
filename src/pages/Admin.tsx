@@ -5,12 +5,13 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import SiteContentAdmin from '@/components/admin/SiteContentAdmin';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X, Image, Video, Flag, AlertTriangle, Settings, Monitor, Tablet, Smartphone, Briefcase, Upload, BarChart3, Play } from 'lucide-react';
+import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X, Image, Video, Flag, AlertTriangle, Settings, Monitor, Tablet, Smartphone, Briefcase, Upload, BarChart3, Play , Images} from 'lucide-react';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
 import { useNavigation, type NavMode, type NavSettings, type DeviceType } from '@/contexts/NavigationContext';
@@ -534,6 +535,7 @@ const AdminDashboard = () => {
             <TabsTrigger value="media" className="gap-1.5"><Play className="w-4 h-4" /> {t('admin.media')}</TabsTrigger>
             <TabsTrigger value="data" className="gap-1.5"><Upload className="w-4 h-4" /> Veri Aktar</TabsTrigger>
             <TabsTrigger value="detailed_reports" className="gap-1.5"><BarChart3 className="w-4 h-4" /> Detaylı Raporlar</TabsTrigger>
+            <TabsTrigger value="site" className="gap-1.5"><Images className="w-4 h-4" /> Site İçerik</TabsTrigger>
             <TabsTrigger value="settings" className="gap-1.5"><Settings className="w-4 h-4" /> {t('admin.settings')}</TabsTrigger>
           </TabsList>
 
@@ -1224,6 +1226,10 @@ const AdminDashboard = () => {
           </TabsContent>
 
           {/* Navigation Settings */}
+          <TabsContent value="site">
+            <SiteContentAdmin />
+          </TabsContent>
+
           <TabsContent value="settings">
             <NavSettingsPanel />
           </TabsContent>
