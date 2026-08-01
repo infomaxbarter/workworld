@@ -3,6 +3,7 @@ import WorldMap from '@/components/WorldMap';
 import ApplicationForm from '@/components/ApplicationForm';
 import Footer from '@/components/Footer';
 import HeroSearch from '@/components/HeroSearch';
+import HeroSlider from '@/components/HeroSlider';
 import PageSeo from '@/components/PageSeo';
 import { useLanguage } from '@/i18n/LanguageContext';
 
@@ -42,6 +43,7 @@ const Index = () => {
           </p>
         </motion.div>
 
+        <HeroSlider />
         <HeroSearch />
         <WorldMap />
       </section>

@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 import { Heart, Github } from 'lucide-react';
@@ -6,6 +8,15 @@ import { Heart, Github } from 'lucide-react';
 const Footer = () => {
   const { t } = useLanguage();
   const lp = useLocalizedPath();
+  const [social, setSocial] = useState<{ id: string; platform: string; url: string; label: string | null }[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any)
+        .from('social_links').select('id, platform, url, label').eq('active', true).order('sort_order');
+      setSocial(data || []);
+    })();
+  }, []);
 
   return (
     <footer className="border-t border-border bg-card py-8 mt-16">
@@ -28,6 +39,17 @@ const Footer = () => {
           <Link to={lp('consent')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.consent')}</Link>
           <Link to={lp('terms')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('footer.terms')}</Link>
         </nav>
+
+        {social.length > 0 && (
+          <nav aria-label="Social media" className="flex items-center gap-4 flex-wrap justify-center">
+            {social.map(sl => (
+              <a key={sl.id} href={sl.url} target="_blank" rel="noopener noreferrer"
+                className="text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors">
+                {sl.label || sl.platform}
+              </a>
+            ))}
+          </nav>
+        )}
 
         <p className="text-xs text-muted-foreground">© 2026 Work<span className="text-primary">World</span>Map — {t('footer.nonprofit')}</p>
       </div>

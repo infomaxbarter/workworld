@@ -177,6 +177,51 @@ export type Database = {
           },
         ]
       }
+      hero_slides: {
+        Row: {
+          active: boolean
+          created_at: string
+          cta_label: string | null
+          cta_url: string | null
+          id: string
+          image_url: string | null
+          sort_order: number
+          subtitle: string | null
+          subtitle_i18n: Json | null
+          title: string
+          title_i18n: Json | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          id?: string
+          image_url?: string | null
+          sort_order?: number
+          subtitle?: string | null
+          subtitle_i18n?: Json | null
+          title: string
+          title_i18n?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          id?: string
+          image_url?: string | null
+          sort_order?: number
+          subtitle?: string | null
+          subtitle_i18n?: Json | null
+          title?: string
+          title_i18n?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mci_cities: {
         Row: {
           admin_notes: string | null
@@ -962,6 +1007,87 @@ export type Database = {
           reason?: string
           target_id?: string
           type?: string
+        }
+        Relationships: []
+      }
+      seo_settings: {
+        Row: {
+          canonical_path: string | null
+          created_at: string
+          description: string | null
+          description_i18n: Json | null
+          id: string
+          keywords: string | null
+          no_index: boolean
+          og_image: string | null
+          page_key: string
+          title: string | null
+          title_i18n: Json | null
+          updated_at: string
+        }
+        Insert: {
+          canonical_path?: string | null
+          created_at?: string
+          description?: string | null
+          description_i18n?: Json | null
+          id?: string
+          keywords?: string | null
+          no_index?: boolean
+          og_image?: string | null
+          page_key: string
+          title?: string | null
+          title_i18n?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          canonical_path?: string | null
+          created_at?: string
+          description?: string | null
+          description_i18n?: Json | null
+          id?: string
+          keywords?: string | null
+          no_index?: boolean
+          og_image?: string | null
+          page_key?: string
+          title?: string | null
+          title_i18n?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      social_links: {
+        Row: {
+          active: boolean
+          created_at: string
+          icon: string | null
+          id: string
+          label: string | null
+          platform: string
+          sort_order: number
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          icon?: string | null
+          id?: string
+          label?: string | null
+          platform: string
+          sort_order?: number
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          icon?: string | null
+          id?: string
+          label?: string | null
+          platform?: string
+          sort_order?: number
+          updated_at?: string
+          url?: string
         }
         Relationships: []
       }

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Download, Upload, FileSpreadsheet, FileText, Loader2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -33,18 +34,23 @@ const escapeCsvField = (val: any): string => {
 
 const DataExportImport = ({ onReload }: { onReload: () => void }) => {
   const [exporting, setExporting] = useState<string | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [selected, setSelected] = useState<TableKey[]>([]);
   const [importing, setImporting] = useState(false);
   const [importTable, setImportTable] = useState<TableKey>('user_markers');
   const [importResult, setImportResult] = useState<{ success: number; errors: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const exportTable = async (tableKey: TableKey, format: 'csv' | 'xlsx') => {
-    setExporting(tableKey);
+  const toggle = (key: TableKey) =>
+    setSelected(prev => (prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]));
+
+  const exportTable = async (tableKey: TableKey, format: 'csv' | 'xlsx', quiet = false) => {
+    if (!quiet) setExporting(tableKey);
     try {
       const table = TABLES.find(t => t.key === tableKey)!;
       const { data, error } = await supabase.from(tableKey).select('*').order('created_at', { ascending: false }).limit(5000);
       if (error) throw error;
-      if (!data || data.length === 0) { toast.info('Tabloda veri bulunamadı'); setExporting(null); return; }
+      if (!data || data.length === 0) { if (!quiet) toast.info('Tabloda veri bulunamadı'); setExporting(null); return 0; }
 
       const header = table.columns.join(format === 'csv' ? ',' : '\t');
       const rows = (data as any[]).map(row =>
@@ -61,20 +67,37 @@ const DataExportImport = ({ onReload }: { onReload: () => void }) => {
       const a = document.createElement('a');
       a.href = url;
       a.download = `${tableKey}_${new Date().toISOString().split('T')[0]}.${format === 'xlsx' ? 'xls' : 'csv'}`;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
-      toast.success(`${table.label} — ${data.length} kayıt dışa aktarıldı`);
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      if (!quiet) toast.success(`${table.label} — ${data.length} kayıt dışa aktarıldı`);
+      return data.length;
     } catch (err: any) {
-      toast.error(err.message || 'Export hatası');
+      toast.error(`${tableKey}: ${err.message || 'Export hatası'}`);
+      return 0;
+    } finally {
+      if (!quiet) setExporting(null);
     }
-    setExporting(null);
   };
 
-  const exportAll = async (format: 'csv' | 'xlsx') => {
-    for (const table of TABLES) {
-      await exportTable(table.key, format);
+  const exportMany = async (keys: readonly TableKey[], format: 'csv' | 'xlsx') => {
+    if (keys.length === 0) { toast.info('Önce tablo seçin'); return; }
+    setBulkBusy(true);
+    let total = 0;
+    let done = 0;
+    for (const key of keys) {
+      setExporting(key);
+      total += await exportTable(key, format, true);
+      done++;
+      // browsers throttle rapid sequential downloads
+      await new Promise(r => setTimeout(r, 600));
     }
+    setExporting(null);
+    setBulkBusy(false);
+    toast.success(`${done} tablo, toplam ${total} kayıt dışa aktarıldı`);
   };
+
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -152,21 +175,34 @@ const DataExportImport = ({ onReload }: { onReload: () => void }) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2 mb-4">
-            <Button variant="outline" size="sm" onClick={() => exportAll('csv')} className="gap-1.5">
-              <FileText className="w-4 h-4" /> Tümünü CSV
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Button variant="outline" size="sm" disabled={bulkBusy} onClick={() => exportMany(TABLES.map(t => t.key), 'csv')} className="gap-1.5">
+              {bulkBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} Tümünü CSV
             </Button>
-            <Button variant="outline" size="sm" onClick={() => exportAll('xlsx')} className="gap-1.5">
-              <FileSpreadsheet className="w-4 h-4" /> Tümünü XLS
+            <Button variant="outline" size="sm" disabled={bulkBusy} onClick={() => exportMany(TABLES.map(t => t.key), 'xlsx')} className="gap-1.5">
+              {bulkBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />} Tümünü XLS
+            </Button>
+            <Button variant="default" size="sm" disabled={bulkBusy || selected.length === 0} onClick={() => exportMany(selected, 'csv')} className="gap-1.5">
+              <FileText className="w-4 h-4" /> Seçili CSV ({selected.length})
+            </Button>
+            <Button variant="default" size="sm" disabled={bulkBusy || selected.length === 0} onClick={() => exportMany(selected, 'xlsx')} className="gap-1.5">
+              <FileSpreadsheet className="w-4 h-4" /> Seçili XLS ({selected.length})
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setSelected(selected.length === TABLES.length ? [] : TABLES.map(t => t.key))}>
+              {selected.length === TABLES.length ? 'Seçimi temizle' : 'Tümünü seç'}
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {TABLES.map(table => (
               <div key={table.key} className="flex items-center justify-between p-3 border border-border rounded-lg bg-muted/20">
-                <div>
-                  <p className="text-sm font-medium text-foreground">{table.label}</p>
-                  <p className="text-xs text-muted-foreground">{table.columns.length} sütun</p>
-                </div>
+                <label className="flex items-center gap-2 cursor-pointer min-w-0">
+                  <Checkbox checked={selected.includes(table.key)} onCheckedChange={() => toggle(table.key)} />
+                  <span className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{table.label}</p>
+                    <p className="text-xs text-muted-foreground">{table.columns.length} sütun</p>
+                  </span>
+                </label>
+
                 <div className="flex gap-1">
                   <Button
                     variant="ghost" size="icon"

@@ -12,6 +12,7 @@ import { MapPin, Globe, Twitter, Linkedin, Instagram, AlertTriangle, Search, Git
 import { Separator } from '@/components/ui/separator';
 import Footer from '@/components/Footer';
 import PageSeo from '@/components/PageSeo';
+import RelatedContent from '@/components/RelatedContent';
 
 interface Profile {
   id: string; user_id: string; display_name: string; avatar_url: string | null;
@@ -238,6 +239,9 @@ const HumansPage = () => {
             )}
           </>
         )}
+      </div>
+      <div className="max-w-6xl mx-auto w-full px-4 pb-12">
+        <RelatedContent kinds={['professions', 'cities', 'events', 'media']} />
       </div>
       <div className="mt-auto"><Footer /></div>
     </div>

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Search, CalendarDays, Clock } from 'lucide-react';
 import Footer from '@/components/Footer';
 import PageSeo from '@/components/PageSeo';
+import RelatedContent from '@/components/RelatedContent';
 
 interface EventData {
   id: string; title: string; date: string | null; start_date: string | null; end_date: string | null;
@@ -154,6 +155,9 @@ const EventsPage = () => {
             })}
           </div>
         )}
+      </div>
+      <div className="max-w-6xl mx-auto w-full px-4 pb-12">
+        <RelatedContent kinds={['media', 'cities', 'professions']} />
       </div>
       <div className="mt-auto"><Footer /></div>
     </div>

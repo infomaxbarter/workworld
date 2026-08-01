@@ -11,6 +11,7 @@ import { MCI_FIELD_DEFS, calculateMCI, rowToMetrics } from '@/lib/mci';
 import MciCitySources from '@/components/MciCitySources';
 import MciCityHistory from '@/components/MciCityHistory';
 import MciCityRepresentatives from '@/components/MciCityRepresentatives';
+import RelatedContent from '@/components/RelatedContent';
 
 
 
@@ -125,6 +126,8 @@ const MciCityDetail = () => {
         <MciCityRepresentatives cityId={city.id} seatQuota={result.seat_quota} city={city.city} />
         <MciCitySources cityId={city.id} isAdmin={isAdmin} />
         <MciCityHistory cityId={city.id} />
+
+        <RelatedContent excludeTitle={city.city} kinds={['cities', 'events', 'professions', 'media']} />
 
 
 

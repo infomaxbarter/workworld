@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Briefcase, UserPlus, Users } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Briefcase, UserPlus, Users, Search, LayoutGrid, List, Rows3 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props { cityId: string; seatQuota: number; city: string }
@@ -45,6 +46,10 @@ const MciCityRepresentatives = ({ cityId, seatQuota, city }: Props) => {
   const [showApply, setShowApply] = useState(false);
   const [selectedProf, setSelectedProf] = useState('');
   const [message, setMessage] = useState('');
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<'all' | 'filled' | 'empty'>('all');
+  const [profFilter, setProfFilter] = useState('');
+  const [view, setView] = useState<'grid' | 'card' | 'list'>('grid');
 
   const load = async () => {
     const [{ data: r }, { data: a }, { data: p }, { data: sess }] = await Promise.all([
@@ -79,6 +84,21 @@ const MciCityRepresentatives = ({ cityId, seatQuota, city }: Props) => {
   const filled = reps.filter(r => r.profile_id).length;
   const emptySlots = Math.max(0, seatQuota - reps.length);
 
+  const visibleReps = reps.filter(r => {
+    if (filter === 'filled' && !r.profile_id) return false;
+    if (filter === 'empty' && r.profile_id) return false;
+    if (profFilter && r.profession_id !== profFilter) return false;
+    if (!query.trim()) return true;
+    const q = query.toLowerCase();
+    const profName = r.professions ? pickI18n(r.professions.name_i18n, r.professions.name, lang) : '';
+    return (r.profiles?.display_name || '').toLowerCase().includes(q) || profName.toLowerCase().includes(q);
+  });
+
+  const layoutClass =
+    view === 'list' ? 'grid grid-cols-1 gap-1.5'
+    : view === 'card' ? 'grid sm:grid-cols-2 lg:grid-cols-3 gap-2'
+    : 'grid sm:grid-cols-2 gap-2';
+
   return (
     <Card>
       <CardHeader>
@@ -94,8 +114,38 @@ const MciCityRepresentatives = ({ cityId, seatQuota, city }: Props) => {
           <p className="text-xs text-muted-foreground">Henüz koltuk oluşturulmadı. Yönetici koltuk açacak.</p>
         )}
 
-        <div className="grid sm:grid-cols-2 gap-2">
-          {reps.map(r => (
+        {reps.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[180px]">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Temsilci veya meslek ara…" className="h-9 pl-8 text-sm" />
+            </div>
+            <select value={filter} onChange={(e) => setFilter(e.target.value as any)}
+                    className="h-9 px-2 rounded border border-border bg-background text-xs">
+              <option value="all">Tümü</option>
+              <option value="filled">Dolu koltuklar</option>
+              <option value="empty">Boş koltuklar</option>
+            </select>
+            <select value={profFilter} onChange={(e) => setProfFilter(e.target.value)}
+                    className="h-9 px-2 rounded border border-border bg-background text-xs max-w-[160px]">
+              <option value="">Tüm meslekler</option>
+              {Array.from(new Map(reps.filter(r => r.professions).map(r => [r.profession_id, r.professions!])).entries()).map(([id, p]) => (
+                <option key={id} value={id}>{pickI18n(p.name_i18n, p.name, lang)}</option>
+              ))}
+            </select>
+            <div className="flex items-center rounded border border-border overflow-hidden">
+              {([['grid', LayoutGrid], ['card', Rows3], ['list', List]] as const).map(([v, Icon]) => (
+                <button key={v} onClick={() => setView(v)} aria-label={v}
+                        className={`h-9 w-9 flex items-center justify-center transition-colors ${view === v ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                  <Icon className="w-4 h-4" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className={layoutClass}>
+          {visibleReps.map(r => (
             <div key={r.id} className="flex items-center gap-3 p-2 rounded-lg border border-border">
               <div className="text-[10px] font-mono text-muted-foreground w-6 shrink-0">#{r.slot_index}</div>
               {r.profiles ? (
@@ -128,7 +178,11 @@ const MciCityRepresentatives = ({ cityId, seatQuota, city }: Props) => {
             </div>
           ))}
 
-          {emptySlots > 0 && Array.from({ length: Math.min(emptySlots, 6) }).map((_, i) => (
+          {reps.length > 0 && visibleReps.length === 0 && (
+            <p className="text-xs text-muted-foreground py-2">Filtreye uyan temsilci yok.</p>
+          )}
+
+          {filter !== 'filled' && !query && !profFilter && emptySlots > 0 && Array.from({ length: Math.min(emptySlots, 6) }).map((_, i) => (
             <div key={`empty-${i}`} className="flex items-center gap-3 p-2 rounded-lg border border-dashed border-border text-muted-foreground">
               <div className="text-[10px] font-mono w-6 shrink-0">#{reps.length + i + 1}</div>
               <div className="w-8 h-8 rounded-full border border-dashed border-border" />
@@ -140,6 +194,7 @@ const MciCityRepresentatives = ({ cityId, seatQuota, city }: Props) => {
         {emptySlots > 6 && (
           <p className="text-xs text-muted-foreground text-center">+ {emptySlots - 6} koltuk daha bekliyor</p>
         )}
+
 
         <div className="pt-2 border-t border-border">
           {!showApply ? (
