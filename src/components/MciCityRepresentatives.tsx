@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Briefcase, UserPlus, Users } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Briefcase, UserPlus, Users, Search, LayoutGrid, List, Rows3 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props { cityId: string; seatQuota: number; city: string }
