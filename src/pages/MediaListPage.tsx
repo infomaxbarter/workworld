@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Play, Headphones, FileText, ArrowRight, Search, X } from 'lucide-react';
 import PageSeo from '@/components/PageSeo';
+import RelatedContent from '@/components/RelatedContent';
 
 export type MediaType = 'blog' | 'video' | 'podcast';
 
@@ -177,6 +178,9 @@ const MediaListPage = ({ type }: { type: MediaType }) => {
             })}
           </div>
         )}
+      </div>
+      <div className="max-w-6xl mx-auto w-full px-4 pb-12">
+        <RelatedContent kinds={['media', 'events', 'cities']} />
       </div>
       <Footer />
     </div>

@@ -23,6 +23,7 @@ import {
 import { Bar, Line, Doughnut, Radar, Pie } from 'react-chartjs-2';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import RelatedContent from '@/components/RelatedContent';
 
 ChartJS.register(
   CategoryScale, LinearScale, BarElement, LineElement, PointElement,
@@ -315,6 +316,9 @@ const AnalyticsPage = () => {
             <div ref={mapContainer} className="w-full h-[500px] rounded-lg overflow-hidden border border-border" />
           </CardContent>
         </Card>
+      </div>
+      <div className="max-w-6xl mx-auto w-full px-4 pb-12">
+        <RelatedContent kinds={['cities', 'professions', 'media']} />
       </div>
       <Footer />
     </div>
