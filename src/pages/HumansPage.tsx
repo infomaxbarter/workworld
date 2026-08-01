@@ -240,9 +240,9 @@ const HumansPage = () => {
           </>
         )}
       </div>
-      <div className="mt-auto"><div className="max-w-6xl mx-auto w-full px-4 pb-12">
-      <div className="mt-auto">  <RelatedContent kinds={['professions', 'cities', 'events', 'media']} />
-      <div className="mt-auto"></div>
+      <div className="max-w-6xl mx-auto w-full px-4 pb-12">
+        <RelatedContent kinds={['professions', 'cities', 'events', 'media']} />
+      </div>
       <div className="mt-auto"><Footer /></div>
     </div>
   );

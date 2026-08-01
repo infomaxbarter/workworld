@@ -156,9 +156,9 @@ const EventsPage = () => {
           </div>
         )}
       </div>
-      <div className="mt-auto"><div className="max-w-6xl mx-auto w-full px-4 pb-12">
-      <div className="mt-auto">  <RelatedContent kinds={['media', 'cities', 'professions']} />
-      <div className="mt-auto"></div>
+      <div className="max-w-6xl mx-auto w-full px-4 pb-12">
+        <RelatedContent kinds={['media', 'cities', 'professions']} />
+      </div>
       <div className="mt-auto"><Footer /></div>
     </div>
   );
