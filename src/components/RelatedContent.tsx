@@ -60,7 +60,7 @@ const RelatedContent = ({
           kind: 'media',
           title: pickI18n(m.title_i18n, m.title, lang),
           subtitle: m.type,
-          to: `${lp('media')}/${m.slug}`,
+          to: lp(m.type === 'video' ? 'videoDetail' : m.type === 'podcast' ? 'podcastDetail' : 'blogDetail', { slug: m.slug }),
         }));
       })());
 
@@ -72,7 +72,7 @@ const RelatedContent = ({
           kind: 'events',
           title: pickI18n(e.title_i18n, e.title, lang),
           subtitle: e.city || undefined,
-          to: `${lp('events')}/${e.slug}`,
+          to: lp('eventDetail', { slug: e.slug }),
         }));
       })());
 
@@ -83,7 +83,7 @@ const RelatedContent = ({
         (data || []).forEach((p: any) => out.push({
           kind: 'professions',
           title: pickI18n(p.name_i18n, p.name, lang),
-          to: `${lp('professions')}/${p.slug}`,
+          to: lp('professionDetail', { slug: p.slug }),
         }));
       })());
 
@@ -95,7 +95,7 @@ const RelatedContent = ({
           kind: 'cities',
           title: c.city,
           subtitle: c.country_code ? `${c.country_code} · K ${c.seat_quota ?? '—'}` : undefined,
-          to: `${lp('mci')}/${c.slug}`,
+          to: lp('mciCityDetail', { slug: c.slug }),
         }));
       })());
 
