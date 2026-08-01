@@ -46,6 +46,10 @@ const MciCityRepresentatives = ({ cityId, seatQuota, city }: Props) => {
   const [showApply, setShowApply] = useState(false);
   const [selectedProf, setSelectedProf] = useState('');
   const [message, setMessage] = useState('');
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<'all' | 'filled' | 'empty'>('all');
+  const [profFilter, setProfFilter] = useState('');
+  const [view, setView] = useState<'grid' | 'card' | 'list'>('grid');
 
   const load = async () => {
     const [{ data: r }, { data: a }, { data: p }, { data: sess }] = await Promise.all([
