@@ -58,12 +58,18 @@ const AnalyticsPage = () => {
 
   useEffect(() => {
     (async () => {
-      const [profilesRes, professionsRes, mciRes, eventsRes, markersRes] = await Promise.all([
+      const [profilesRes, professionsRes, mciRes, eventsRes, markersRes, profProfRes] = await Promise.all([
         supabase.from('profiles').select('country, created_at, lat, lng').eq('status', 'active'),
-        supabase.from('professions').select('name, status').eq('status', 'active'),
-        supabase.from('mci_cities').select('city, country_code, gdp_pc, connectivity, education_index, mobility, safety_index, cost_of_living').limit(20),
+        supabase.from('professions').select('id, name, status').eq('status', 'active'),
+        supabase
+          .from('mci_cities')
+          .select('city, country_code, cp_final, ai_index, esg_score, h_vc_access, t_flow, p_search, g_gdp_per_capita')
+          .eq('approved', true)
+          .order('cp_final', { ascending: false })
+          .limit(20),
         supabase.from('event_markers').select('status, lat, lng'),
         supabase.from('user_markers').select('lat, lng, country').eq('status', 'active'),
+        supabase.from('profile_professions').select('profession_id'),
       ]);
 
       const profiles = (profilesRes.data || []) as any[];
