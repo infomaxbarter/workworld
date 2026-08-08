@@ -102,10 +102,14 @@ const AnalyticsPage = () => {
         .slice(-12)
         .map(([month, count]) => ({ month, count }));
 
-      // Top professions (just names, count via professions count for now)
+      // Top professions — real member counts from profile_professions
+      const profLinks = (profProfRes.data || []) as any[];
+      const linkCount = new Map<string, number>();
+      profLinks.forEach((l) => linkCount.set(l.profession_id, (linkCount.get(l.profession_id) || 0) + 1));
       const topProfessions = professions
-        .slice(0, 8)
-        .map((p, i) => ({ name: p.name, count: professions.length - i }));
+        .map((p) => ({ name: p.name, count: linkCount.get(p.id) || 0 }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
 
       // Event status
       const statusMap = new Map<string, number>();
@@ -115,17 +119,27 @@ const AnalyticsPage = () => {
       });
       const eventStatus = Array.from(statusMap.entries()).map(([status, count]) => ({ status, count }));
 
-      // MCI radar (top 5 cities, 6 metrics normalized 0-100)
+      // MCI radar — top 5 cities, real metrics normalized 0-100 against the sample max
+      const radarKeys: [string, string][] = [
+        ['AI', 'ai_index'],
+        ['ESG', 'esg_score'],
+        ['VC', 'h_vc_access'],
+        ['Flow', 't_flow'],
+        ['Search', 'p_search'],
+        ['GDP', 'g_gdp_per_capita'],
+      ];
+      const maxOf = new Map<string, number>();
+      radarKeys.forEach(([, col]) => {
+        maxOf.set(col, Math.max(1, ...mciCities.map((c) => Number(c[col]) || 0)));
+      });
       const mciSel = mciCities.slice(0, 5).map((c) => ({
         name: `${c.city}`,
-        scores: {
-          GDP: Math.min(100, (c.gdp_pc || 0) / 1000),
-          Conn: c.connectivity || 0,
-          Edu: c.education_index || 0,
-          Mob: c.mobility || 0,
-          Safe: c.safety_index || 0,
-          Cost: 100 - (c.cost_of_living || 0),
-        },
+        scores: Object.fromEntries(
+          radarKeys.map(([label, col]) => [
+            label,
+            Math.round(((Number(c[col]) || 0) / (maxOf.get(col) || 1)) * 100),
+          ])
+        ) as Record<string, number>,
       }));
 
       // Map points
