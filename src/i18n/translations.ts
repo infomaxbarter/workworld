@@ -74,6 +74,7 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     'dashboard.title': 'Panelim',
     'dashboard.my_events': 'Katıldığım Etkinlikler',
+    'dashboard.my_applications': 'Başvurularım',
     'dashboard.no_events': 'Henüz bir etkinliğe katılmadınız.',
     'dashboard.events_count': 'Etkinlik',
     'dashboard.profile_status': 'Profil Durumu',
@@ -397,6 +398,7 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     'dashboard.title': 'My Dashboard',
     'dashboard.my_events': 'My Events',
+    'dashboard.my_applications': 'My Applications',
     'dashboard.no_events': 'You haven\'t joined any events yet.',
     'dashboard.events_count': 'Events',
     'dashboard.profile_status': 'Profile Status',
@@ -720,6 +722,7 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     'dashboard.title': 'Mein Dashboard',
     'dashboard.my_events': 'Meine Veranstaltungen',
+    'dashboard.my_applications': 'Meine Bewerbungen',
     'dashboard.no_events': 'Sie haben noch an keiner Veranstaltung teilgenommen.',
     'dashboard.events_count': 'Veranstaltungen',
     'dashboard.profile_status': 'Profilstatus',
