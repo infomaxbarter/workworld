@@ -16,19 +16,27 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<any>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [editRequests, setEditRequests] = useState<any[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate('/auth'); return; }
-      const [{ data: p }, { data: rsvps }, { data: reqs }] = await Promise.all([
+      const [{ data: p }, { data: rsvps }, { data: reqs }, { data: apps }] = await Promise.all([
         supabase.from('profiles').select('*').eq('user_id', session.user.id).single(),
         supabase.from('event_rsvps').select('event_id').eq('user_id', session.user.id),
         supabase.from('profile_edit_requests').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false }).limit(5),
+        supabase
+          .from('mci_seat_applications')
+          .select('id, status, review_note, created_at, mci_cities(city, slug), professions(name)')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(10),
       ]);
       if (p) setProfile(p);
       if (reqs) setEditRequests(reqs as any[]);
+      if (apps) setApplications(apps as any[]);
       if (rsvps && rsvps.length > 0) {
         const eventIds = rsvps.map((r: any) => r.event_id);
         const { data: evts } = await supabase.from('event_markers').select('*').in('id', eventIds);
