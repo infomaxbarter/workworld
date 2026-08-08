@@ -12,6 +12,7 @@ import MciCitySources from '@/components/MciCitySources';
 import MciCityHistory from '@/components/MciCityHistory';
 import MciCityRepresentatives from '@/components/MciCityRepresentatives';
 import RelatedContent from '@/components/RelatedContent';
+import PageSeo from '@/components/PageSeo';
 
 
 
