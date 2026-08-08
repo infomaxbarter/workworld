@@ -5,6 +5,8 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 import { pickI18n } from '@/i18n/i18nField';
 import Footer from '@/components/Footer';
+import PageSeo from '@/components/PageSeo';
+import RelatedContent from '@/components/RelatedContent';
 import CommentsSection from '@/components/CommentsSection';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, Play, Headphones, FileText } from 'lucide-react';
@@ -76,7 +78,24 @@ const MediaDetail = ({ type }: { type: MediaType }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PageSeo
+        title={`${title} — WorkWorldMap`}
+        description={desc || `${t(`media.type_${type}`)} — WorkWorldMap`}
+        image={item.cover_url || undefined}
+        type="article"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': type === 'blog' ? 'Article' : type === 'video' ? 'VideoObject' : 'PodcastEpisode',
+          headline: title,
+          name: title,
+          description: desc || undefined,
+          image: item.cover_url || undefined,
+          datePublished: item.published_at || item.created_at,
+          dateModified: item.updated_at || item.published_at || item.created_at,
+        }}
+      />
       <article className="max-w-3xl mx-auto px-4 py-8 sm:py-12 flex-1 w-full">
+
         <Link to={lp(listKey as any)} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="w-4 h-4" /> {t('event.back')}
         </Link>
@@ -127,6 +146,8 @@ const MediaDetail = ({ type }: { type: MediaType }) => {
         <div className="border-t border-border pt-8">
           <CommentsSection targetType={`media_${type}`} targetId={item.id} />
         </div>
+
+        <RelatedContent excludeTitle={title} kinds={['media', 'events', 'cities', 'professions']} />
       </article>
       <Footer />
     </div>

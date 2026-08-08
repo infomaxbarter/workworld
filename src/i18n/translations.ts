@@ -74,6 +74,7 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     'dashboard.title': 'Panelim',
     'dashboard.my_events': 'Katıldığım Etkinlikler',
+    'dashboard.my_applications': 'Başvurularım',
     'dashboard.no_events': 'Henüz bir etkinliğe katılmadınız.',
     'dashboard.events_count': 'Etkinlik',
     'dashboard.profile_status': 'Profil Durumu',
@@ -309,6 +310,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     'analytics.events_by_status': 'Etkinlik durumu',
     'analytics.density_map': 'Küresel yoğunluk',
     'analytics.data_source': 'Veri kaynağı',
+    'analytics.no_data': 'Henüz veri yok',
     'analytics.updated': 'Güncelleme',
     'analytics.live': 'canlı',
     'analytics.transparency_note': 'Bu sayfa hesap gerektirmez. Grafikler doğrudan platform veritabanından, gerçek zamanlı okunur.',
@@ -397,6 +399,7 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     'dashboard.title': 'My Dashboard',
     'dashboard.my_events': 'My Events',
+    'dashboard.my_applications': 'My Applications',
     'dashboard.no_events': 'You haven\'t joined any events yet.',
     'dashboard.events_count': 'Events',
     'dashboard.profile_status': 'Profile Status',
@@ -632,6 +635,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     'analytics.events_by_status': 'Event status',
     'analytics.density_map': 'Global density',
     'analytics.data_source': 'Source',
+    'analytics.no_data': 'No data yet',
     'analytics.updated': 'Updated',
     'analytics.live': 'live',
     'analytics.transparency_note': 'This page requires no account. Charts read directly from the platform database in real-time.',
@@ -720,6 +724,7 @@ export const translations: Record<Lang, Record<string, string>> = {
 
     'dashboard.title': 'Mein Dashboard',
     'dashboard.my_events': 'Meine Veranstaltungen',
+    'dashboard.my_applications': 'Meine Bewerbungen',
     'dashboard.no_events': 'Sie haben noch an keiner Veranstaltung teilgenommen.',
     'dashboard.events_count': 'Veranstaltungen',
     'dashboard.profile_status': 'Profilstatus',
@@ -955,6 +960,7 @@ export const translations: Record<Lang, Record<string, string>> = {
     'analytics.events_by_status': 'Veranstaltungsstatus',
     'analytics.density_map': 'Globale Dichte',
     'analytics.data_source': 'Quelle',
+    'analytics.no_data': 'Noch keine Daten',
     'analytics.updated': 'Aktualisiert',
     'analytics.live': 'live',
     'analytics.transparency_note': 'Diese Seite erfordert kein Konto. Diagramme lesen direkt aus der Plattform-Datenbank in Echtzeit.',

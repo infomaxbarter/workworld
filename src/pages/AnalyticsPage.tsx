@@ -58,12 +58,18 @@ const AnalyticsPage = () => {
 
   useEffect(() => {
     (async () => {
-      const [profilesRes, professionsRes, mciRes, eventsRes, markersRes] = await Promise.all([
+      const [profilesRes, professionsRes, mciRes, eventsRes, markersRes, profProfRes] = await Promise.all([
         supabase.from('profiles').select('country, created_at, lat, lng').eq('status', 'active'),
-        supabase.from('professions').select('name, status').eq('status', 'active'),
-        supabase.from('mci_cities').select('city, country_code, gdp_pc, connectivity, education_index, mobility, safety_index, cost_of_living').limit(20),
+        supabase.from('professions').select('id, name, status').eq('status', 'active'),
+        supabase
+          .from('mci_cities')
+          .select('city, country_code, cp_final, ai_index, esg_score, h_vc_access, t_flow, p_search, g_gdp_per_capita')
+          .eq('approved', true)
+          .order('cp_final', { ascending: false })
+          .limit(20),
         supabase.from('event_markers').select('status, lat, lng'),
         supabase.from('user_markers').select('lat, lng, country').eq('status', 'active'),
+        supabase.from('profile_professions').select('profession_id'),
       ]);
 
       const profiles = (profilesRes.data || []) as any[];
@@ -96,10 +102,14 @@ const AnalyticsPage = () => {
         .slice(-12)
         .map(([month, count]) => ({ month, count }));
 
-      // Top professions (just names, count via professions count for now)
+      // Top professions — real member counts from profile_professions
+      const profLinks = (profProfRes.data || []) as any[];
+      const linkCount = new Map<string, number>();
+      profLinks.forEach((l) => linkCount.set(l.profession_id, (linkCount.get(l.profession_id) || 0) + 1));
       const topProfessions = professions
-        .slice(0, 8)
-        .map((p, i) => ({ name: p.name, count: professions.length - i }));
+        .map((p) => ({ name: p.name, count: linkCount.get(p.id) || 0 }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
 
       // Event status
       const statusMap = new Map<string, number>();
@@ -109,17 +119,27 @@ const AnalyticsPage = () => {
       });
       const eventStatus = Array.from(statusMap.entries()).map(([status, count]) => ({ status, count }));
 
-      // MCI radar (top 5 cities, 6 metrics normalized 0-100)
+      // MCI radar — top 5 cities, real metrics normalized 0-100 against the sample max
+      const radarKeys: [string, string][] = [
+        ['AI', 'ai_index'],
+        ['ESG', 'esg_score'],
+        ['VC', 'h_vc_access'],
+        ['Flow', 't_flow'],
+        ['Search', 'p_search'],
+        ['GDP', 'g_gdp_per_capita'],
+      ];
+      const maxOf = new Map<string, number>();
+      radarKeys.forEach(([, col]) => {
+        maxOf.set(col, Math.max(1, ...mciCities.map((c) => Number(c[col]) || 0)));
+      });
       const mciSel = mciCities.slice(0, 5).map((c) => ({
         name: `${c.city}`,
-        scores: {
-          GDP: Math.min(100, (c.gdp_pc || 0) / 1000),
-          Conn: c.connectivity || 0,
-          Edu: c.education_index || 0,
-          Mob: c.mobility || 0,
-          Safe: c.safety_index || 0,
-          Cost: 100 - (c.cost_of_living || 0),
-        },
+        scores: Object.fromEntries(
+          radarKeys.map(([label, col]) => [
+            label,
+            Math.round(((Number(c[col]) || 0) / (maxOf.get(col) || 1)) * 100),
+          ])
+        ) as Record<string, number>,
       }));
 
       // Map points
@@ -221,7 +241,7 @@ const AnalyticsPage = () => {
         </p>
 
         <div className="grid gap-6 md:grid-cols-2 mb-6">
-          <ChartCard title={t('analytics.members_by_country')} icon={<BarChart3 className="w-4 h-4" />} source="profiles + user_markers">
+          <ChartCard title={t('analytics.members_by_country')} icon={<BarChart3 className="w-4 h-4" />} source="profiles + user_markers" empty={data.byCountry.length === 0}>
             <Bar
               data={{
                 labels: data.byCountry.map((c) => c.country),
@@ -235,7 +255,7 @@ const AnalyticsPage = () => {
             />
           </ChartCard>
 
-          <ChartCard title={t('analytics.monthly_growth')} icon={<TrendingUp className="w-4 h-4" />} source="profiles.created_at">
+          <ChartCard title={t('analytics.monthly_growth')} icon={<TrendingUp className="w-4 h-4" />} source="profiles.created_at" empty={data.monthly.length === 0}>
             <Line
               data={{
                 labels: data.monthly.map((m) => m.month),
@@ -252,7 +272,7 @@ const AnalyticsPage = () => {
             />
           </ChartCard>
 
-          <ChartCard title={t('analytics.top_professions')} icon={<PieIcon className="w-4 h-4" />} source="professions">
+          <ChartCard title={t('analytics.top_professions')} icon={<PieIcon className="w-4 h-4" />} source="professions" empty={data.topProfessions.reduce((a, p) => a + p.count, 0) === 0}>
             <Doughnut
               data={{
                 labels: data.topProfessions.map((p) => p.name),
@@ -265,7 +285,7 @@ const AnalyticsPage = () => {
             />
           </ChartCard>
 
-          <ChartCard title={t('analytics.events_by_status')} icon={<PieIcon className="w-4 h-4" />} source="event_markers.status">
+          <ChartCard title={t('analytics.events_by_status')} icon={<PieIcon className="w-4 h-4" />} source="event_markers.status" empty={data.eventStatus.length === 0}>
             <Pie
               data={{
                 labels: data.eventStatus.map((e) => e.status),
@@ -280,13 +300,13 @@ const AnalyticsPage = () => {
         </div>
 
         {data.mciCities.length > 0 && (
-          <ChartCard title={t('analytics.mci_compare')} icon={<RadarIcon className="w-4 h-4" />} source="mci_cities" className="mb-6">
+          <ChartCard title={t('analytics.mci_compare')} icon={<RadarIcon className="w-4 h-4" />} source="mci_cities" className="mb-6" empty={data.mciCities.length === 0}>
             <Radar
               data={{
-                labels: ['GDP', 'Conn', 'Edu', 'Mob', 'Safe', 'Cost'],
+                labels: ['AI', 'ESG', 'VC', 'Flow', 'Search', 'GDP'],
                 datasets: data.mciCities.map((c, i) => ({
                   label: c.name,
-                  data: [c.scores.GDP, c.scores.Conn, c.scores.Edu, c.scores.Mob, c.scores.Safe, c.scores.Cost],
+                  data: [c.scores.AI, c.scores.ESG, c.scores.VC, c.scores.Flow, c.scores.Search, c.scores.GDP],
                   backgroundColor: chartColors[i] + '33',
                   borderColor: chartColors[i],
                   borderWidth: 2,
@@ -325,7 +345,7 @@ const AnalyticsPage = () => {
   );
 };
 
-const ChartCard = ({ title, icon, source, children, className }: { title: string; icon: React.ReactNode; source: string; children: React.ReactNode; className?: string }) => {
+const ChartCard = ({ title, icon, source, children, className, empty }: { title: string; icon: React.ReactNode; source: string; children: React.ReactNode; className?: string; empty?: boolean }) => {
   const { t } = useLanguage();
   return (
     <Card className={className}>
@@ -339,7 +359,13 @@ const ChartCard = ({ title, icon, source, children, className }: { title: string
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-64 sm:h-72">{children}</div>
+        <div className="h-64 sm:h-72">
+          {empty ? (
+            <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+              {t('analytics.no_data')}
+            </div>
+          ) : children}
+        </div>
       </CardContent>
     </Card>
   );
