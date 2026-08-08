@@ -157,6 +157,39 @@ const Dashboard = () => {
           </Card>
         )}
 
+        {/* Seat applications */}
+        {applications.length > 0 && (
+          <Card className="mb-4 sm:mb-6">
+            <CardHeader className="p-4 sm:p-6 pb-2">
+              <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-primary" />
+                {t('dashboard.my_applications')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 pt-0 space-y-2">
+              {applications.map((a: any) => (
+                <div key={a.id} className="flex items-start justify-between gap-2 p-2 rounded-lg bg-muted/30">
+                  <div className="min-w-0">
+                    <p className="text-sm text-foreground truncate">
+                      {a.mci_cities?.city || '—'}{a.professions?.name ? ` · ${a.professions.name}` : ''}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleDateString()}</p>
+                    {a.status === 'rejected' && a.review_note && (
+                      <p className="text-xs text-destructive mt-1">{a.review_note}</p>
+                    )}
+                  </div>
+                  <Badge
+                    variant={a.status === 'approved' ? 'default' : a.status === 'rejected' ? 'destructive' : 'secondary'}
+                    className="text-xs shrink-0"
+                  >
+                    {a.status === 'approved' ? t('profile.approved') : a.status === 'rejected' ? t('admin.rejected') : t('profile.pending')}
+                  </Badge>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Events */}
         <Card>
           <CardHeader className="p-4 sm:p-6">
