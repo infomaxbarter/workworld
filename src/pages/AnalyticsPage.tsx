@@ -241,7 +241,7 @@ const AnalyticsPage = () => {
         </p>
 
         <div className="grid gap-6 md:grid-cols-2 mb-6">
-          <ChartCard title={t('analytics.members_by_country')} icon={<BarChart3 className="w-4 h-4" />} source="profiles + user_markers">
+          <ChartCard title={t('analytics.members_by_country')} icon={<BarChart3 className="w-4 h-4" />} source="profiles + user_markers" empty={data.byCountry.length === 0}>
             <Bar
               data={{
                 labels: data.byCountry.map((c) => c.country),
@@ -255,7 +255,7 @@ const AnalyticsPage = () => {
             />
           </ChartCard>
 
-          <ChartCard title={t('analytics.monthly_growth')} icon={<TrendingUp className="w-4 h-4" />} source="profiles.created_at">
+          <ChartCard title={t('analytics.monthly_growth')} icon={<TrendingUp className="w-4 h-4" />} source="profiles.created_at" empty={data.monthly.length === 0}>
             <Line
               data={{
                 labels: data.monthly.map((m) => m.month),
@@ -272,7 +272,7 @@ const AnalyticsPage = () => {
             />
           </ChartCard>
 
-          <ChartCard title={t('analytics.top_professions')} icon={<PieIcon className="w-4 h-4" />} source="professions">
+          <ChartCard title={t('analytics.top_professions')} icon={<PieIcon className="w-4 h-4" />} source="professions" empty={data.topProfessions.reduce((a, p) => a + p.count, 0) === 0}>
             <Doughnut
               data={{
                 labels: data.topProfessions.map((p) => p.name),
@@ -285,7 +285,7 @@ const AnalyticsPage = () => {
             />
           </ChartCard>
 
-          <ChartCard title={t('analytics.events_by_status')} icon={<PieIcon className="w-4 h-4" />} source="event_markers.status">
+          <ChartCard title={t('analytics.events_by_status')} icon={<PieIcon className="w-4 h-4" />} source="event_markers.status" empty={data.eventStatus.length === 0}>
             <Pie
               data={{
                 labels: data.eventStatus.map((e) => e.status),
@@ -300,7 +300,7 @@ const AnalyticsPage = () => {
         </div>
 
         {data.mciCities.length > 0 && (
-          <ChartCard title={t('analytics.mci_compare')} icon={<RadarIcon className="w-4 h-4" />} source="mci_cities" className="mb-6">
+          <ChartCard title={t('analytics.mci_compare')} icon={<RadarIcon className="w-4 h-4" />} source="mci_cities" className="mb-6" empty={data.mciCities.length === 0}>
             <Radar
               data={{
                 labels: ['AI', 'ESG', 'VC', 'Flow', 'Search', 'GDP'],
