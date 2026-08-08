@@ -62,6 +62,16 @@ const MciCityDetail = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <PageSeo
+        title={`${city.city} — Matrix City Index`}
+        description={`${city.city} MCI v9 profile: CP_final ${result.cp_final}/600, seat quota ${result.seat_quota}, transparent metric breakdown and data sources.`}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Place',
+          name: city.city,
+          address: { '@type': 'PostalAddress', addressCountry: city.country_code },
+        }}
+      />
       <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12 flex-1 w-full space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <Button asChild variant="ghost" size="sm">
