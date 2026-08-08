@@ -146,6 +146,8 @@ const MediaDetail = ({ type }: { type: MediaType }) => {
         <div className="border-t border-border pt-8">
           <CommentsSection targetType={`media_${type}`} targetId={item.id} />
         </div>
+
+        <RelatedContent excludeTitle={title} kinds={['media', 'events', 'cities', 'professions']} />
       </article>
       <Footer />
     </div>
