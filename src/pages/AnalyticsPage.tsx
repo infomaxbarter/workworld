@@ -345,7 +345,7 @@ const AnalyticsPage = () => {
   );
 };
 
-const ChartCard = ({ title, icon, source, children, className }: { title: string; icon: React.ReactNode; source: string; children: React.ReactNode; className?: string }) => {
+const ChartCard = ({ title, icon, source, children, className, empty }: { title: string; icon: React.ReactNode; source: string; children: React.ReactNode; className?: string; empty?: boolean }) => {
   const { t } = useLanguage();
   return (
     <Card className={className}>
@@ -359,7 +359,13 @@ const ChartCard = ({ title, icon, source, children, className }: { title: string
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-64 sm:h-72">{children}</div>
+        <div className="h-64 sm:h-72">
+          {empty ? (
+            <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
+              {t('analytics.no_data')}
+            </div>
+          ) : children}
+        </div>
       </CardContent>
     </Card>
   );
