@@ -5,6 +5,8 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 import { pickI18n } from '@/i18n/i18nField';
 import Footer from '@/components/Footer';
+import PageSeo from '@/components/PageSeo';
+import RelatedContent from '@/components/RelatedContent';
 import CommentsSection from '@/components/CommentsSection';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Calendar, Play, Headphones, FileText } from 'lucide-react';
