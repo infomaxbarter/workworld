@@ -303,10 +303,10 @@ const AnalyticsPage = () => {
           <ChartCard title={t('analytics.mci_compare')} icon={<RadarIcon className="w-4 h-4" />} source="mci_cities" className="mb-6">
             <Radar
               data={{
-                labels: ['GDP', 'Conn', 'Edu', 'Mob', 'Safe', 'Cost'],
+                labels: ['AI', 'ESG', 'VC', 'Flow', 'Search', 'GDP'],
                 datasets: data.mciCities.map((c, i) => ({
                   label: c.name,
-                  data: [c.scores.GDP, c.scores.Conn, c.scores.Edu, c.scores.Mob, c.scores.Safe, c.scores.Cost],
+                  data: [c.scores.AI, c.scores.ESG, c.scores.VC, c.scores.Flow, c.scores.Search, c.scores.GDP],
                   backgroundColor: chartColors[i] + '33',
                   borderColor: chartColors[i],
                   borderWidth: 2,
