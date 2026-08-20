@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      ambassador_levels: {
+        Row: {
+          badges: string | null
+          code: string
+          created_at: string
+          id: string
+          motivation: string | null
+          requirements: string | null
+          rights: string | null
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          badges?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          motivation?: string | null
+          requirements?: string | null
+          rights?: string | null
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          badges?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          motivation?: string | null
+          requirements?: string | null
+          rights?: string | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -44,6 +83,66 @@ export type Database = {
           target_id?: string
           target_type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      crm_leads: {
+        Row: {
+          channel: string | null
+          city: string | null
+          code: string | null
+          created_at: string
+          current_title: string | null
+          full_name: string
+          id: string
+          last_contact_at: string | null
+          notes: string | null
+          owner: string | null
+          quality_score: number
+          region: string | null
+          stage: string
+          target_role: string | null
+          tier: string | null
+          updated_at: string
+          vertical: string | null
+        }
+        Insert: {
+          channel?: string | null
+          city?: string | null
+          code?: string | null
+          created_at?: string
+          current_title?: string | null
+          full_name: string
+          id?: string
+          last_contact_at?: string | null
+          notes?: string | null
+          owner?: string | null
+          quality_score?: number
+          region?: string | null
+          stage?: string
+          target_role?: string | null
+          tier?: string | null
+          updated_at?: string
+          vertical?: string | null
+        }
+        Update: {
+          channel?: string | null
+          city?: string | null
+          code?: string | null
+          created_at?: string
+          current_title?: string | null
+          full_name?: string
+          id?: string
+          last_contact_at?: string | null
+          notes?: string | null
+          owner?: string | null
+          quality_score?: number
+          region?: string | null
+          stage?: string
+          target_role?: string | null
+          tier?: string | null
+          updated_at?: string
+          vertical?: string | null
         }
         Relationships: []
       }
@@ -708,6 +807,42 @@ export type Database = {
         }
         Relationships: []
       }
+      outreach_templates: {
+        Row: {
+          audience: string
+          body: string | null
+          channel: string | null
+          code: string
+          created_at: string
+          id: string
+          sort_order: number
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          audience: string
+          body?: string | null
+          channel?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          body?: string | null
+          channel?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pilot_countries: {
         Row: {
           active: boolean
@@ -1112,6 +1247,120 @@ export type Database = {
           id?: string
           message?: string
           name?: string
+        }
+        Relationships: []
+      }
+      tr_provinces: {
+        Row: {
+          active: boolean
+          community_channels: string | null
+          created_at: string
+          focus_sectors: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          local_hubs: string | null
+          name: string
+          name_i18n: Json | null
+          plate_no: number
+          region: string
+          slug: string | null
+          target_representatives: number
+          tier: string
+          updated_at: string
+          value_proposition: string | null
+          value_proposition_i18n: Json | null
+        }
+        Insert: {
+          active?: boolean
+          community_channels?: string | null
+          created_at?: string
+          focus_sectors?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          local_hubs?: string | null
+          name: string
+          name_i18n?: Json | null
+          plate_no: number
+          region: string
+          slug?: string | null
+          target_representatives?: number
+          tier: string
+          updated_at?: string
+          value_proposition?: string | null
+          value_proposition_i18n?: Json | null
+        }
+        Update: {
+          active?: boolean
+          community_channels?: string | null
+          created_at?: string
+          focus_sectors?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          local_hubs?: string | null
+          name?: string
+          name_i18n?: Json | null
+          plate_no?: number
+          region?: string
+          slug?: string | null
+          target_representatives?: number
+          tier?: string
+          updated_at?: string
+          value_proposition?: string | null
+          value_proposition_i18n?: Json | null
+        }
+        Relationships: []
+      }
+      tr_verticals: {
+        Row: {
+          active: boolean
+          barter_supply: string | null
+          code: string
+          created_at: string
+          discovery_channels: string | null
+          id: string
+          ideal_representative: string | null
+          name: string
+          name_i18n: Json | null
+          slug: string | null
+          sort_order: number
+          target_roles: string | null
+          typical_demand: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          barter_supply?: string | null
+          code: string
+          created_at?: string
+          discovery_channels?: string | null
+          id?: string
+          ideal_representative?: string | null
+          name: string
+          name_i18n?: Json | null
+          slug?: string | null
+          sort_order?: number
+          target_roles?: string | null
+          typical_demand?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          barter_supply?: string | null
+          code?: string
+          created_at?: string
+          discovery_channels?: string | null
+          id?: string
+          ideal_representative?: string | null
+          name?: string
+          name_i18n?: Json | null
+          slug?: string | null
+          sort_order?: number
+          target_roles?: string | null
+          typical_demand?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
