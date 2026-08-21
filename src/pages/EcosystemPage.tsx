@@ -217,7 +217,7 @@ const EcosystemPage = () => {
         </Tabs>
 
         <div className="mt-10">
-          <RelatedContent currentType="mci" />
+          <RelatedContent />
         </div>
       </section>
 
