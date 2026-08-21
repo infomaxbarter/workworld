@@ -34,6 +34,8 @@ const ProfessionDetail = lazy(() => import("./pages/ProfessionDetail"));
 const MediaListPage = lazy(() => import("./pages/MediaListPage"));
 const MediaDetail = lazy(() => import("./pages/MediaDetail"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const EcosystemPage = lazy(() => import("./pages/EcosystemPage"));
+const ProvinceDetail = lazy(() => import("./pages/ProvinceDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -60,6 +62,8 @@ const pageFor: Record<RouteKey, JSX.Element> = {
   videos: <MediaListPage type="video" />,
   podcast: <MediaListPage type="podcast" />,
   analytics: <AnalyticsPage />,
+  ecosystem: <EcosystemPage />,
+  provinceDetail: <ProvinceDetail />,
 
   dashboard: <Dashboard />,
   admin: <Admin />,

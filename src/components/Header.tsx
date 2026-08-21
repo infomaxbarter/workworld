@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays, Map, Info, LayoutDashboard, Menu, Search, ChevronDown, Briefcase, FileText, Play, Headphones, Activity, BarChart3, Database } from 'lucide-react';
+import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays, Map, Info, LayoutDashboard, Menu, Search, ChevronDown, Briefcase, FileText, Play, Headphones, Activity, BarChart3, Database, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -88,6 +88,7 @@ const Header = () => {
       children: [
         { to: lp('mci'), label: 'MCI v7.0', desc: 'Matrix City Index', icon: BarChart3 },
         { to: lp('analytics'), label: t('analytics.title'), desc: t('analytics.subtitle'), icon: Activity },
+        { to: lp('ecosystem'), label: 'Türkiye Ecosystem', desc: '81 provinces & verticals', icon: MapPin },
       ],
     },
     {
@@ -109,6 +110,7 @@ const Header = () => {
     { to: lp('map'), icon: Map, label: t('nav.map') },
     { to: lp('analytics'), icon: Activity, label: t('nav.analytics') },
     { to: lp('mci'), icon: Shield, label: 'MCI' },
+    { to: lp('ecosystem'), icon: MapPin, label: 'Ecosystem' },
     { to: lp('about'), icon: Info, label: t('nav.about') },
   ];
 

@@ -20,6 +20,7 @@ import DataExportImport from '@/components/admin/DataExportImport';
 import DetailedReports from '@/components/admin/DetailedReports';
 import AdminToolbar from '@/components/admin/AdminToolbar';
 import MediaAdmin from '@/components/admin/MediaAdmin';
+import EcosystemAdmin from '@/components/admin/EcosystemAdmin';
 import { useAdminTable } from '@/hooks/useAdminTable';
 import { Checkbox } from '@/components/ui/checkbox';
 import { pickI18n } from '@/i18n/i18nField';
@@ -535,6 +536,7 @@ const AdminDashboard = () => {
             <TabsTrigger value="media" className="gap-1.5"><Play className="w-4 h-4" /> {t('admin.media')}</TabsTrigger>
             <TabsTrigger value="data" className="gap-1.5"><Upload className="w-4 h-4" /> Veri Aktar</TabsTrigger>
             <TabsTrigger value="detailed_reports" className="gap-1.5"><BarChart3 className="w-4 h-4" /> Detaylı Raporlar</TabsTrigger>
+            <TabsTrigger value="ecosystem" className="gap-1.5"><MapPin className="w-4 h-4" /> Ekosistem</TabsTrigger>
             <TabsTrigger value="site" className="gap-1.5"><Images className="w-4 h-4" /> Site İçerik</TabsTrigger>
             <TabsTrigger value="settings" className="gap-1.5"><Settings className="w-4 h-4" /> {t('admin.settings')}</TabsTrigger>
           </TabsList>
@@ -1226,6 +1228,10 @@ const AdminDashboard = () => {
           </TabsContent>
 
           {/* Navigation Settings */}
+          <TabsContent value="ecosystem">
+            <EcosystemAdmin />
+          </TabsContent>
+
           <TabsContent value="site">
             <SiteContentAdmin />
           </TabsContent>
