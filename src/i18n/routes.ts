@@ -48,8 +48,8 @@ export const routeMap: Record<RouteKey, Record<Lang, string>> = {
   videos:           { en: '/videos',     tr: '/videolar',    de: '/videos' },
   podcast:          { en: '/podcast',    tr: '/podcast',     de: '/podcast' },
   analytics:        { en: '/analytics',  tr: '/analitik',    de: '/analysen' },
-  ecosystem:        { en: '/ecosystem',  tr: '/ekosistem',   de: '/oekosystem' },
-  provinceDetail:   { en: '/ecosystem/:slug', tr: '/ekosistem/:slug', de: '/oekosystem/:slug' },
+  ecosystem:        { en: '/turkiye-ecosystem',  tr: '/turkiye-ekosistem',   de: '/tuerkiye-oekosystem' },
+  provinceDetail:   { en: '/turkiye-ecosystem/:slug', tr: '/turkiye-ekosistem/:slug', de: '/tuerkiye-oekosystem/:slug' },
 
   dashboard:        { en: '/dashboard',  tr: '/panel',       de: '/uebersicht' },
   admin:            { en: '/admin',      tr: '/yonetim',     de: '/verwaltung' },

@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Search, MapPin, Users, Briefcase, Trophy, LayoutGrid, List, ArrowRight } from 'lucide-react';
+import { Search, MapPin, Users, Briefcase, Trophy, LayoutGrid, List, ArrowRight, Map as MapIcon } from 'lucide-react';
+import TurkeyEcosystemMap from '@/components/TurkeyEcosystemMap';
 import { et, tierClass, tierKey, type Province, type Vertical, type AmbassadorLevel } from '@/lib/ecosystem';
 
 const EcosystemPage = () => {
@@ -81,12 +82,18 @@ const EcosystemPage = () => {
       </section>
 
       <section className="px-4 pb-12 max-w-6xl mx-auto w-full">
-        <Tabs defaultValue="provinces">
+        <Tabs defaultValue="map">
           <TabsList className="flex-wrap h-auto">
+            <TabsTrigger value="map" className="gap-1.5"><MapIcon className="w-4 h-4" /> {lang === 'tr' ? 'Harita' : lang === 'de' ? 'Karte' : 'Map'}</TabsTrigger>
             <TabsTrigger value="provinces" className="gap-1.5"><MapPin className="w-4 h-4" /> {et('provinces', lang)}</TabsTrigger>
             <TabsTrigger value="verticals" className="gap-1.5"><Briefcase className="w-4 h-4" /> {et('verticals', lang)}</TabsTrigger>
             <TabsTrigger value="levels" className="gap-1.5"><Trophy className="w-4 h-4" /> {et('levels', lang)}</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="map" className="mt-4">
+            <TurkeyEcosystemMap provinces={provinces} verticals={verticals} levels={levels} />
+          </TabsContent>
+
 
           <TabsContent value="provinces" className="mt-4 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
