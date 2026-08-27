@@ -140,25 +140,7 @@ const Header = () => {
           {isMega && (
             <nav className="hidden md:flex items-center gap-1">
               {megaItems.map((group) => (
-                <DropdownMenu key={group.label}>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="gap-1.5">
-                      <group.icon className="w-4 h-4" />
-                      {group.label}
-                      <ChevronDown className="w-3 h-3 opacity-50" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-64">
-                    {group.children.map((child) => (
-                      <DropdownMenuItem key={child.to} asChild className="cursor-pointer">
-                        <Link to={child.to} className="flex flex-col items-start gap-0.5 py-2">
-                          <span className="font-medium text-sm">{child.label}</span>
-                          <span className="text-xs text-muted-foreground">{child.desc}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <HoverMegaMenu key={group.label} group={group} />
               ))}
             </nav>
           )}
