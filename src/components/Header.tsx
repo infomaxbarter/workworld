@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Moon, Sun, LogIn, LogOut, User, Globe, Shield, Users, CalendarDays, Map, Info, LayoutDashboard, Menu, Search, ChevronDown, Briefcase, FileText, Play, Headphones, Activity, BarChart3, Database, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -13,6 +13,53 @@ import { useNavigation } from '@/contexts/NavigationContext';
 import { useLocalizedPath } from '@/hooks/useLocalizedPath';
 
 const langLabels: Record<Lang, string> = { tr: 'TR', en: 'EN', de: 'DE' };
+
+// Mega menu group that opens on hover (with small close delay for smooth UX)
+const HoverMegaMenu = ({ group }: { group: { label: string; icon: any; children: { to: string; label: string; desc: string; icon: any }[] } }) => {
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleEnter = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpen(true);
+  };
+  const handleLeave = () => {
+    closeTimer.current = setTimeout(() => setOpen(false), 150);
+  };
+
+  return (
+    <div onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="gap-1.5" aria-expanded={open}>
+            <group.icon className="w-4 h-4" />
+            {group.label}
+            <ChevronDown className={`w-3 h-3 opacity-50 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          className="w-64"
+          onMouseEnter={handleEnter}
+          onMouseLeave={handleLeave}
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
+          {group.children.map((child) => (
+            <DropdownMenuItem key={child.to} asChild className="cursor-pointer">
+              <Link to={child.to} className="flex items-start gap-2.5 py-2" onClick={() => setOpen(false)}>
+                <child.icon className="w-4 h-4 mt-0.5 text-muted-foreground" />
+                <span className="flex flex-col gap-0.5">
+                  <span className="font-medium text-sm">{child.label}</span>
+                  <span className="text-xs text-muted-foreground line-clamp-1">{child.desc}</span>
+                </span>
+              </Link>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};
 
 const Header = () => {
   const { lang, setLang, t } = useLanguage();
@@ -140,25 +187,7 @@ const Header = () => {
           {isMega && (
             <nav className="hidden md:flex items-center gap-1">
               {megaItems.map((group) => (
-                <DropdownMenu key={group.label}>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="gap-1.5">
-                      <group.icon className="w-4 h-4" />
-                      {group.label}
-                      <ChevronDown className="w-3 h-3 opacity-50" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-64">
-                    {group.children.map((child) => (
-                      <DropdownMenuItem key={child.to} asChild className="cursor-pointer">
-                        <Link to={child.to} className="flex flex-col items-start gap-0.5 py-2">
-                          <span className="font-medium text-sm">{child.label}</span>
-                          <span className="text-xs text-muted-foreground">{child.desc}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <HoverMegaMenu key={group.label} group={group} />
               ))}
             </nav>
           )}
