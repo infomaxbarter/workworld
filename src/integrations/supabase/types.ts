@@ -883,6 +883,7 @@ export type Database = {
           content_i18n: Json | null
           created_at: string
           id: string
+          media: Json
           slug: string | null
           status: string
           target_id: string | null
@@ -897,6 +898,7 @@ export type Database = {
           content_i18n?: Json | null
           created_at?: string
           id?: string
+          media?: Json
           slug?: string | null
           status?: string
           target_id?: string | null
@@ -911,6 +913,7 @@ export type Database = {
           content_i18n?: Json | null
           created_at?: string
           id?: string
+          media?: Json
           slug?: string | null
           status?: string
           target_id?: string | null
