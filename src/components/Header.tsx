@@ -189,8 +189,12 @@ const Header = () => {
               {megaItems.map((group) => (
                 <HoverMegaMenu key={group.label} group={group} />
               ))}
+              <Button size="sm" asChild className="ml-2 gap-1.5">
+                <Link to={lp('map')}><Map className="w-4 h-4" />{t('nav.map')}</Link>
+              </Button>
             </nav>
           )}
+
         </div>
 
         <div className="flex items-center gap-1">
