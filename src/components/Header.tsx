@@ -176,11 +176,12 @@ const Header = () => {
           {!isMega && (
             <nav className="hidden md:flex items-center gap-1">
               {navItems.map((item) => (
-                <Button key={item.to} variant="ghost" size="sm" asChild>
+                <Button key={item.to} variant={item.to === lp('map') ? 'default' : 'ghost'} size="sm" asChild>
                   <Link to={item.to} className="gap-1.5"><item.icon className="w-4 h-4" />{item.label}</Link>
                 </Button>
               ))}
             </nav>
+
           )}
 
           {/* Mega menu nav */}
@@ -189,8 +190,12 @@ const Header = () => {
               {megaItems.map((group) => (
                 <HoverMegaMenu key={group.label} group={group} />
               ))}
+              <Button size="sm" asChild className="ml-2 gap-1.5">
+                <Link to={lp('map')}><Map className="w-4 h-4" />{t('nav.map')}</Link>
+              </Button>
             </nav>
           )}
+
         </div>
 
         <div className="flex items-center gap-1">

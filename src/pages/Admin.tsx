@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Download, Plus, Trash2, ShieldAlert, CheckCircle, XCircle, Clock, Users, CalendarDays, FileText, MapPin, GitCompare, MessageSquare, Edit2, Save, X, Image, Video, Flag, AlertTriangle, Settings, Monitor, Tablet, Smartphone, Briefcase, Upload, BarChart3, Play , Images} from 'lucide-react';
 import { toast } from 'sonner';
 import LocationPicker from '@/components/LocationPicker';
+import LocationSelect from '@/components/LocationSelect';
 import { useNavigation, type NavMode, type NavSettings, type DeviceType } from '@/contexts/NavigationContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DataExportImport from '@/components/admin/DataExportImport';
@@ -688,8 +689,7 @@ const AdminDashboard = () => {
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1"><Label>{t('profile.display_name')}</Label><Input value={editProfileForm.display_name || ''} onChange={e => setEditProfileForm({ ...editProfileForm, display_name: e.target.value })} /></div>
                           <div className="space-y-1"><Label>{t('profile.location')}</Label><Input value={editProfileForm.location || ''} onChange={e => setEditProfileForm({ ...editProfileForm, location: e.target.value })} /></div>
-                          <div className="space-y-1"><Label>{t('admin.city')}</Label><Input value={editProfileForm.city || ''} onChange={e => setEditProfileForm({ ...editProfileForm, city: e.target.value })} /></div>
-                          <div className="space-y-1"><Label>{t('admin.country')}</Label><Input value={editProfileForm.country || ''} onChange={e => setEditProfileForm({ ...editProfileForm, country: e.target.value })} /></div>
+                          <div className="space-y-1 sm:col-span-2"><Label>{t('admin.city')} / {t('admin.country')}</Label><LocationSelect city={editProfileForm.city || ''} country={editProfileForm.country || ''} onChange={(v) => setEditProfileForm({ ...editProfileForm, city: v.city, country: v.country, ...(v.lat != null ? { lat: v.lat, lng: v.lng } : {}) } as any)} /></div>
                         </div>
                         <div className="space-y-1"><Label>{t('profile.bio')}</Label><Textarea value={editProfileForm.bio || ''} onChange={e => setEditProfileForm({ ...editProfileForm, bio: e.target.value })} rows={2} /></div>
                         <div className="grid grid-cols-2 gap-3">
@@ -812,10 +812,7 @@ const AdminDashboard = () => {
               <CardContent className="p-4 space-y-3">
                 <h3 className="font-semibold text-sm">{t('admin.add_member')}</h3>
                 <Input value={newMemberName} onChange={e => setNewMemberName(e.target.value)} placeholder="Name" />
-                <div className="grid grid-cols-2 gap-3">
-                  <Input value={newMemberCity} onChange={e => setNewMemberCity(e.target.value)} placeholder={t('admin.city')} />
-                  <Input value={newMemberCountry} onChange={e => setNewMemberCountry(e.target.value)} placeholder={t('admin.country')} />
-                </div>
+                <LocationSelect city={newMemberCity} country={newMemberCountry} onChange={(v) => { setNewMemberCity(v.city); setNewMemberCountry(v.country); if (v.lat != null && v.lng != null) { setNewMemberLat(v.lat); setNewMemberLng(v.lng); } }} />
                 <div className="space-y-1">
                   <Label>{t('admin.status')}</Label>
                   <StatusSelect value={newMemberStatus} onChange={setNewMemberStatus} />
@@ -850,8 +847,7 @@ const AdminDashboard = () => {
                       <div className="space-y-3">
                         <div className="space-y-1"><Label>Name</Label><Input value={editMemberForm.name || ''} onChange={e => setEditMemberForm({ ...editMemberForm, name: e.target.value })} /></div>
                         <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1"><Label>{t('admin.city')}</Label><Input value={(editMemberForm as any).city || ''} onChange={e => setEditMemberForm({ ...editMemberForm, city: e.target.value } as any)} /></div>
-                          <div className="space-y-1"><Label>{t('admin.country')}</Label><Input value={(editMemberForm as any).country || ''} onChange={e => setEditMemberForm({ ...editMemberForm, country: e.target.value } as any)} /></div>
+                          <div className="space-y-1 sm:col-span-2"><Label>{t('admin.city')} / {t('admin.country')}</Label><LocationSelect city={(editMemberForm as any).city || ''} country={(editMemberForm as any).country || ''} onChange={(v) => setEditMemberForm({ ...editMemberForm, city: v.city, country: v.country, ...(v.lat != null ? { lat: v.lat, lng: v.lng } : {}) } as any)} /></div>
                         </div>
                         <div className="space-y-1"><Label>{t('admin.status')}</Label><StatusSelect value={editMemberForm.status || 'active'} onChange={v => setEditMemberForm({ ...editMemberForm, status: v })} /></div>
                         <Button variant="outline" size="sm" onClick={() => setShowEditMemberPicker(!showEditMemberPicker)} className="gap-1">
@@ -899,10 +895,7 @@ const AdminDashboard = () => {
                   <div className="space-y-1"><Label>{t('event.end')}</Label><Input type="date" value={newEvent.end_date} onChange={e => setNewEvent({ ...newEvent, end_date: e.target.value })} /></div>
                   <div className="space-y-1"><Label>{t('event.capacity')}</Label><Input type="number" value={newEvent.capacity} onChange={e => setNewEvent({ ...newEvent, capacity: e.target.value })} placeholder="0 = unlimited" /></div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <Input value={newEvent.city} onChange={e => setNewEvent({ ...newEvent, city: e.target.value })} placeholder={t('admin.city')} />
-                  <Input value={newEvent.country} onChange={e => setNewEvent({ ...newEvent, country: e.target.value })} placeholder={t('admin.country')} />
-                </div>
+                <LocationSelect city={newEvent.city} country={newEvent.country} onChange={(v) => { setNewEvent({ ...newEvent, city: v.city, country: v.country }); if (v.lat != null && v.lng != null) { setNewEventLat(v.lat); setNewEventLng(v.lng); } }} />
                 <div className="space-y-1">
                   <Label>{t('admin.status')}</Label>
                   <StatusSelect value={newEvent.status} onChange={v => setNewEvent({ ...newEvent, status: v })} />
@@ -968,8 +961,7 @@ const AdminDashboard = () => {
                           <div className="space-y-1"><Label>{t('event.capacity')}</Label><Input type="number" value={(editEventForm as any).capacity || ''} onChange={ev => setEditEventForm({ ...editEventForm, capacity: ev.target.value ? parseInt(ev.target.value) : null } as any)} /></div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1"><Label>{t('admin.city')}</Label><Input value={(editEventForm as any).city || ''} onChange={ev => setEditEventForm({ ...editEventForm, city: ev.target.value } as any)} /></div>
-                          <div className="space-y-1"><Label>{t('admin.country')}</Label><Input value={(editEventForm as any).country || ''} onChange={ev => setEditEventForm({ ...editEventForm, country: ev.target.value } as any)} /></div>
+                          <div className="space-y-1 sm:col-span-2"><Label>{t('admin.city')} / {t('admin.country')}</Label><LocationSelect city={(editEventForm as any).city || ''} country={(editEventForm as any).country || ''} onChange={(v) => setEditEventForm({ ...editEventForm, city: v.city, country: v.country, ...(v.lat != null ? { lat: v.lat, lng: v.lng } : {}) } as any)} /></div>
                         </div>
                         <div className="space-y-1"><Label>{t('admin.status')}</Label><StatusSelect value={editEventForm.status || 'active'} onChange={v => setEditEventForm({ ...editEventForm, status: v })} /></div>
                         <div className="space-y-1"><Label>Description</Label><Textarea value={editEventForm.description || ''} onChange={ev => setEditEventForm({ ...editEventForm, description: ev.target.value })} rows={3} /></div>

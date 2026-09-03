@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { FileText, Plus, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, Plus, Clock, ChevronDown, ChevronUp, Video, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import TranslateButton from './TranslateButton';
@@ -16,9 +16,43 @@ import TranslateButton from './TranslateButton';
 interface Post {
   id: string; author_id: string; title: string; content: string; slug: string | null;
   status: string; created_at: string;
-  title_i18n?: any; content_i18n?: any;
+  title_i18n?: any; content_i18n?: any; media?: MediaItem[] | any;
   profile?: { display_name: string; avatar_url: string | null; slug: string | null };
 }
+
+interface MediaItem { url: string; type: 'image' | 'video' }
+
+const isVideo = (u: string) => /youtube|youtu\.be|vimeo|\.mp4($|\?)|\.webm($|\?)/i.test(u);
+
+const embedUrl = (u: string) => {
+  const yt = u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vm = u.match(/vimeo\.com\/(\d+)/);
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}`;
+  return null;
+};
+
+const PostGallery = ({ items }: { items: MediaItem[] }) => {
+  if (!items?.length) return null;
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
+      {items.map((m, i) => {
+        const emb = m.type === 'video' ? embedUrl(m.url) : null;
+        return (
+          <div key={i} className="rounded-md overflow-hidden border border-border bg-muted aspect-video">
+            {m.type === 'image' ? (
+              <img src={m.url} alt="" loading="lazy" className="w-full h-full object-cover" />
+            ) : emb ? (
+              <iframe src={emb} title={`media-${i}`} className="w-full h-full" allowFullScreen />
+            ) : (
+              <video src={m.url} controls className="w-full h-full object-cover" />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 interface Props { targetType: string; targetId: string; }
 
@@ -33,6 +67,15 @@ const PostsSection = ({ targetType, targetId }: Props) => {
   const [expandedPost, setExpandedPost] = useState<string | null>(null);
   const [titleI18n, setTitleI18n] = useState<Record<string, string> | null>(null);
   const [contentI18n, setContentI18n] = useState<Record<string, string> | null>(null);
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [mediaUrl, setMediaUrl] = useState('');
+
+  const addMedia = () => {
+    const u = mediaUrl.trim();
+    if (!u) return;
+    setMedia([...media, { url: u, type: isVideo(u) ? 'video' : 'image' }]);
+    setMediaUrl('');
+  };
 
   const loadPosts = async () => {
     const { data } = await supabase
@@ -63,12 +106,13 @@ const PostsSection = ({ targetType, targetId }: Props) => {
       author_id: userId, title: title.trim(), content: content.trim(),
       title_i18n: titleI18n || { tr: title.trim() },
       content_i18n: contentI18n || { tr: content.trim() },
+      media,
       target_type: targetType, target_id: targetId,
     } as any);
     if (error) toast.error(error.message);
     else {
       toast.success(t('posts.submitted'));
-      setTitle(''); setContent(''); setTitleI18n(null); setContentI18n(null); setShowForm(false);
+      setTitle(''); setContent(''); setTitleI18n(null); setContentI18n(null); setMedia([]); setMediaUrl(''); setShowForm(false);
       await supabase.rpc('notify_admins', { _type: 'post', _title: t('posts.new_post_admin'), _message: title.trim() } as any);
       loadPosts();
     }
@@ -98,6 +142,26 @@ const PostsSection = ({ targetType, targetId }: Props) => {
           <div className="space-y-3 p-3 border border-border rounded-lg bg-muted/30">
             <Input value={title} onChange={e => { setTitle(e.target.value); setTitleI18n(null); }} placeholder={t('posts.title_placeholder')} />
             <Textarea value={content} onChange={e => { setContent(e.target.value); setContentI18n(null); }} placeholder={t('posts.content_placeholder')} rows={5} />
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} placeholder="https://... (image or video URL)" onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addMedia(); } }} />
+                <Button type="button" variant="outline" size="sm" onClick={addMedia}>{t('posts.add_media') !== 'posts.add_media' ? t('posts.add_media') : 'Add media'}</Button>
+              </div>
+              {media.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {media.map((m, i) => (
+                    <div key={i} className="relative group rounded-md overflow-hidden border border-border bg-muted aspect-video flex items-center justify-center">
+                      {m.type === 'image'
+                        ? <img src={m.url} alt="" className="w-full h-full object-cover" />
+                        : <Video className="w-5 h-5 text-muted-foreground" />}
+                      <button type="button" onClick={() => setMedia(media.filter((_, j) => j !== i))} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <div className="flex gap-2 justify-between items-center">
               <TranslateButton
                 source={`${title}\n\n---\n\n${content}`}
@@ -159,6 +223,7 @@ const PostsSection = ({ targetType, targetId }: Props) => {
             {expandedPost === p.id && (
               <div className="px-3 pb-3 border-t border-border">
                 <div className="pt-3 text-sm text-foreground whitespace-pre-wrap leading-relaxed">{pickI18n(p.content_i18n, p.content, lang)}</div>
+                <PostGallery items={Array.isArray(p.media) ? p.media : []} />
                 <p className="text-xs text-muted-foreground mt-2">— {p.profile?.display_name}</p>
               </div>
             )}
