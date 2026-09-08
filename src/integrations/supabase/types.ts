@@ -276,6 +276,54 @@ export type Database = {
           },
         ]
       }
+      faq_items: {
+        Row: {
+          active: boolean
+          answer: string
+          answer_i18n: Json | null
+          category: string
+          created_at: string
+          id: string
+          keywords: string[]
+          link_label: string | null
+          link_url: string | null
+          question: string
+          question_i18n: Json | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          answer: string
+          answer_i18n?: Json | null
+          category?: string
+          created_at?: string
+          id?: string
+          keywords?: string[]
+          link_label?: string | null
+          link_url?: string | null
+          question: string
+          question_i18n?: Json | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          answer?: string
+          answer_i18n?: Json | null
+          category?: string
+          created_at?: string
+          id?: string
+          keywords?: string[]
+          link_label?: string | null
+          link_url?: string | null
+          question?: string
+          question_i18n?: Json | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hero_slides: {
         Row: {
           active: boolean
@@ -1193,6 +1241,30 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       social_links: {
         Row: {
           active: boolean
@@ -1457,6 +1529,113 @@ export type Database = {
         }
         Relationships: []
       }
+      waitlist_entries: {
+        Row: {
+          city: string | null
+          community: string | null
+          country: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          invite_code: string | null
+          list_id: string
+          notes: string | null
+          profession: string | null
+          referral_code: string
+          referral_count: number
+          referred_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          community?: string | null
+          country?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          invite_code?: string | null
+          list_id: string
+          notes?: string | null
+          profession?: string | null
+          referral_code?: string
+          referral_count?: number
+          referred_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          community?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          invite_code?: string | null
+          list_id?: string
+          notes?: string | null
+          profession?: string | null
+          referral_code?: string
+          referral_count?: number
+          referred_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_entries_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "waitlist_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waitlist_lists: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          invite_required: boolean
+          is_default: boolean
+          mode: string
+          name: string
+          show_counter: boolean
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          invite_required?: boolean
+          is_default?: boolean
+          mode?: string
+          name: string
+          show_counter?: boolean
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          invite_required?: boolean
+          is_default?: boolean
+          mode?: string
+          name?: string
+          show_counter?: boolean
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1491,6 +1670,26 @@ export type Database = {
         }
         Returns: undefined
       }
+      waitlist_count: { Args: { _list_slug: string }; Returns: number }
+      waitlist_join: {
+        Args: {
+          _city?: string
+          _community?: string
+          _country?: string
+          _email: string
+          _full_name: string
+          _list_slug: string
+          _profession?: string
+          _ref?: string
+        }
+        Returns: Json
+      }
+      waitlist_position: { Args: { _entry_id: string }; Returns: number }
+      waitlist_redeem_invite: {
+        Args: { _email: string; _invite_code: string }
+        Returns: boolean
+      }
+      waitlist_status: { Args: { _referral_code: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
