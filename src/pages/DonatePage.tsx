@@ -69,7 +69,7 @@ const DonatePage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageSeo pageKey="donate" fallbackTitle="Support WorkWorldMap — Donate" fallbackDescription="Support the open-source WorkWorldMap project. Donors get a profile badge and featured placement." />
+      <PageSeo title="Support WorkWorldMap — Donate" description="Support the open-source WorkWorldMap project. Donors get a profile badge and featured placement in listings." />
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
         <header className="text-center space-y-3">
           <h1 className="text-3xl font-bold tracking-tight">Support WorkWorldMap</h1>
