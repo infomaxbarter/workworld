@@ -14,6 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_creatives: {
+        Row: {
+          active: boolean
+          advertiser: string | null
+          body: string | null
+          clicks: number
+          created_at: string
+          cta_label: string | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          impressions: number
+          link_url: string | null
+          slot_id: string
+          starts_at: string | null
+          title: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          active?: boolean
+          advertiser?: string | null
+          body?: string | null
+          clicks?: number
+          created_at?: string
+          cta_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          impressions?: number
+          link_url?: string | null
+          slot_id: string
+          starts_at?: string | null
+          title: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          active?: boolean
+          advertiser?: string | null
+          body?: string | null
+          clicks?: number
+          created_at?: string
+          cta_label?: string | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          impressions?: number
+          link_url?: string | null
+          slot_id?: string
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_creatives_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "ad_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_slots: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          height: number | null
+          id: string
+          name: string
+          page_key: string
+          placement: string
+          updated_at: string
+          width: number | null
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          height?: number | null
+          id?: string
+          name: string
+          page_key?: string
+          placement?: string
+          updated_at?: string
+          width?: number | null
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          height?: number | null
+          id?: string
+          name?: string
+          page_key?: string
+          placement?: string
+          updated_at?: string
+          width?: number | null
+        }
+        Relationships: []
+      }
       ambassador_levels: {
         Row: {
           badges: string | null
@@ -145,6 +252,217 @@ export type Database = {
           vertical?: string | null
         }
         Relationships: []
+      }
+      donation_tiers: {
+        Row: {
+          active: boolean
+          badge_color: string
+          badge_icon: string
+          badge_label: string | null
+          code: string
+          created_at: string
+          currency: string
+          description: string | null
+          description_i18n: Json | null
+          highlight_days: number
+          id: string
+          min_amount: number
+          name: string
+          name_i18n: Json | null
+          perks: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          badge_color?: string
+          badge_icon?: string
+          badge_label?: string | null
+          code: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          description_i18n?: Json | null
+          highlight_days?: number
+          id?: string
+          min_amount?: number
+          name: string
+          name_i18n?: Json | null
+          perks?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          badge_color?: string
+          badge_icon?: string
+          badge_label?: string | null
+          code?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          description_i18n?: Json | null
+          highlight_days?: number
+          id?: string
+          min_amount?: number
+          name?: string
+          name_i18n?: Json | null
+          perks?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      donations: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          channel: string
+          created_at: string
+          currency: string
+          donated_at: string | null
+          donor_name: string
+          email: string | null
+          id: string
+          message: string | null
+          profile_id: string | null
+          show_publicly: boolean
+          status: string
+          tier_id: string | null
+          updated_at: string
+          user_id: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          amount?: number
+          channel?: string
+          created_at?: string
+          currency?: string
+          donated_at?: string | null
+          donor_name: string
+          email?: string | null
+          id?: string
+          message?: string | null
+          profile_id?: string | null
+          show_publicly?: boolean
+          status?: string
+          tier_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          channel?: string
+          created_at?: string
+          currency?: string
+          donated_at?: string | null
+          donor_name?: string
+          email?: string | null
+          id?: string
+          message?: string | null
+          profile_id?: string | null
+          show_publicly?: boolean
+          status?: string
+          tier_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donations_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "donation_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      donor_badges: {
+        Row: {
+          active: boolean
+          color: string
+          created_at: string
+          display_name: string | null
+          donation_id: string | null
+          expires_at: string | null
+          featured: boolean
+          icon: string
+          id: string
+          label: string
+          note: string | null
+          profile_id: string | null
+          starts_at: string
+          tier_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          color?: string
+          created_at?: string
+          display_name?: string | null
+          donation_id?: string | null
+          expires_at?: string | null
+          featured?: boolean
+          icon?: string
+          id?: string
+          label: string
+          note?: string | null
+          profile_id?: string | null
+          starts_at?: string
+          tier_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          color?: string
+          created_at?: string
+          display_name?: string | null
+          donation_id?: string | null
+          expires_at?: string | null
+          featured?: boolean
+          icon?: string
+          id?: string
+          label?: string
+          note?: string | null
+          profile_id?: string | null
+          starts_at?: string
+          tier_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donor_badges_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "donations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donor_badges_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "donor_badges_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "donation_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_gallery: {
         Row: {
@@ -1641,6 +1959,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ad_track: {
+        Args: { _creative_id: string; _kind: string }
+        Returns: undefined
+      }
       create_notification: {
         Args: {
           _link?: string
