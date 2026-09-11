@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import Footer from '@/components/Footer';
 import PageSeo from '@/components/PageSeo';
 import RelatedContent from '@/components/RelatedContent';
+import TeamBuilder from '@/components/TeamBuilder';
 
 interface Profile {
   id: string; user_id: string; display_name: string; avatar_url: string | null;
@@ -239,6 +240,9 @@ const HumansPage = () => {
             )}
           </>
         )}
+      </div>
+      <div className="max-w-6xl mx-auto w-full px-4 pb-6">
+        <TeamBuilder />
       </div>
       <div className="max-w-6xl mx-auto w-full px-4 pb-12">
         <RelatedContent kinds={['professions', 'cities', 'events', 'media']} />
