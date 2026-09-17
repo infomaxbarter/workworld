@@ -17,6 +17,8 @@ export type RouteKey =
   | 'analytics'
   | 'ecosystem'
   | 'provinceDetail'
+  | 'donate'
+  | 'waitlist'
   | 'dashboard'
   | 'admin'
   | 'auth'
@@ -50,6 +52,8 @@ export const routeMap: Record<RouteKey, Record<Lang, string>> = {
   analytics:        { en: '/analytics',  tr: '/analitik',    de: '/analysen' },
   ecosystem:        { en: '/turkiye-ecosystem',  tr: '/turkiye-ekosistem',   de: '/tuerkiye-oekosystem' },
   provinceDetail:   { en: '/turkiye-ecosystem/:slug', tr: '/turkiye-ekosistem/:slug', de: '/tuerkiye-oekosystem/:slug' },
+  donate:           { en: '/donate',    tr: '/bagis',        de: '/spenden' },
+  waitlist:         { en: '/waitlist',  tr: '/bekleme-listesi', de: '/warteliste' },
 
   dashboard:        { en: '/dashboard',  tr: '/panel',       de: '/uebersicht' },
   admin:            { en: '/admin',      tr: '/yonetim',     de: '/verwaltung' },
