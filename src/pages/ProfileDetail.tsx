@@ -224,6 +224,19 @@ const ProfileDetail = () => {
               </>
             ) : (
               <>
+                {badges.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {badges.map((b) => (
+                      <span
+                        key={b.id}
+                        className="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium"
+                        style={{ borderColor: b.color, color: b.color }}
+                      >
+                        ★ {b.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <p className="text-foreground">{pickI18n(profile.bio_i18n, profile.bio, lang) || t('profile.no_bio')}</p>
                 <div className="flex flex-wrap gap-3 sm:gap-4 text-sm text-muted-foreground">
                   {locationText && <span className="inline-flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{locationText}</span>}
