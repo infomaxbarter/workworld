@@ -121,10 +121,12 @@ const AppLayout = () => {
             <header className="h-12 flex items-center border-b border-border bg-background/80 backdrop-blur-md px-3 sticky top-0 z-50">
               <SidebarTrigger aria-label="Toggle sidebar" />
             </header>
-            <main id="main" className="flex-1">
+            <main id="main" className="flex-1 pb-16 md:pb-0">
               <AppRoutes />
             </main>
           </div>
+          <BottomNav />
+          <FaqChat />
         </div>
       </SidebarProvider>
     );
@@ -139,9 +141,11 @@ const AppLayout = () => {
         Skip to content
       </a>
       <Header />
-      <main id="main">
+      <main id="main" className="pb-16 md:pb-0">
         <AppRoutes />
       </main>
+      <BottomNav />
+      <FaqChat />
     </>
   );
 };
