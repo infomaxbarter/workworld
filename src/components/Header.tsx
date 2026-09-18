@@ -70,7 +70,14 @@ const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [profileSlug, setProfileSlug] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [beta, setBeta] = useState<{ enabled?: boolean; label?: string } | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    (supabase as any)
+      .from('site_settings').select('value').eq('key', 'beta_mode').maybeSingle()
+      .then(({ data }: any) => setBeta((data?.value as any) || null));
+  }, []);
 
   useEffect(() => { document.documentElement.classList.toggle('dark', dark); }, [dark]);
 
@@ -168,8 +175,15 @@ const Header = () => {
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to="/" className="text-xl font-bold tracking-tight text-foreground">
-            Work<span className="text-primary">World</span>Map
+          <Link to="/" className="flex flex-col leading-none">
+            <span className="text-xl font-bold tracking-tight text-foreground">
+              Work<span className="text-primary">World</span>Map
+            </span>
+            {beta?.enabled !== false && beta?.label && (
+              <span className="text-[9px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                {beta.label}
+              </span>
+            )}
           </Link>
 
           {/* Standard nav */}

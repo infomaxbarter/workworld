@@ -57,6 +57,8 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
     events: { marker: L.Marker; data: any }[];
     professions: { marker: L.Marker; data: any }[];
   }>({ profiles: [], anon: [], events: [], professions: [] });
+  const provincesRef = useRef<L.MarkerClusterGroup | null>(null);
+  const [provinceCount, setProvinceCount] = useState(0);
 
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'profiles' | 'anon' | 'events' | 'professions'>('all');
@@ -69,7 +71,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
   const [anonProfessions, setAnonProfessions] = useState<Map<string, string[]>>(new Map());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
-  const [layerVisibility, setLayerVisibility] = useState({ profiles: true, anon: true, events: true, professions: true });
+  const [layerVisibility, setLayerVisibility] = useState({ profiles: true, anon: true, events: true, professions: true, provinces: false });
   const [openSection, setOpenSection] = useState<Record<string, boolean>>({ filters: true, layers: true, stats: false, network: false, list: true });
   const [stats, setStats] = useState({ profiles: 0, anon: 0, events: 0, professions: 0, total: 0 });
 
@@ -205,6 +207,34 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
       map.addLayer(anonLayer);
       map.addLayer(eventsLayer);
       map.addLayer(professionsLayer);
+
+      // Türkiye ecosystem provinces (independent optional layer)
+      const provincesLayer = L.markerClusterGroup();
+      provincesRef.current = provincesLayer;
+      const { data: provinces } = await (supabase as any)
+        .from('tr_provinces')
+        .select('id, plate_no, name, name_i18n, slug, region, tier, target_representatives, lat, lng')
+        .eq('active', true)
+        .not('lat', 'is', null);
+      (provinces as any[] | null)?.forEach((pv) => {
+        const marker = L.marker([pv.lat, pv.lng], {
+          icon: L.divIcon({
+            className: '',
+            html: `<div style="background:#0ea5e9;color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)">${pv.plate_no ?? ''}</div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+          }),
+        });
+        marker.bindPopup(`
+          <div style="padding:12px;min-width:180px;font-family:inherit;">
+            <div style="font-weight:700;font-size:15px;margin-bottom:4px;">📍 ${pickI18n(pv.name_i18n, pv.name, lang)}</div>
+            <div style="font-size:12px;color:#666;margin-bottom:6px;">${pv.region || ''} · ${pv.tier || ''} · ${pv.target_representatives ?? 0} reps</div>
+            <a href="/turkiye-ecosystem/${pv.slug || pv.id}" style="display:block;text-align:center;padding:6px 12px;background:#0ea5e9;color:white;border-radius:6px;font-size:12px;font-weight:500;text-decoration:none;">${t('map.view_details')}</a>
+          </div>
+        `);
+        provincesLayer.addLayer(marker);
+      });
+      setProvinceCount((provinces as any[] | null)?.length || 0);
 
       const profData = (profs as any[] || []).filter(p => p.lat && p.lng);
       setAllData({ profiles: profiles || [], anon: anonMarkers || [], events: events || [], professions: profData });

@@ -8,6 +8,8 @@ import { LanguageProvider } from "@/i18n/LanguageContext";
 import { NavigationProvider, useNavigation } from "@/contexts/NavigationContext";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import Header from "@/components/Header";
+import BottomNav from "@/components/BottomNav";
+import FaqChat from "@/components/FaqChat";
 import AppSidebar from "@/components/AppSidebar";
 import CommandPalette from "@/components/CommandPalette";
 import LanguageURLSync from "@/components/LanguageURLSync";
@@ -36,6 +38,8 @@ const MediaDetail = lazy(() => import("./pages/MediaDetail"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const EcosystemPage = lazy(() => import("./pages/EcosystemPage"));
 const ProvinceDetail = lazy(() => import("./pages/ProvinceDetail"));
+const DonatePage = lazy(() => import("./pages/DonatePage"));
+const WaitlistPage = lazy(() => import("./pages/WaitlistPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -64,6 +68,8 @@ const pageFor: Record<RouteKey, JSX.Element> = {
   analytics: <AnalyticsPage />,
   ecosystem: <EcosystemPage />,
   provinceDetail: <ProvinceDetail />,
+  donate: <DonatePage />,
+  waitlist: <WaitlistPage />,
 
   dashboard: <Dashboard />,
   admin: <Admin />,
@@ -115,10 +121,12 @@ const AppLayout = () => {
             <header className="h-12 flex items-center border-b border-border bg-background/80 backdrop-blur-md px-3 sticky top-0 z-50">
               <SidebarTrigger aria-label="Toggle sidebar" />
             </header>
-            <main id="main" className="flex-1">
+            <main id="main" className="flex-1 pb-16 md:pb-0">
               <AppRoutes />
             </main>
           </div>
+          <BottomNav />
+          <FaqChat />
         </div>
       </SidebarProvider>
     );
@@ -133,9 +141,11 @@ const AppLayout = () => {
         Skip to content
       </a>
       <Header />
-      <main id="main">
+      <main id="main" className="pb-16 md:pb-0">
         <AppRoutes />
       </main>
+      <BottomNav />
+      <FaqChat />
     </>
   );
 };

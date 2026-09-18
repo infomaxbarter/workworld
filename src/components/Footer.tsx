@@ -31,6 +31,8 @@ const Footer = () => {
           <Link to={lp('podcast')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('nav.podcast')}</Link>
           <Link to={lp('analytics')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t('nav.analytics')}</Link>
           <Link to={lp('mci')} className="text-sm text-primary hover:underline transition-colors font-medium">MCI v7.0</Link>
+          <Link to={lp('donate')} className="text-sm text-primary hover:underline transition-colors font-medium">Donate</Link>
+          <Link to={lp('waitlist')} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Waitlist</Link>
           <a href="https://github.com/workworldmap/workworldmap" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1">
             <Github className="w-3.5 h-3.5" /> GitHub
           </a>

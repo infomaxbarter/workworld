@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import SiteContentAdmin from '@/components/admin/SiteContentAdmin';
+import DonationsAdmin from '@/components/admin/DonationsAdmin';
+import AdsAdmin from '@/components/admin/AdsAdmin';
+import WaitlistAdmin from '@/components/admin/WaitlistAdmin';
+import FaqAdmin from '@/components/admin/FaqAdmin';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -539,6 +543,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="detailed_reports" className="gap-1.5"><BarChart3 className="w-4 h-4" /> Detaylı Raporlar</TabsTrigger>
             <TabsTrigger value="ecosystem" className="gap-1.5"><MapPin className="w-4 h-4" /> Ekosistem</TabsTrigger>
             <TabsTrigger value="site" className="gap-1.5"><Images className="w-4 h-4" /> Site İçerik</TabsTrigger>
+            <TabsTrigger value="donations" className="gap-1.5"><Images className="w-4 h-4" /> Bağışlar</TabsTrigger>
+            <TabsTrigger value="ads" className="gap-1.5"><Images className="w-4 h-4" /> Reklamlar</TabsTrigger>
+            <TabsTrigger value="waitlist" className="gap-1.5"><Users className="w-4 h-4" /> Bekleme Listesi</TabsTrigger>
+            <TabsTrigger value="faq" className="gap-1.5"><MessageSquare className="w-4 h-4" /> SSS & Beta</TabsTrigger>
             <TabsTrigger value="settings" className="gap-1.5"><Settings className="w-4 h-4" /> {t('admin.settings')}</TabsTrigger>
           </TabsList>
 
@@ -1226,6 +1234,22 @@ const AdminDashboard = () => {
 
           <TabsContent value="site">
             <SiteContentAdmin />
+          </TabsContent>
+
+          <TabsContent value="donations">
+            <DonationsAdmin />
+          </TabsContent>
+
+          <TabsContent value="ads">
+            <AdsAdmin />
+          </TabsContent>
+
+          <TabsContent value="waitlist">
+            <WaitlistAdmin />
+          </TabsContent>
+
+          <TabsContent value="faq">
+            <FaqAdmin />
           </TabsContent>
 
           <TabsContent value="settings">
