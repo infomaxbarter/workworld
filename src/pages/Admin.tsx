@@ -1232,6 +1232,22 @@ const AdminDashboard = () => {
             <SiteContentAdmin />
           </TabsContent>
 
+          <TabsContent value="donations">
+            <DonationsAdmin />
+          </TabsContent>
+
+          <TabsContent value="ads">
+            <AdsAdmin />
+          </TabsContent>
+
+          <TabsContent value="waitlist">
+            <WaitlistAdmin />
+          </TabsContent>
+
+          <TabsContent value="faq">
+            <FaqAdmin />
+          </TabsContent>
+
           <TabsContent value="settings">
             <NavSettingsPanel />
           </TabsContent>
