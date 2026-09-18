@@ -46,6 +46,7 @@ const ProfileDetail = () => {
   const [uploading, setUploading] = useState(false);
   const [events, setEvents] = useState<EventData[]>([]);
   const [editRequests, setEditRequests] = useState<any[]>([]);
+  const [badges, setBadges] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -56,6 +57,11 @@ const ProfileDetail = () => {
         const p = data as unknown as Profile;
         setProfile(p);
         setForm(p);
+
+        const { data: db } = await (supabase as any)
+          .from('donor_badges').select('id, label, color, icon, featured')
+          .eq('profile_id', p.id).eq('active', true).order('featured', { ascending: false });
+        setBadges(db || []);
 
         // Load events user has joined
         const { data: rsvps } = await supabase.from('event_rsvps').select('event_id').eq('user_id', p.user_id);
