@@ -57,6 +57,8 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
     events: { marker: L.Marker; data: any }[];
     professions: { marker: L.Marker; data: any }[];
   }>({ profiles: [], anon: [], events: [], professions: [] });
+  const provincesRef = useRef<L.MarkerClusterGroup | null>(null);
+  const [provinceCount, setProvinceCount] = useState(0);
 
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'profiles' | 'anon' | 'events' | 'professions'>('all');
@@ -69,7 +71,7 @@ const WorldMap = ({ showSidebar = false }: WorldMapProps) => {
   const [anonProfessions, setAnonProfessions] = useState<Map<string, string[]>>(new Map());
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
-  const [layerVisibility, setLayerVisibility] = useState({ profiles: true, anon: true, events: true, professions: true });
+  const [layerVisibility, setLayerVisibility] = useState({ profiles: true, anon: true, events: true, professions: true, provinces: false });
   const [openSection, setOpenSection] = useState<Record<string, boolean>>({ filters: true, layers: true, stats: false, network: false, list: true });
   const [stats, setStats] = useState({ profiles: 0, anon: 0, events: 0, professions: 0, total: 0 });
 
